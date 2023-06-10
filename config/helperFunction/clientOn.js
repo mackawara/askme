@@ -77,15 +77,19 @@ const clientOn = async (client, arg1, arg2, MessageMedia) => {
             warnings: 0,
             calls: 0,
           });
-          await newContact.save();
-          client.sendMessage(
-            serialisedNumber,
-            `Hi ${notifyName},thank you for using AskMe, the AI powered virtual assistant.\n*How to use*\n1. *Simply* ask any question and wait for a response. For example you can ask "Explain the theory of relativity"or \n "Give me a step by step procedure of mounting an engine",if the response is incomplete you can just say "continue". Yes, you can chat to *AskMe* as you would to a human (*a super intelligent, all knowing human*) because *Askme* remembers topics that you talked about for the previous 30 minutes.\n\n What *Askme* cannot do\n1.Provide updates on current events (events after October 2021)\n2.Provide opinions on subjective things,\nWe hope you enjoy using the app. Please avoid making too many requests in short period of time, as this may slow down the app and cause your number to be blocked if warnings are not heeded. Your feedback is valued , please send suggestions to 0775231426`
-          );
+          try {
+            await newContact.save();
+            client.sendMessage(
+              serialisedNumber,
+              `Hi ${notifyName},thank you for using AskMe, the AI powered virtual assistant.\n*How to use*\n1. *Simply* ask any question and wait for a response. For example you can ask "Explain the theory of relativity"or \n "Give me a step by step procedure of mounting an engine",if the response is incomplete you can just say "continue". Yes, you can chat to *AskMe* as you would to a human (*a super intelligent, all knowing human*) because *Askme* remembers topics that you talked about for the previous 30 minutes.\n\n What *Askme* cannot do\n1.Provide updates on current events (events after October 2021)\n2.Provide opinions on subjective things,\nWe hope you enjoy using the app. Please avoid making too many requests in short period of time, as this may slow down the app and cause your number to be blocked if warnings are not heeded. Your feedback is valued , please send suggestions to 0775231426`
+            );
+          } catch (err) {
+            console.log(err);
+          }
         }
         // else check if already blocked
         else if (contacts[0].isBlocked) {
-          contact.block();
+          //contact.block();
         }
 
         let response = await openAiCall(prompt, chatID, client);
@@ -96,7 +100,7 @@ const clientOn = async (client, arg1, arg2, MessageMedia) => {
           response ==
           "*Error!* too many requests made , please try later. You cannot make mutiple requests at the same time"
         ) {
-          contact.block();
+          //contact.block();
           //const offender=new
 
           client.sendMessage(
