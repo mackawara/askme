@@ -23,7 +23,22 @@ const openAiCall = async (prompt, chatID) => {
 
   const openai = new OpenAIApi(configuration);
   let error;
+
+  if (!chats[chatID]) {
+    console.log("no previous found");
+    Object.assign(chats, {
+      [chatID]: {
+        messages: [{ role: "user", content: prompt }],
+        calls: 0,
+      },
+    });
+    console.log(chats);
+  } else {
+    console.log("found existing chat");
+    chats[chatID].messages.push({ role: "user", content: prompt });
+  }
   if (chats[chatID]["calls"] < 2) {
+    console.log(chats[chatID]["calls"]);
     const response = await openai
       .createChatCompletion({
         model: "gpt-3.5-turbo",
@@ -56,21 +71,22 @@ const openAiCall = async (prompt, chatID) => {
         parseInt(contact.tokens) + response.data.usage.total_tokens;
       contact.calls = parseInt(contact.calls) + 1;
       contact.save();
+
       return response.data.choices[0]["message"]["content"];
     } else {
       return error.message;
     }
   } else {
+    console.log("the number of calls made " + chats[chatID]["calls"]);
     //if contact exceeds 10 warnings block them
     contact.warnings = contact.warnings + 1;
     if (contact.warnings > 10) {
       contact.isBlocked = true;
-    }
-
-    try {
-      contact.save();
-    } catch (error) {
-      console.log(error);
+      try {
+        contact.save();
+      } catch (error) {
+        console.log(error);
+      }
     }
     return "*Error!* too many requests made , please try later. You cannot make mutiple requests at the same time";
   }
