@@ -1,7 +1,7 @@
-const { buffer } = require("stream/consumers");
+
 const contactsModel = require("../../models/contactsModel");
 const queryAndSave = require("./queryAndSave");
-const { RateLimiterMemory } = require("rate-limiter-flexible");
+
 let messages = [];
 const timeDelay = (ms) => new Promise((res) => setTimeout(res, ms));
 const clientOn = async (client, arg1, arg2, MessageMedia) => {
