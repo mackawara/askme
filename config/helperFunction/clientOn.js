@@ -1,4 +1,3 @@
-
 const contactsModel = require("../../models/contactsModel");
 const queryAndSave = require("./queryAndSave");
 
@@ -9,32 +8,6 @@ const clientOn = async (client, arg1, arg2, MessageMedia) => {
   const me = process.env.ME;
   const contactsModel = require("../../models/contactsModel");
   //const { MessageMedia } = require("whatsapp-web.js");
-
-  //ratelimiting options
-  const rateLimits = {
-    points: 6, // Available points per minute.
-    duration: 48000, // If the limit reached start waiting for that long before granting access again (in seconds).
-  };
-
-  const rateLimiter = new RateLimiterMemory(rateLimits);
-
-  const checkIfAllowed = async (id) => {
-    return new Promise((resolve, reject) => {
-      rateLimiter
-        .consume(id)
-        .then(() => resolve("User allowed to proceed with request."))
-        .continue()
-        .catch((rejRes) =>
-          reject(
-            `Too many requests: ${JSON.stringify(
-              rejRes,
-              null,
-              2
-            )}. Try again later.`
-          )
-        );
-    });
-  };
 
   if (arg1 == "auth_failure") {
     client.on("auth_failure", (msg) => {
@@ -129,7 +102,7 @@ const clientOn = async (client, arg1, arg2, MessageMedia) => {
           response ==
           "*Error!* too many requests made , please try later. You cannot make mutiple requests at the same time"
         ) {
-           client.sendMessage(
+          client.sendMessage(
             `263775231426@c.us`,
             `contact ${chatID} has been blocked for infractions`
           );
