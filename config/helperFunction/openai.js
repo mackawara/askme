@@ -36,6 +36,7 @@ const openAiCall = async (prompt, chatID) => {
   } else {
     console.log("found existing chat");
     chats[chatID].messages.push({ role: "user", content: prompt });
+    chats[chatID][""];
   }
   if (chats[chatID]["calls"] < 2) {
     console.log(chats[chatID]["calls"]);
@@ -44,7 +45,7 @@ const openAiCall = async (prompt, chatID) => {
         model: "gpt-3.5-turbo",
         messages: chats[chatID]["messages"],
         temperature: 1,
-        max_tokens: 150,
+        max_tokens: 200,
         frequency_penalty: 1.7,
         presence_penalty: 1.89,
       })
@@ -65,7 +66,7 @@ const openAiCall = async (prompt, chatID) => {
         chats[chatID]["calls"] = 0;
       }, 15000); // reset the calls in local store
       setTimeout(() => {
-        chats[chatID]["message"] = [];
+        chats[chatID]["messages"] = [];
       }, 180000); // messages are forgotten after 30mins
       contact.tokens =
         parseInt(contact.tokens) + response.data.usage.total_tokens;
