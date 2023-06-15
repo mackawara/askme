@@ -24,20 +24,6 @@ const openAiCall = async (prompt, chatID) => {
   const openai = new OpenAIApi(configuration);
   let error;
 
-  if (!chats[chatID]) {
-    console.log("no previous found");
-    Object.assign(chats, {
-      [chatID]: {
-        messages: [{ role: "user", content: prompt }],
-        calls: 0,
-      },
-    });
-    console.log(chats);
-  } else {
-    console.log("found existing chat");
-    chats[chatID].messages.push({ role: "user", content: prompt });
-    chats[chatID]["calls"]++;
-  }
   if (chats[chatID]["calls"] < 2) {
     console.log(chats[chatID]["calls"]);
     const response = await openai
