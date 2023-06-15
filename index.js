@@ -1,4 +1,5 @@
 const connectDB = require("./config/database");
+const createDoc = require("./config/helperFunction/docxCreator");
 require("dotenv").config();
 // connect to mongodb before running anything on the app
 connectDB().then(async () => {
@@ -7,7 +8,7 @@ connectDB().then(async () => {
   const client = new Client({
     authStrategy: new LocalAuth(),
     puppeteer: {
-      executablePath: process.env.EXECPATH,
+      // executablePath: process.env.EXECPATH,
       handleSIGINT: true,
       headless: true,
       args: [
@@ -45,6 +46,10 @@ connectDB().then(async () => {
     console.log("Client is ready!");
     //functions abd resources
     //Helper Functions
+    client.sendMessage(
+      "263775231426@c.us",
+      MessageMedia.fromFilePath("./output.docx")
+    );
     const cron = require("node-cron");
     //client events and functions
     //decalre variables that work with client here
