@@ -46,10 +46,7 @@ connectDB().then(async () => {
     console.log("Client is ready!");
     //functions abd resources
     //Helper Functions
-    client.sendMessage(
-      "263775231426@c.us",
-      MessageMedia.fromFilePath("./output.docx")
-    );
+   
     const cron = require("node-cron");
     //client events and functions
     //decalre variables that work with client here
