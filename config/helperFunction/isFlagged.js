@@ -9,4 +9,4 @@ const isFlagged = (string) => {
     } else return false;
   });
 };
-mpdule.exports=isFlagged
+module.exports = isFlagged;
