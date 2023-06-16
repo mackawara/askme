@@ -1,6 +1,7 @@
 const contactsModel = require("../../models/contactsModel");
 const queryAndSave = require("./queryAndSave");
 const isFlagged = require("./isFlagged");
+const docxCreator = require("./docxCreator");
 
 const chats = require("../../chats");
 
@@ -54,7 +55,7 @@ const clientOn = async (client, arg1, arg2, MessageMedia) => {
           return;
         }
         const openAiCall = require("./openai");
-        const prompt = await msgBody.replace(/openAi:/gi, "");
+        let prompt = await msgBody.replace(/openAi:/gi, "");
 
         const chatID = msg.from;
 
@@ -111,8 +112,17 @@ const clientOn = async (client, arg1, arg2, MessageMedia) => {
           chats[chatID]["calls"]++;
         }
         if (chats[chatID]["calls"] < 2) {
+          let response = await openAiCall(prompt, chatID, client);
           if (!msg.hasMedia) {
-            let response = await openAiCall(prompt, chatID, client);
+            if (msgBody.startsWith("createDoc")) {
+              msg.reply(
+                "Please be patient while system generates your docx file"
+              );
+              prompt = await msgBody.replace(/createDoc:/gi, "");
+              response = await openAiCall(prompt, chatID, client);
+              const filePath = await docxCreator(response);
+              client.sendMessage(chatID, MessageMedia.fromFilePath(filePath));
+            }
             // response = response[0].text;
 
             //   const signOff = `\n\n\n*Thank you ${notifyName}* for using this *trial version* brought to you buy Venta Tech. In this improved version you can chat to our Ai as you would to a person. Send all feedback/suggestions to 0775231426`;
@@ -132,6 +142,7 @@ const clientOn = async (client, arg1, arg2, MessageMedia) => {
             msg.reply(
               "Our apologies, current version is not yet able to process media such as images and audio, please make a textual request"
             );
+            return;
           }
         } else {
           console.log("the number of calls made " + chats[chatID]["calls"]);

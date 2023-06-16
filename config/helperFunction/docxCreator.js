@@ -32,6 +32,8 @@ const createDoc = async (contentBody) => {
 
   // buf is a nodejs Buffer, you can either write it to a
   // file or res.send it with express for example.
-  fs.writeFileSync(path.resolve(__dirname, "output.docx"), buf);
+  fs.writeFileSync(path.resolve(__dirname, "createdbyAskMe.docx"), buf);
+  console.log(path.resolve(__dirname, "createdbyAskMe.docx"))
+  return path.resolve(__dirname, "createdbyAskMe.docx")
 };
 module.exports = createDoc;
