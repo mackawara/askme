@@ -46,7 +46,7 @@ connectDB().then(async () => {
     console.log("Client is ready!");
     //functions abd resources
     //Helper Functions
-   
+
     const cron = require("node-cron");
     //client events and functions
     //decalre variables that work with client here
