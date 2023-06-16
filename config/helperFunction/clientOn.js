@@ -1,5 +1,7 @@
 const contactsModel = require("../../models/contactsModel");
 const queryAndSave = require("./queryAndSave");
+const isFlagged = require("./isFlagged");
+
 const chats = require("../../chats");
 
 let messages = [];
@@ -39,21 +41,18 @@ const clientOn = async (client, arg1, arg2, MessageMedia) => {
       // console.log(chat);
       const msgBody = msg.body;
       //only use on direct messages
-      if (!chat.isGroup && !msg.isStatus) {
-        msgBody.split(" ").forEach(async (word) => {
-          const keywords = {
-            flags: ["porn", "xxx", "LGBT", "gay", "games", "movies"],
-          };
 
-          if (keywords.flags.includes(word)) {
-            console.log(msg);
-            //do stuff
-            msg.reply(
-              `Flagged words detected in your request please refrain from requesting adult content or content that is purely for entertainment. If you believe you have been wrngly flagged please submit your text to us on this number 0775 231 426 by prefixing you text with wrong flag`
-            );
-            return;
-          }
-        });
+      if (!chat.isGroup && !msg.isStatus) {
+        if (isFlagged(msgBody)) {
+          msg.reply(
+            "System has detected flagged keywords which are deemed inappropriate for this platform \nIf you feel this message has been wrongly flagged kindly send a query to our team on 0775231426"
+          );
+          client.sendMessage(
+            "263775231426@c.us",
+            `This user ${contact.number} has been flagged for this message \n ${msgBody}`
+          );
+          return;
+        }
         const openAiCall = require("./openai");
         const prompt = await msgBody.replace(/openAi:/gi, "");
 
@@ -112,21 +111,27 @@ const clientOn = async (client, arg1, arg2, MessageMedia) => {
           chats[chatID]["calls"]++;
         }
         if (chats[chatID]["calls"] < 2) {
-          let response = await openAiCall(prompt, chatID, client);
-          // response = response[0].text;
+          if (!msg.hasMedia) {
+            let response = await openAiCall(prompt, chatID, client);
+            // response = response[0].text;
 
-          //   const signOff = `\n\n\n*Thank you ${notifyName}* for using this *trial version* brought to you buy Venta Tech. In this improved version you can chat to our Ai as you would to a person. Send all feedback/suggestions to 0775231426`;
-          if (
-            response ==
-            "*Error!* too many requests made , please try later. You cannot make mutiple requests at the same time"
-          ) {
-            client.sendMessage(
-              `263775231426@c.us`,
-              `contact ${chatID} has been blocked for infractions`
-            );
-            msg.reply(response); //Alert the use of too many messages
+            //   const signOff = `\n\n\n*Thank you ${notifyName}* for using this *trial version* brought to you buy Venta Tech. In this improved version you can chat to our Ai as you would to a person. Send all feedback/suggestions to 0775231426`;
+            if (
+              response ==
+              "*Error!* too many requests made , please try later. You cannot make mutiple requests at the same time"
+            ) {
+              client.sendMessage(
+                `263775231426@c.us`,
+                `contact ${chatID} has been blocked for infractions`
+              );
+              msg.reply(response); //Alert the use of too many messages
+            } else {
+              msg.reply(response);
+            }
           } else {
-            msg.reply(response);
+            msg.reply(
+              "Our apologies, current version is not yet able to process media such as images and audio, please make a textual request"
+            );
           }
         } else {
           console.log("the number of calls made " + chats[chatID]["calls"]);
@@ -140,7 +145,7 @@ const clientOn = async (client, arg1, arg2, MessageMedia) => {
               console.log(error);
             }
           }
-          return "*Error!* too many requests made , please try later. You cannot make mutiple requests at the same time";
+          return "*Error!* too many requests made , please try later. You cannot make multiple requests (more than 2 per minute) at the same time";
         }
       }
     });
