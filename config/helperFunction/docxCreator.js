@@ -4,7 +4,7 @@ const Docxtemplater = require("docxtemplater");
 const fs = require("fs");
 const path = require("path");
 
-const createDoc = async (contentBody) => {
+const createDoc = async (contentBody, chatID, timestamp) => {
   // Load the docx file as binary content
   const content = fs.readFileSync(
     path.resolve(__dirname, "input.docx"),
@@ -32,8 +32,12 @@ const createDoc = async (contentBody) => {
 
   // buf is a nodejs Buffer, you can either write it to a
   // file or res.send it with express for example.
-  fs.writeFileSync(path.resolve(__dirname, "createdbyAskMe.docx"), buf);
-  console.log(path.resolve(__dirname, "createdbyAskMe.docx"))
-  return path.resolve(__dirname, "createdbyAskMe.docx")
+  fs.writeFileSync(
+    path.resolve(
+      __dirname,
+      `../../assets/${chatID}_${timestamp}_createdbyAskMe.docx`
+    ),
+    buf
+  );
 };
 module.exports = createDoc;

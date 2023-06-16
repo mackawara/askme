@@ -36,46 +36,56 @@ const openAiCall = async (prompt, chatID) => {
         presence_penalty: 1.89,
       })
       .catch((err) => {
-        console.log("Error recorded " + err.response.data.error.message);
+        // console.log("Error recorded " + err.response.data.error.message);
         console.log(err);
         error = err.response;
         return;
       });
+    if (response) {
+      if ("data" in response) {
+        chats[chatID]["calls"]++; // add call count
+        chats[chatID].messages.push(response.data.choices[0]["message"]); //add system response to messages
+        chats[chatID].messages.splice(0, chats[chatID].messages.length - 4); //trim messages and remain wit newest ones only
+        console.log(chats[chatID].messages.length);
+        contact.calls = parseInt(contact.calls) + 1;
+        setTimeout(() => {
+          chats[chatID]["calls"] = 0;
+        }, 15000); // reset the calls in local store
+        setTimeout(() => {
+          chats[chatID]["messages"] = [];
+        }, 180000); // messages are forgotten after 30mins
+        contact.tokens =
+          parseInt(contact.tokens) + response.data.usage.total_tokens;
+        contact.calls = parseInt(contact.calls) + 1;
+        contact.save();
 
-    if ("data" in response) {
-      chats[chatID]["calls"]++; // add call count
-      chats[chatID].messages.push(response.data.choices[0]["message"]); //add system response to messages
-      chats[chatID].messages.splice(0, chats[chatID].messages.length - 4); //trim messages and remain wit newest ones only
-      console.log(chats[chatID].messages.length);
-      contact.calls = parseInt(contact.calls) + 1;
-      setTimeout(() => {
-        chats[chatID]["calls"] = 0;
-      }, 15000); // reset the calls in local store
-      setTimeout(() => {
-        chats[chatID]["messages"] = [];
-      }, 180000); // messages are forgotten after 30mins
-      contact.tokens =
-        parseInt(contact.tokens) + response.data.usage.total_tokens;
-      contact.calls = parseInt(contact.calls) + 1;
-      contact.save();
-
-      return response.data.choices[0]["message"]["content"];
+        return response.data.choices[0]["message"]["content"];
+      } else {
+        return error.message;
+      }
     } else {
-      return error.message;
+      console.log("the number of calls made " + chats[chatID]["calls"]);
+      //if contact exceeds 10 warnings block them
+      contact.warnings = contact.warnings + 1;
+      if (contact.warnings > 10) {
+        contact.isBlocked = true;
+        try {
+          contact.save();
+        } catch (error) {
+          console.log(error);
+        }
+      }
+      return "*Error!* too many requests made , please try later. You cannot make mutiple requests at the same time";
     }
   } else {
-    console.log("the number of calls made " + chats[chatID]["calls"]);
-    //if contact exceeds 10 warnings block them
-    contact.warnings = contact.warnings + 1;
-    if (contact.warnings > 10) {
-      contact.isBlocked = true;
-      try {
-        contact.save();
-      } catch (error) {
-        console.log(error);
-      }
-    }
-    return "*Error!* too many requests made , please try later. You cannot make mutiple requests at the same time";
+    contact.calls = parseInt(contact.calls) + 1;
+    setTimeout(() => {
+      chats[chatID]["calls"] = 0;
+    }, 15000); // reset the calls in local store
+    setTimeout(() => {
+      chats[chatID]["messages"] = [];
+    }, 180000); // messages are forgotten after 30mins
+    return `Error, system could not process your request,please try again later`;
   }
 };
 module.exports = openAiCall;

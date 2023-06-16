@@ -2,6 +2,7 @@ const contactsModel = require("../../models/contactsModel");
 const queryAndSave = require("./queryAndSave");
 const isFlagged = require("./isFlagged");
 const docxCreator = require("./docxCreator");
+const path = require("path");
 
 const chats = require("../../chats");
 
@@ -37,6 +38,7 @@ const clientOn = async (client, arg1, arg2, MessageMedia) => {
     client.on(`message`, async (msg) => {
       const chat = await msg.getChat();
       const contact = await msg.getContact();
+      console.log(arg1, arg2, MessageMedia);
       // const message=await
 
       // console.log(chat);
@@ -44,10 +46,13 @@ const clientOn = async (client, arg1, arg2, MessageMedia) => {
       //only use on direct messages
 
       if (!chat.isGroup && !msg.isStatus) {
+        // check if message has any flagged word
         if (isFlagged(msgBody)) {
+          //if flaged reply with warning
           msg.reply(
             "System has detected flagged keywords which are deemed inappropriate for this platform \nIf you feel this message has been wrongly flagged kindly send a query to our team on 0775231426"
           );
+          //send to adminstrator
           client.sendMessage(
             "263775231426@c.us",
             `This user ${contact.number} has been flagged for this message \n ${msgBody}`
@@ -55,22 +60,23 @@ const clientOn = async (client, arg1, arg2, MessageMedia) => {
           return;
         }
         const openAiCall = require("./openai");
-        let prompt = await msgBody.replace(/openAi:/gi, "");
-
+        let prompt = await msgBody.replace(/openAi:|createDoc/gi, "");
+        console.log(prompt);
         const chatID = msg.from;
-
+        //for tracking messages, check if there is an existing call log for the chat ID
         if (!chats[chatID]) {
           console.log("no previous found");
-          //check if they are in DB
+          //if not in chat logs check if they are in DB
           const contacts = await contactsModel
             .find({ serialisedNumber: chatID })
             .exec();
+          //means in each conversation there is only 1 DB check meaning subsequent calls are faster
 
           let serialisedNumber, notifyName, number;
           serialisedNumber = contact.id._serialized;
           notifyName = contact.pushname;
           number = contact.number;
-          // if contact is not already saved
+          // if contact is not already saved save to DB
           if (contacts.length < 1) {
             const newContact = new contactsModel({
               date: new Date().toISOString().slice(0, 10),
@@ -97,7 +103,7 @@ const clientOn = async (client, arg1, arg2, MessageMedia) => {
           else if (contacts[0].isBlocked) {
             //contact.block();
           }
-
+          //then add to the chat logs
           Object.assign(chats, {
             [chatID]: {
               messages: [{ role: "user", content: prompt }],
@@ -111,33 +117,46 @@ const clientOn = async (client, arg1, arg2, MessageMedia) => {
           chats[chatID].messages.push({ role: "user", content: prompt });
           chats[chatID]["calls"]++;
         }
+
+        // check if the user has exceeded the rate limit imposed in users and execute
         if (chats[chatID]["calls"] < 2) {
           let response = await openAiCall(prompt, chatID, client);
           if (!msg.hasMedia) {
-            if (msgBody.startsWith("createDoc")) {
+            // system is yet unable to read images so check if message has media
+            if (msgBody.startsWith("createDoc") && msg.hasQuotedMsg) {
+              const message = await msg.getQuotedMessage();
               msg.reply(
                 "Please be patient while system generates your docx file"
               );
-              prompt = await msgBody.replace(/createDoc:/gi, "");
-              response = await openAiCall(prompt, chatID, client);
-              const filePath = await docxCreator(response);
-              client.sendMessage(chatID, MessageMedia.fromFilePath(filePath));
+              await docxCreator(message, chatID);
+              console.log(message);
+              const timestamp = new Date();
+              client.sendMessage(
+                chatID,
+                MessageMedia.fromFilePath(
+                  path.resolve(
+                    __dirname,
+                    `../../assets/${chatID}_${timestamp}_createdbyAskMe.docx`
+                  )
+                )
+              );
+            } else {
+              if (
+                response ==
+                "*Error!* too many requests made , please try later. You cannot make mutiple requests at the same time"
+              ) {
+                client.sendMessage(
+                  `263775231426@c.us`,
+                  `contact ${chatID} has been blocked for infractions`
+                );
+                msg.reply(response); //Alert the use of too many messages
+              } else {
+                msg.reply(response);
+              }
             }
             // response = response[0].text;
 
             //   const signOff = `\n\n\n*Thank you ${notifyName}* for using this *trial version* brought to you buy Venta Tech. In this improved version you can chat to our Ai as you would to a person. Send all feedback/suggestions to 0775231426`;
-            if (
-              response ==
-              "*Error!* too many requests made , please try later. You cannot make mutiple requests at the same time"
-            ) {
-              client.sendMessage(
-                `263775231426@c.us`,
-                `contact ${chatID} has been blocked for infractions`
-              );
-              msg.reply(response); //Alert the use of too many messages
-            } else {
-              msg.reply(response);
-            }
           } else {
             msg.reply(
               "Our apologies, current version is not yet able to process media such as images and audio, please make a textual request"

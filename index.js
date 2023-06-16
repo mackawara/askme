@@ -50,7 +50,7 @@ connectDB().then(async () => {
     const cron = require("node-cron");
     //client events and functions
     //decalre variables that work with client here
-    clientOn(client, "message");
+    clientOn(client, "message", "", MessageMedia);
     clientOn(client, "group-join");
     clientOn(client, "group-leave"); //client
 
