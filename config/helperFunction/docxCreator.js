@@ -18,7 +18,6 @@ const createDoc = async (contentBody, chatID, timestamp) => {
     linebreaks: true,
   });
 
-  // Render the document (Replace {first_name} by John, {last_name} by Doe, ...)
   doc.render({
     body_text: contentBody,
   });
@@ -38,6 +37,16 @@ const createDoc = async (contentBody, chatID, timestamp) => {
       `../../assets/${chatID}_${timestamp}_createdbyAskMe.docx`
     ),
     buf
+  ); //the filename identies the chatID to originate the message ant he time stap
+  console.log(
+    path.resolve(
+      __dirname,
+      `../../assets/${chatID}_${timestamp}_createdbyAskMe.docx`
+    )
+  );
+  return path.resolve(
+    __dirname,
+    `../../assets/${chatID}_${timestamp}_createdbyAskMe.docx`
   );
 };
 module.exports = createDoc;

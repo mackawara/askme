@@ -31,7 +31,7 @@ const openAiCall = async (prompt, chatID) => {
         model: "gpt-3.5-turbo",
         messages: chats[chatID]["messages"],
         temperature: 1,
-        max_tokens: 200,
+        max_tokens: 250,
         frequency_penalty: 1.7,
         presence_penalty: 1.89,
       })

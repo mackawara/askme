@@ -125,21 +125,16 @@ const clientOn = async (client, arg1, arg2, MessageMedia) => {
             // system is yet unable to read images so check if message has media
             if (msgBody.startsWith("createDoc") && msg.hasQuotedMsg) {
               const message = await msg.getQuotedMessage();
+              const qtdMsgBody = message.body;
+              const timestamp = message.timestamp;
+              console.log(qtdMsgBody);
+              console.log(timestamp);
               msg.reply(
                 "Please be patient while system generates your docx file"
               );
-              await docxCreator(message, chatID);
-              console.log(message);
-              const timestamp = new Date();
-              client.sendMessage(
-                chatID,
-                MessageMedia.fromFilePath(
-                  path.resolve(
-                    __dirname,
-                    `../../assets/${chatID}_${timestamp}_createdbyAskMe.docx`
-                  )
-                )
-              );
+              const pathRet = await docxCreator(qtdMsgBody, chatID, timestamp);
+
+              client.sendMessage(chatID, MessageMedia.fromFilePath(pathRet));
             } else {
               if (
                 response ==
