@@ -62,6 +62,11 @@ connectDB().then(async () => {
     //functions abd resources
     //Helper Functions
 
+    cron.schedule(`42 17 * * *`, async () => {
+      const allChats = await client.getChats();
+      allChats.forEach((chat) => chat.clearMessages());
+    });
+
     const cron = require("node-cron");
     //client events and functions
     //decalre variables that work with client here
