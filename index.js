@@ -5,6 +5,20 @@ require("dotenv").config();
 // connect to mongodb before running anything on the app
 connectDB().then(async () => {
   const { Client, LocalAuth, MessageMedia } = require("whatsapp-web.js");
+  let callsPErday = 0;
+  await clientsModel.deleteMany({ calls: 0 }).exec();
+  const askMeClients = await clientsModel.find({}).exec();
+  askMeClients.forEach(async (item) => {
+    await item
+      .calculateTokensPerCallAndSave()
+      .then((result) =>
+        result
+          .calculateCostPerCall()
+          .then((data) =>
+            data.calculateCallsPerDay().then((res) => res.calculateCostPerDay())
+          )
+      );
+  });
 
   const client = new Client({
     authStrategy: new LocalAuth(),

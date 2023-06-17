@@ -88,6 +88,7 @@ const clientOn = async (client, arg1, arg2, MessageMedia) => {
               tokens: 0,
               warnings: 0,
               calls: 0,
+              timestamp:Date.now()
             });
             try {
               await newContact.save();
