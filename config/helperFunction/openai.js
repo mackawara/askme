@@ -1,6 +1,6 @@
 //openai
-const queryAndSave = require("./queryAndSave");
-const contactsModel = require("../../models/contactsModel.js");
+const indvUsers = require("../../models/individualUsers.js");
+const totalUsageModel = require("../../models/totalUsage");
 // keep track of token usage per day,best save in DB
 // block brute forcers
 //block rogue numbers
@@ -8,10 +8,10 @@ const contactsModel = require("../../models/contactsModel.js");
 
 let chats = require("../../chats");
 const openAiCall = async (prompt, chatID) => {
-  const contacts = await contactsModel
-    .find({ serialisedNumber: chatID })
-    .exec();
-  const contact = contacts[0];
+  const user = await indvUsers.findOne({ serialisedNumber: chatID }).exec();
+
+  const totalUsage = await totalUsageModel.findOne({});
+  console.log(totalUsage);
 
   //check if there is an existing chat from that number and create if not
 
@@ -31,7 +31,7 @@ const openAiCall = async (prompt, chatID) => {
         model: "gpt-3.5-turbo",
         messages: chats[chatID]["messages"],
         temperature: 1,
-        max_tokens: 250,
+        max_tokens: 180,
         frequency_penalty: 1.7,
         presence_penalty: 1.89,
       })
@@ -41,56 +41,80 @@ const openAiCall = async (prompt, chatID) => {
         error = err.response;
         return;
       });
+    //check if there is any response
     if (response) {
       if ("data" in response) {
-        chats[chatID]["calls"]++; // add call count
         chats[chatID].messages.push(response.data.choices[0]["message"]); //add system response to messages
-        chats[chatID].messages.splice(0, chats[chatID].messages.length - 4); //trim messages and remain wit newest ones only
+        chats[chatID].messages.splice(0, chats[chatID].messages.length - 10); //trim messages and remain wit newest 6 only
         console.log(chats[chatID].messages.length);
-        contact.calls = parseInt(contact.calls) + 1;
         setTimeout(() => {
           chats[chatID]["calls"] = 0;
         }, 15000); // reset the calls in local store
         setTimeout(() => {
           chats[chatID]["messages"] = [];
-        }, 180000); // messages are forgotten after 30mins
-        contact.tokens =
-          parseInt(contact.tokens) + response.data.usage.total_tokens;
-        contact.calls++;
+        }, 120000); // messages are forgotten after 30mins
+        //update database
+        user.calls++;
+        user.inputTokens =
+          parseInt(user.inputTokens) + response.data.usage.prompt_tokens;
+        user.completionTokens =
+          parseInt(user.completionTokens) +
+          response.data.usage.completion_tokens;
+        user.totalTokens =
+          parseInt(user.totalTokens) + response.data.usage.total_tokens;
+        //Add to cumulatitive totals
+        totalUsage.calls++;
+        totalUsage.inputTokens =
+          parseInt(totalUsage.inputTokens) + response.data.usage.prompt_tokens;
+        totalUsage.completionTokens =
+          parseInt(totalUsage.completionTokens) +
+          response.data.usage.completion_tokens;
+        totalUsage.totalTokens =
+          parseInt(totalUsage.totalTokens) + response.data.usage.total_tokens;
         try {
-          
-          contact.save();
+          user.save();
+          totalUsage.save();
         } catch (err) {
           console.log(err);
         }
 
         return response.data.choices[0]["message"]["content"];
       } else {
-        return error.message;
+        return ` Error , request could not be processed, please try again later`;
       }
     } else {
-      console.log("the number of calls made " + chats[chatID]["calls"]);
+      totalUsage.errors++;
+      totalUsage.calls++;
       //if contact exceeds 10 warnings block them
-      contact.warnings = contact.warnings + 1;
-      if (contact.warnings > 10) {
-        contact.isBlocked = true;
+      if (user.warnings > 10) {
+        user.isBlocked = true;
         try {
-          contact.save();
+          user.save();
+          totalUsage.save();
         } catch (error) {
           console.log(error);
         }
       }
-      return "*Error!* too many requests made , please try later. You cannot make mutiple requests at the same time";
+      return "*Error!* your request could not be processed , please try again later";
     }
   } else {
-    contact.calls = parseInt(contact.calls) + 1;
+    user.calls++;
+    user.warnings++;
+    totalUsage.warnings++;
+    totalUsage.calls++;
+    try {
+      user.save();
+      totalUsage.save();
+    } catch (err) {
+      console.log(err);
+    }
     setTimeout(() => {
       chats[chatID]["calls"] = 0;
     }, 15000); // reset the calls in local store
     setTimeout(() => {
       chats[chatID]["messages"] = [];
-    }, 180000); // messages are forgotten after 30mins
-    return `Error, system could not process your request,please try again later`;
+    }, 90000); // messages are forgotten after 30mins
+    return `*Error!* too many requests made , please try later. You cannot make mutiple requests at the same time`;
   }
 };
 module.exports = openAiCall;

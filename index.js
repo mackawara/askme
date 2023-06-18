@@ -1,14 +1,15 @@
 const connectDB = require("./config/database");
 const createDoc = require("./config/helperFunction/docxCreator");
-const clientsModel = require("./models/contactsModel");
+const indvUsers = require("./models/individualUsers");
+const totalUsage = require("./models/totalUsage");
 require("dotenv").config();
 // connect to mongodb before running anything on the app
 connectDB().then(async () => {
   const { Client, LocalAuth, MessageMedia } = require("whatsapp-web.js");
   let callsPErday = 0;
-  await clientsModel.deleteMany({ calls: 0 }).exec();
-  const askMeClients = await clientsModel.find({}).exec();
-  askMeClients.forEach(async (item) => {
+  await indvUsers.deleteMany({ calls: 0 }).exec();
+  const user = await indvUsers.find({}).exec();
+  user.forEach(async (item) => {
     await item
       .calculateTokensPerCallAndSave()
       .then((result) =>
@@ -19,6 +20,17 @@ connectDB().then(async () => {
           )
       );
   });
+  const totalUsageMetrics = await totalUsage.findOne({});
+  //update metrics
+  totalUsageMetrics
+    .calculateTokensPerCallAndSave()
+    .then((result) =>
+      result
+        .calculateCostPerCall()
+        .then((data) =>
+          data.calculateCallsPerDay().then((res) => res.calculateCostPerDay())
+        )
+    );
 
   const client = new Client({
     authStrategy: new LocalAuth(),
@@ -93,7 +105,7 @@ connectDB().then(async () => {
         ,
         `We are in the process of adding new features such as exporting word documents and at times while we test, we need to have the software offline. In the event that you do not get a response, just wait and try later`,
       ];
-      const askMeClients = await clientsModel.find({});
+      const askMeClients = await indvUsers.find({});
 
       const iteration = Math.floor(
         Math.floor(Math.random() * 10) * broadcastMessage.length
@@ -105,7 +117,7 @@ connectDB().then(async () => {
             MessageMedia.fromFilePath("./assets/example.png")
           );
 
-          client.sendMessage(askMeclient.serialisedNumber, broadcastMessage[1]);
+          //  client.sendMessage(askMeclient.serialisedNumber, broadcastMessage[1]);
           await timeDelay(Math.floor(Math.random() * 10) * 1000);
         } catch (err) {
           console.log(err);

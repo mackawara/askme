@@ -1,5 +1,5 @@
-const contactsModel = require("../../models/contactsModel");
-const queryAndSave = require("./queryAndSave");
+const totalUsageModel = require("../../models/totalUsage");
+//const totalUsage = await totalUsageModel.findOne({}).exec();
 const isFlagged = require("./isFlagged");
 const docxCreator = require("./docxCreator");
 const path = require("path");
@@ -11,7 +11,7 @@ const timeDelay = (ms) => new Promise((res) => setTimeout(res, ms));
 const clientOn = async (client, arg1, arg2, MessageMedia) => {
   const fs = require("fs/promises");
   const me = process.env.ME;
-  const contactsModel = require("../../models/contactsModel");
+  const usersModel = require("../../models/individualUsers");
   //const { MessageMedia } = require("whatsapp-web.js");
 
   if (arg1 == "auth_failure") {
@@ -38,10 +38,25 @@ const clientOn = async (client, arg1, arg2, MessageMedia) => {
     client.on(`message`, async (msg) => {
       const chat = await msg.getChat();
       const contact = await msg.getContact();
-      console.log(arg1, arg2, MessageMedia);
-      // const message=await
 
-      // console.log(chat);
+      const totalUsage = await totalUsageModel.findOne({});
+      if (!totalUsage) {
+        const newTotalUsage = new totalUsageModel({
+          date: new Date().toISOString().slice(0, 10),
+          calls: 0,
+          warnings: 0,
+          errorsRec: 0,
+          totalTokens: 0,
+          inputTokens: 0,
+          completionTokens: 0,
+          tokensPerCall: 0,
+          timestamp: Date.now(),
+          callsPerDay: 0,
+          costPerCall: 0,
+          costPerDay: 0,
+        });
+        newTotalUsage.save();
+      }
       const msgBody = msg.body;
       //only use on direct messages
 
@@ -60,14 +75,25 @@ const clientOn = async (client, arg1, arg2, MessageMedia) => {
           return;
         }
         const openAiCall = require("./openai");
+
         let prompt = await msgBody.replace(/openAi:|createDoc/gi, "");
         console.log(prompt);
+        const defaultRes = `Thank you for using AskMe, the number 1 app for Students,Parents and Teacher/Lecturers\n*How to get the best results from our AI model*\nYou can use our app to generate almost any written text as long as you povide proper context and use the guidelines below.
+      1. Use good information as input - The better the starting point, the better results you'll get. Give examples of what you want, writing style , level etc\n\n2. Choose suitable prompts/messages - Choosing useful sentences or phrases will help get a good response from AI model. Instead of "osmosis", send useful questions such as "Please explain osmosis in point form and provide  3 examples" \n      
+      3.Check responses carefully and give feedback. If you did not get the exact answer you needed , you can refine the question or ask for further explanation – Taking time when reviewing output helps detect errors that can be corrected via consistent feedback.\n\nEg you can ask for a shortend response or ask for emphasis on a certain point \n If you have the exact answer you want you can save it in a word document by quoting the message (click on the message dropdown and click on "reply") and typing "createDoc".\n *AskMe* can keep track of messages sent within the latest 2 minutes, so you dont have to start afresh if you dont get what you want, just correct where correction is needed`;
+        const ignorePatterns =
+          /^(ok|thank you|Youre welcome|welcome|you welcome|thanks?|k|[hi]+|\bhey\b)\W*$/i;
+        if (ignorePatterns.test(msgBody.toLowerCase())) {
+          msg.reply(defaultRes);
+          return;
+        }
+
         const chatID = msg.from;
         //for tracking messages, check if there is an existing call log for the chat ID
         if (!chats[chatID]) {
           console.log("no previous found");
           //if not in chat logs check if they are in DB
-          const contacts = await contactsModel
+          const contacts = await usersModel
             .find({ serialisedNumber: chatID })
             .exec();
           //means in each conversation there is only 1 DB check meaning subsequent calls are faster
@@ -78,14 +104,18 @@ const clientOn = async (client, arg1, arg2, MessageMedia) => {
           number = contact.number;
           // if contact is not already saved save to DB
           if (contacts.length < 1) {
-            const newContact = new contactsModel({
+            const newContact = new usersModel({
               date: new Date().toISOString().slice(0, 10),
               isBlocked: false,
               number: number,
               notifyName: notifyName,
               serialisedNumber: serialisedNumber,
               isSubscribed: false,
-              tokens: 0,
+              errorsRec: 0,
+              totalTokens: 0,
+              inputTokens: 0,
+              completionTokens: 0,
+              tokensPerCall: 0,
               warnings: 0,
               calls: 0,
               timestamp: Date.now(),
@@ -162,7 +192,7 @@ const clientOn = async (client, arg1, arg2, MessageMedia) => {
         } else {
           console.log("the number of calls made " + chats[chatID]["calls"]);
           //if contact exceeds 10 warnings block them
-          contact.warnings = contact.warnings + 1;
+          contact.warnings++;
           if (contact.warnings > 10) {
             contact.isBlocked = true;
             try {

@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const contactsSchema = new mongoose.Schema({
+const usersSchema = new mongoose.Schema({
   date: {
     type: String,
     required: false,
@@ -30,7 +30,15 @@ const contactsSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  tokens: {
+  totalTokens: {
+    type: Number,
+    required: false,
+  },
+  completionTokens: {
+    type: Number,
+    required: false,
+  },
+  inputTokens: {
     type: Number,
     required: false,
   },
@@ -49,30 +57,33 @@ const contactsSchema = new mongoose.Schema({
   costPerCall: { type: Number, required: false },
   costPerDay: { type: Number, required: false },
 });
-contactsSchema.methods.calculateTokensPerCallAndSave = function () {
-  this.tokensPerCall = this.tokens / this.calls;
+usersSchema.methods.calculateTokensPerCallAndSave = function () {
+  this.tokensPerCall = this.totalTokens / this.calls;
   this.timestamp = Date.now();
   return this.save();
 };
-contactsSchema.methods.calculateCallsPerDay = function () {
+usersSchema.methods.calculateCallsPerDay = function () {
   const dateNOW = parseInt(new Date().toISOString().slice(8, 10));
+  const dateToday = Date.now();
   const initialDate = parseInt(this.date.slice(8, 10));
-  const dayElapsed = dateNOW - initialDate;
+
+  const dayElapsed = (dateToday - this.timestamp) / 1000 / 86400;
+  console.log(dayElapsed)
   this.callsPerDay = this.calls / dayElapsed;
 
   return this.save();
 };
-contactsSchema.methods.calculateCostPerCall = function () {
+usersSchema.methods.calculateCostPerCall = function () {
   this.costPerCall = (this.tokensPerCall / 1000) * 0.003;
 
   return this.save();
 };
-contactsSchema.methods.calculateCostPerDay = function () {
+usersSchema.methods.calculateCostPerDay = function () {
   this.costPerDay = this.costPerCall * this.callsPerDay;
 
   return this.save();
 };
 
-const contactsModel = mongoose.model("contacts", contactsSchema);
+const contactsModel = mongoose.model("users", usersSchema);
 
 module.exports = contactsModel;
