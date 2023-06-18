@@ -105,7 +105,7 @@ connectDB().then(async () => {
             MessageMedia.fromFilePath("./assets/example.png")
           );
 
-          client.sendMessage(askMeclient.serialisedNumber, broadcastMessage[2]);
+          client.sendMessage(askMeclient.serialisedNumber, broadcastMessage[1]);
           await timeDelay(Math.floor(Math.random() * 10) * 1000);
         } catch (err) {
           console.log(err);
