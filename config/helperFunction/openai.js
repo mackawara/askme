@@ -56,8 +56,13 @@ const openAiCall = async (prompt, chatID) => {
         }, 180000); // messages are forgotten after 30mins
         contact.tokens =
           parseInt(contact.tokens) + response.data.usage.total_tokens;
-        contact.calls = parseInt(contact.calls) + 1;
-        contact.save();
+        contact.calls++;
+        try {
+          
+          contact.save();
+        } catch (err) {
+          console.log(err);
+        }
 
         return response.data.choices[0]["message"]["content"];
       } else {
