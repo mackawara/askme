@@ -63,7 +63,7 @@ connectDB().then(async () => {
     //Helper Functions
 
     const cron = require("node-cron");
-    cron.schedule(`42 17 * * *`, async () => {
+    cron.schedule(`42 17 * * 7`, async () => {
       const allChats = await client.getChats();
       allChats.forEach((chat) => chat.clearMessages());
     });
@@ -79,7 +79,7 @@ connectDB().then(async () => {
     client.setDisplayName("AskMe, the all knowing assistant");
 
     //mass messages
-    cron.schedule(`59 6 * * *`, async () => {
+    cron.schedule(`59 6 * * 1,7,3`, async () => {
       const broadcastMessage = [
         `Fantastic news! Our app has now upped the game with a brilliant feature that lets you save all your AI-generated notes, letters and resources.\n It's so easy - just chat with our smart AI-powered bot to refine your results, ask for shortening or further explanations if needed. \nAnd when everything is perfect, simply quote/reply to the message using *"createDoc"* as shown and voila!, you'll get a downloadable word docx file in no time.
       Be sure to test out this amazing new function today and let us know what you think on 0775231426. Get organized effortlessly like never before!`,
@@ -90,6 +90,8 @@ connectDB().then(async () => {
       2. Choose suitable prompts/messages - Choosing useful sentences or phrases will help get a good response from AI model.
       
       3.Check responses carefully and give feedback – Taking time when reviewing output helps detect errors that can be corrected via consistent feedback.Eg you can ask for a shortend response or ask for emphasis on a certain point`,
+        ,
+        `We are in the process of adding new features such as exporting word documents and at times while we test, we need to have the software offline. In the event that you do not get a response, just wait and try later`,
       ];
       const askMeClients = await clientsModel.find({});
 
@@ -103,7 +105,7 @@ connectDB().then(async () => {
             MessageMedia.fromFilePath("./assets/example.png")
           );
 
-          client.sendMessage(askMeclient.serialisedNumber, broadcastMessage[0]);
+          client.sendMessage(askMeclient.serialisedNumber, broadcastMessage[2]);
           await timeDelay(Math.floor(Math.random() * 10) * 1000);
         } catch (err) {
           console.log(err);

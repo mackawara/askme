@@ -88,7 +88,7 @@ const clientOn = async (client, arg1, arg2, MessageMedia) => {
               tokens: 0,
               warnings: 0,
               calls: 0,
-              timestamp:Date.now()
+              timestamp: Date.now(),
             });
             try {
               await newContact.save();
@@ -124,7 +124,7 @@ const clientOn = async (client, arg1, arg2, MessageMedia) => {
           let response = await openAiCall(prompt, chatID, client);
           if (!msg.hasMedia) {
             // system is yet unable to read images so check if message has media
-            if (msgBody.startsWith("createDoc") && msg.hasQuotedMsg) {
+            if (msgBody.startsWith(/createDoc/gi) && msg.hasQuotedMsg) {
               const message = await msg.getQuotedMessage();
               const qtdMsgBody = message.body;
               const timestamp = message.timestamp;
