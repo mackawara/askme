@@ -7,35 +7,11 @@ require("dotenv").config();
 connectDB().then(async () => {
   const { Client, LocalAuth, MessageMedia } = require("whatsapp-web.js");
   let callsPErday = 0;
-  await indvUsers.deleteMany({ calls: 0 }).exec();
-  const user = await indvUsers.find({}).exec();
-  user.forEach(async (item) => {
-    await item
-      .calculateTokensPerCallAndSave()
-      .then((result) =>
-        result
-          .calculateCostPerCall()
-          .then((data) =>
-            data.calculateCallsPerDay().then((res) => res.calculateCostPerDay())
-          )
-      );
-  });
-  const totalUsageMetrics = await totalUsage.findOne({});
-  //update metrics
-  totalUsageMetrics
-    .calculateTokensPerCallAndSave()
-    .then((result) =>
-      result
-        .calculateCostPerCall()
-        .then((data) =>
-          data.calculateCallsPerDay().then((res) => res.calculateCostPerDay())
-        )
-    );
 
   const client = new Client({
     authStrategy: new LocalAuth(),
     puppeteer: {
-      executablePath: process.env.EXECPATH,
+      // executablePath: process.env.EXECPATH,
       handleSIGINT: true,
       headless: true,
       args: [
@@ -75,6 +51,36 @@ connectDB().then(async () => {
     //Helper Functions
 
     const cron = require("node-cron");
+    cron.schedule(`0 8 * * *`, async () => {
+      await indvUsers.deleteMany({ calls: 0 }).exec();
+      const user = await indvUsers.find({}).exec();
+      user.forEach(async (item) => {
+        await item
+          .calculateTokensPerCallAndSave()
+          .then((result) =>
+            result
+              .calculateCostPerCall()
+              .then((data) =>
+                data
+                  .calculateCallsPerDay()
+                  .then((res) => res.calculateCostPerDay())
+              )
+          );
+      });
+      const totalUsageMetrics = await totalUsage.findOne({});
+      //update metrics
+      totalUsageMetrics
+        .calculateTokensPerCallAndSave()
+        .then((result) =>
+          result
+            .calculateCostPerCall()
+            .then((data) =>
+              data
+                .calculateCallsPerDay()
+                .then((res) => res.calculateCostPerDay())
+            )
+        );
+    });
     cron.schedule(`42 17 * * 7`, async () => {
       const allChats = await client.getChats();
       allChats.forEach((chat) => chat.clearMessages());
@@ -91,7 +97,7 @@ connectDB().then(async () => {
     client.setDisplayName("AskMe, the all knowing assistant");
 
     //mass messages
-    cron.schedule(`59 6 * * 1,7,3`, async () => {
+    cron.schedule(`25 16 * * *`, async () => {
       const broadcastMessage = [
         `Fantastic news! Our app has now upped the game with a brilliant feature that lets you save all your AI-generated notes, letters and resources.\n It's so easy - just chat with our smart AI-powered bot to refine your results, ask for shortening or further explanations if needed. \nAnd when everything is perfect, simply quote/reply to the message using *"createDoc"* as shown and voila!, you'll get a downloadable word docx file in no time.
       Be sure to test out this amazing new function today and let us know what you think on 0775231426. Get organized effortlessly like never before!`,
@@ -112,12 +118,15 @@ connectDB().then(async () => {
       );
       askMeClients.forEach(async (askMeclient) => {
         try {
-          client.sendMessage(
+          /* client.sendMessage(
             askMeclient,
             MessageMedia.fromFilePath("./assets/example.png")
           );
-
-          //  client.sendMessage(askMeclient.serialisedNumber, broadcastMessage[1]);
+ */
+          client.sendMessage(
+            askMeclient.serialisedNumber,
+            `We are currently running some tests on the app so it may not work as expected. If you do not get a response do try after a few hours`
+          );
           await timeDelay(Math.floor(Math.random() * 10) * 1000);
         } catch (err) {
           console.log(err);

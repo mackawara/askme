@@ -11,7 +11,7 @@ const openAiCall = async (prompt, chatID) => {
   const user = await indvUsers.findOne({ serialisedNumber: chatID }).exec();
 
   const totalUsage = await totalUsageModel.findOne({});
-  console.log(totalUsage);
+  
 
   //check if there is an existing chat from that number and create if not
 
@@ -25,7 +25,7 @@ const openAiCall = async (prompt, chatID) => {
   let error;
 
   if (chats[chatID]["calls"] < 2) {
-    console.log(chats[chatID]["calls"]);
+   
     const response = await openai
       .createChatCompletion({
         model: "gpt-3.5-turbo",
@@ -46,7 +46,7 @@ const openAiCall = async (prompt, chatID) => {
       if ("data" in response) {
         chats[chatID].messages.push(response.data.choices[0]["message"]); //add system response to messages
         chats[chatID].messages.splice(0, chats[chatID].messages.length - 10); //trim messages and remain wit newest 6 only
-        console.log(chats[chatID].messages.length);
+       
         setTimeout(() => {
           chats[chatID]["calls"] = 0;
         }, 15000); // reset the calls in local store

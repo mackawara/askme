@@ -4,7 +4,10 @@ const isFlagged = require("./isFlagged");
 const docxCreator = require("./docxCreator");
 const path = require("path");
 
+//middleware
+const ratelimiter = require("./rateLimiter");
 const chats = require("../../chats");
+const { RateLimiterMemory } = require("rate-limiter-flexible");
 
 let messages = [];
 const timeDelay = (ms) => new Promise((res) => setTimeout(res, ms));
@@ -58,9 +61,41 @@ const clientOn = async (client, arg1, arg2, MessageMedia) => {
         newTotalUsage.save();
       }
       const msgBody = msg.body;
+      const chatID = msg.from;
       //only use on direct messages
 
       if (!chat.isGroup && !msg.isStatus) {
+        const options = {
+          points: 2,
+          duration: 60 * 720,
+        };
+        let limiter = new RateLimiterMemory(options);
+
+        
+        limiter
+          .consume(chatID, 1)
+          .then((ratelimitResponse) => {
+            console.log(
+              `this is the ${reminingratelimitResponse.consumedPoints}`
+            );
+            console.log(ratelimitResponse.remainingPoints);
+            console.log(ratelimitResponse.msBeforeNext);
+          })
+          .catch((err) => {
+            console.log(err);
+            msg.reply("request quota for the day exceeded");
+            return;
+          });
+        const defaultRes = `Thank you for using AskMe, the number 1 app for Students,Parents and Teacher/Lecturers\n*How to get the best results from our AI model*\nYou can use our app to generate almost any written text as long as you povide proper context and use the guidelines below.
+        1. Use good information as input - The better the starting point, the better results you'll get. Give examples of what you want, writing style , level etc\n\n2. Choose suitable prompts/messages - Choosing useful sentences or phrases will help get a good response from AI model. Instead of "osmosis", send useful questions such as "Please explain osmosis in point form and provide  3 examples" \n      
+        3.Check responses carefully and give feedback. If you did not get the exact answer you needed , you can refine the question or ask for further explanation – Taking time when reviewing output helps detect errors that can be corrected via consistent feedback.\n\nEg you can ask for a shortend response or ask for emphasis on a certain point \n If you have the exact answer you want you can save it in a word document by quoting the message (click on the message dropdown and click on "reply") and typing "createDoc".\n *AskMe* can keep track of messages sent within the latest 2 minutes, so you dont have to start afresh if you dont get what you want, just correct where correction is needed`;
+        const ignorePatterns =
+          /^(ok|kay|k|ok noted|alright|noted|gracias|no problem|you are welcome|my pleasure|hey|noted|thank you|thankyou|Youre welcome|welcome|you welcome|thanks?|k|[hi]+|\bhey\b)\W*$/i;
+        if (ignorePatterns.test(msgBody.toLowerCase())) {
+          msg.reply(defaultRes);
+          return;
+        }
+
         // check if message has any flagged word
         if (isFlagged(msgBody)) {
           //if flaged reply with warning
@@ -77,21 +112,9 @@ const clientOn = async (client, arg1, arg2, MessageMedia) => {
         const openAiCall = require("./openai");
 
         let prompt = await msgBody.replace(/openAi:|createDoc/gi, "");
-        console.log(prompt);
-        const defaultRes = `Thank you for using AskMe, the number 1 app for Students,Parents and Teacher/Lecturers\n*How to get the best results from our AI model*\nYou can use our app to generate almost any written text as long as you povide proper context and use the guidelines below.
-      1. Use good information as input - The better the starting point, the better results you'll get. Give examples of what you want, writing style , level etc\n\n2. Choose suitable prompts/messages - Choosing useful sentences or phrases will help get a good response from AI model. Instead of "osmosis", send useful questions such as "Please explain osmosis in point form and provide  3 examples" \n      
-      3.Check responses carefully and give feedback. If you did not get the exact answer you needed , you can refine the question or ask for further explanation – Taking time when reviewing output helps detect errors that can be corrected via consistent feedback.\n\nEg you can ask for a shortend response or ask for emphasis on a certain point \n If you have the exact answer you want you can save it in a word document by quoting the message (click on the message dropdown and click on "reply") and typing "createDoc".\n *AskMe* can keep track of messages sent within the latest 2 minutes, so you dont have to start afresh if you dont get what you want, just correct where correction is needed`;
-        const ignorePatterns =
-          /^(ok|thank you|Youre welcome|welcome|you welcome|thanks?|k|[hi]+|\bhey\b)\W*$/i;
-        if (ignorePatterns.test(msgBody.toLowerCase())) {
-          msg.reply(defaultRes);
-          return;
-        }
 
-        const chatID = msg.from;
         //for tracking messages, check if there is an existing call log for the chat ID
         if (!chats[chatID]) {
-          console.log("no previous found");
           //if not in chat logs check if they are in DB
           const contacts = await usersModel
             .find({ serialisedNumber: chatID })
@@ -141,7 +164,6 @@ const clientOn = async (client, arg1, arg2, MessageMedia) => {
               calls: 0,
             },
           });
-          console.log(chats);
         } else {
           //
           console.log("found existing chat");
@@ -158,8 +180,7 @@ const clientOn = async (client, arg1, arg2, MessageMedia) => {
               const message = await msg.getQuotedMessage();
               const qtdMsgBody = message.body;
               const timestamp = message.timestamp;
-              console.log(qtdMsgBody);
-              console.log(timestamp);
+
               msg.reply(
                 "Please be patient while system generates your docx file"
               );
@@ -190,7 +211,12 @@ const clientOn = async (client, arg1, arg2, MessageMedia) => {
             return;
           }
         } else {
-          console.log("the number of calls made " + chats[chatID]["calls"]);
+          console.log(
+            "the number of calls made by " +
+              chatID +
+              " is " +
+              chats[chatID]["calls"]
+          );
           //if contact exceeds 10 warnings block them
           contact.warnings++;
           if (contact.warnings > 10) {
