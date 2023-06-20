@@ -66,18 +66,15 @@ const clientOn = async (client, arg1, arg2, MessageMedia) => {
 
       if (!chat.isGroup && !msg.isStatus) {
         const options = {
-          points: 2,
+          points: 5,
           duration: 60 * 720,
         };
         let limiter = new RateLimiterMemory(options);
 
-        
         limiter
           .consume(chatID, 1)
           .then((ratelimitResponse) => {
-            console.log(
-              `this is the ${reminingratelimitResponse.consumedPoints}`
-            );
+            console.log(`this is the ${ratelimitResponse.consumedPoints}`);
             console.log(ratelimitResponse.remainingPoints);
             console.log(ratelimitResponse.msBeforeNext);
           })
