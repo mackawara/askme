@@ -35,7 +35,7 @@ connectDB().then(async () => {
   const client = new Client({
     authStrategy: new LocalAuth(),
     puppeteer: {
-      executablePath: process.env.EXECPATH,
+       executablePath: process.env.EXECPATH,
       handleSIGINT: true,
       headless: true,
       args: [
@@ -88,6 +88,37 @@ connectDB().then(async () => {
 
     //Db models
     //decalre variables that work with client here
+
+    cron.schedule(`10 3 * * *`, async () => {
+      await indvUsers.deleteMany({ calls: 0 }).exec();
+      const user = await indvUsers.find({}).exec();
+      user.forEach(async (item) => {
+        await item
+          .calculateTokensPerCallAndSave()
+          .then((result) =>
+            result
+              .calculateCostPerCall()
+              .then((data) =>
+                data
+                  .calculateCallsPerDay()
+                  .then((res) => res.calculateCostPerDay())
+              )
+          );
+      });
+      const totalUsageMetrics = await totalUsage.findOne({});
+      //update metrics
+      totalUsageMetrics
+        .calculateTokensPerCallAndSave()
+        .then((result) =>
+          result
+            .calculateCostPerCall()
+            .then((data) =>
+              data
+                .calculateCallsPerDay()
+                .then((res) => res.calculateCostPerDay())
+            )
+        );
+    });
     client.setDisplayName("AskMe, the all knowing assistant");
 
     //mass messages
