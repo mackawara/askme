@@ -7,7 +7,7 @@ const totalUsageModel = require("../../models/totalUsage");
 // check if existing number locally if not check on db
 
 let chats = require("../../chats");
-const openAiCall = async (prompt, chatID) => {
+const openAiCall = async (prompt, chatID, tokenLimit) => {
   const user = await indvUsers.findOne({ serialisedNumber: chatID }).exec();
 
   const totalUsage = await totalUsageModel.findOne({});
@@ -31,7 +31,7 @@ const openAiCall = async (prompt, chatID) => {
         model: "gpt-3.5-turbo",
         messages: chats[chatID]["messages"],
         temperature: 1,
-        max_tokens: 180,
+        max_tokens: tokenLimit,
         frequency_penalty: 1.7,
         presence_penalty: 1.89,
       })

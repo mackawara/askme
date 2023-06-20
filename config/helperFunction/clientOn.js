@@ -1,10 +1,16 @@
 const totalUsageModel = require("../../models/totalUsage");
+const redis = require("redis");
+const redisClient = redis.createClient();
+
 //const totalUsage = await totalUsageModel.findOne({}).exec();
 const isFlagged = require("./isFlagged");
 const docxCreator = require("./docxCreator");
 const path = require("path");
 
 const chats = require("../../chats");
+
+//helper Functions
+const getSecsToMidNight = require("./getSecsToMidnight");
 
 let messages = [];
 const timeDelay = (ms) => new Promise((res) => setTimeout(res, ms));
@@ -38,7 +44,20 @@ const clientOn = async (client, arg1, arg2, MessageMedia) => {
     client.on(`message`, async (msg) => {
       const chat = await msg.getChat();
       const contact = await msg.getContact();
+      const chatID = msg.from;
+      let tokenLimit;
 
+      redisClient.on("error", (err) => console.log("Redis Client Error", err));
+      await redisClient.connect();
+      const userDetails = {
+        calls: 1,
+        isBlocked: false,
+        isSubscribed: false,
+      };
+      const user = await redisClient.get(chatID);
+      const expTime = getSecsToMidNight();
+
+      console.log(user);
       const totalUsage = await totalUsageModel.findOne({});
       if (!totalUsage) {
         const newTotalUsage = new totalUsageModel({
@@ -61,6 +80,46 @@ const clientOn = async (client, arg1, arg2, MessageMedia) => {
       //only use on direct messages
 
       if (!chat.isGroup && !msg.isStatus) {
+        const getNestedValue = async (key, subKey) => {
+          return new Promise((resolve, reject) => {
+            client.hgetall(key, (err, result) => {
+              if (err || !result[subKey]) {
+                reject(err);
+              } else {
+                resolve(result[subKey]);
+              }
+            });
+          });
+        };
+
+        if (!user) {
+          //check if user exists already
+          await redisClient.set(chatID, JSON.stringify(userDetails));
+          //user set to expire at midninght
+          redisClient.setEx(chatID, expTime, JSON.stringify(userDetails));
+        } else {
+          redisClient.hIncrBy(chatID, calls, 1, (err, result) => {
+            if (err) {
+              console.error(err);
+            } else {
+              console.log(`updated the calls count ${result}`);
+            }
+          });
+          //for unsubscribed users check if they have exceeded daily limit of 5 calls
+          if (getNestedValue(chatID, calls)) {
+            //set token limits based on subscription
+            if (!getNestedValue(chatID, isSubscribed)) {
+              tokenLimit = 100;
+              msg.reply("you have exceeded your daily quota");
+              return;
+            } else if (getNestedValue(chatID, isSubscribed)) {
+              tokenLimit = 500;
+            } else {
+              tokenLimit = 150;
+            }
+          }
+        }
+
         // check if message has any flagged word
         if (isFlagged(msgBody)) {
           //if flaged reply with warning
@@ -88,7 +147,6 @@ const clientOn = async (client, arg1, arg2, MessageMedia) => {
           return;
         }
 
-        const chatID = msg.from;
         //for tracking messages, check if there is an existing call log for the chat ID
         if (!chats[chatID]) {
           console.log("no previous found");
@@ -151,7 +209,7 @@ const clientOn = async (client, arg1, arg2, MessageMedia) => {
 
         // check if the user has exceeded the rate limit imposed in users and execute
         if (chats[chatID]["calls"] < 2) {
-          let response = await openAiCall(prompt, chatID, client);
+          let response = await openAiCall(prompt, chatID, 150);
           if (!msg.hasMedia) {
             // system is yet unable to read images so check if message has media
             if (msgBody.startsWith("createDoc") && msg.hasQuotedMsg) {
