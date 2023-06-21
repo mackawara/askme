@@ -72,14 +72,25 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
         console.log(exists);
         if (!exists) {
           console.log("user not found");
-          await redisClient.hSet(chatID, {
-            isBlocked: "0",
-            calls: 1,
-            isSubscribed: "0",
-            messages: JSON.stringify([{ role: "user", content: msgBody }]),
-          });
+
+          if (chatID == "263775231426@c.us") {
+            await redisClient.hSet(chatID, {
+              isBlocked: "0",
+              calls: 1,
+              isSubscribed: "1",
+              messages: JSON.stringify([{ role: "user", content: msgBody }]),
+            });
+          } else {
+            await redisClient.hSet(chatID, {
+              isBlocked: "0",
+              calls: 1,
+              isSubscribed: "0",
+              messages: JSON.stringify([{ role: "user", content: msgBody }]),
+            });
+          }
           await redisClient.expire(chatID, 86400);
           console.log(`Time to live is ` + (await redisClient.TTL(chatID)));
+          console.log(await redisClient.hGetAll(chatID));
           //check if user exists already in the database
           const contacts = await usersModel
             .find({ serialisedNumber: chatID })
@@ -166,14 +177,15 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
               await redisClient.hSet(chatID, "isBlocked", "1");
               return;
             }
-          } /* else {
-            // if user is subscribed
+          }
+          // if user is subscribed
+          else {
             if (callsMade < 30) {
               console.log("and is subscribed so set limit to 500");
               //set token limits based on subscription
               tokenLimit = 400;
             }
-          } */
+          }
         }
         console.log("line 168");
         console.log(tokenLimit);
