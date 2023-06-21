@@ -2,40 +2,33 @@ const connectDB = require("./config/database");
 const createDoc = require("./config/helperFunction/docxCreator");
 const indvUsers = require("./models/individualUsers");
 const totalUsage = require("./models/totalUsage");
-require("dotenv").config();
+
+const {
+  AggregateSteps,
+  AggregateGroupByReducers,
+  createClient,
+  SchemaFieldTypes,
+  redis,
+} = require("redis");
+const redisClient = createClient();
+require("dotenv").config(); 
 // connect to mongodb before running anything on the app
 connectDB().then(async () => {
   const { Client, LocalAuth, MessageMedia } = require("whatsapp-web.js");
   let callsPErday = 0;
-  await indvUsers.deleteMany({ calls: 0 }).exec();
-  const user = await indvUsers.find({}).exec();
-  user.forEach(async (item) => {
-    await item
-      .calculateTokensPerCallAndSave()
-      .then((result) =>
-        result
-          .calculateCostPerCall()
-          .then((data) =>
-            data.calculateCallsPerDay().then((res) => res.calculateCostPerDay())
-          )
-      );
-  });
-  const totalUsageMetrics = await totalUsage.findOne({});
-  //update metrics
-  totalUsageMetrics
-    .calculateTokensPerCallAndSave()
-    .then((result) =>
-      result
-        .calculateCostPerCall()
-        .then((data) =>
-          data.calculateCallsPerDay().then((res) => res.calculateCostPerDay())
-        )
-    );
+  // redis clent connections
+  await redisClient.on("error", (err) =>
+    console.log("Redis Client Error", err)
+  );
 
+  await redisClient.connect();
+  console.log(redisClient.isReady);
+
+  redisClient.flushDb();
   const client = new Client({
     authStrategy: new LocalAuth(),
     puppeteer: {
-      //  executablePath: process.env.EXECPATH,
+        executablePath: process.env.EXECPATH,
       handleSIGINT: true,
       headless: true,
       args: [
@@ -82,7 +75,7 @@ connectDB().then(async () => {
 
     //client events and functions
     //decalre variables that work with client here
-    clientOn(client, "message", "", MessageMedia);
+    clientOn(client, "message", redisClient, MessageMedia);
     clientOn(client, "group-join");
     clientOn(client, "group-leave"); //client
 
@@ -124,7 +117,8 @@ connectDB().then(async () => {
         }
       });
     });
-
+    
+  //
     // get the latest updates
     let calls = 0;
     const date = new Date();

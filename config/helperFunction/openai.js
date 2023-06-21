@@ -7,9 +7,9 @@ const totalUsageModel = require("../../models/totalUsage");
 // check if existing number locally if not check on db
 
 let chats = require("../../chats");
-const openAiCall = async (prompt, chatID, tokenLimit) => {
+const openAiCall = async (prompt, chatID, tokenLimit, redisClient) => {
   const user = await indvUsers.findOne({ serialisedNumber: chatID }).exec();
-
+  console.log(user);
   const totalUsage = await totalUsageModel.findOne({});
   console.log(totalUsage);
 
@@ -23,13 +23,15 @@ const openAiCall = async (prompt, chatID, tokenLimit) => {
 
   const openai = new OpenAIApi(configuration);
   let error;
-
-  if (chats[chatID]["calls"] < 2) {
-    console.log(chats[chatID]["calls"]);
+  const calls = await redisClient.hGet(chatID, "calls");
+  const messages = JSON.parse(await redisClient.hGet(chatID, "messages"));
+  console.log(messages);
+  console.log(calls);
+  if (calls <= 5) {
     const response = await openai
       .createChatCompletion({
         model: "gpt-3.5-turbo",
-        messages: chats[chatID]["messages"],
+        messages: messages,
         temperature: 1,
         max_tokens: tokenLimit,
         frequency_penalty: 1.7,
@@ -44,16 +46,18 @@ const openAiCall = async (prompt, chatID, tokenLimit) => {
     //check if there is any response
     if (response) {
       if ("data" in response) {
-        chats[chatID].messages.push(response.data.choices[0]["message"]); //add system response to messages
-        chats[chatID].messages.splice(0, chats[chatID].messages.length - 10); //trim messages and remain wit newest 6 only
-        console.log(chats[chatID].messages.length);
-        setTimeout(() => {
+        messages.push(response.data.choices[0]["message"]); //add system response to messages
+        messages.splice(0, messages.length - 10); //trim messages and remain wit newest 6 only
+        console.log(messages.length);
+        redisClient.hSet(chatID, "messages", JSON.stringify(messages));
+        /*   setTimeout(() => {
           chats[chatID]["calls"] = 0;
         }, 15000); // reset the calls in local store
         setTimeout(() => {
           chats[chatID]["messages"] = [];
         }, 120000); // messages are forgotten after 30mins
-        //update database
+        //update database */
+        //update the databases
         user.calls++;
         user.inputTokens =
           parseInt(user.inputTokens) + response.data.usage.prompt_tokens;
@@ -108,12 +112,12 @@ const openAiCall = async (prompt, chatID, tokenLimit) => {
     } catch (err) {
       console.log(err);
     }
-    setTimeout(() => {
+    /* setTimeout(() => {
       chats[chatID]["calls"] = 0;
     }, 15000); // reset the calls in local store
     setTimeout(() => {
       chats[chatID]["messages"] = [];
-    }, 90000); // messages are forgotten after 30mins
+    }, 90000); // messages are forgotten after 30mins */
     return `*Error!* too many requests made , please try later. You cannot make mutiple requests at the same time`;
   }
 };
