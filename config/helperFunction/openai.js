@@ -27,7 +27,7 @@ const openAiCall = async (prompt, chatID, tokenLimit, redisClient) => {
   const messages = JSON.parse(await redisClient.hGet(chatID, "messages"));
   console.log(messages);
   console.log(calls);
-  if (calls <= 5) {
+  if (calls <= 10) {
     const response = await openai
       .createChatCompletion({
         model: "gpt-3.5-turbo",

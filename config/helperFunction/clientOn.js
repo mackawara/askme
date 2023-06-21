@@ -78,6 +78,8 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
             isSubscribed: "0",
             messages: JSON.stringify([{ role: "user", content: msgBody }]),
           });
+          await redisClient.expire(chatID, 86400);
+          console.log(`Time to live is ` + (await redisClient.TTL(chatID)));
           //check if user exists already in the database
           const contacts = await usersModel
             .find({ serialisedNumber: chatID })
@@ -110,7 +112,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
               await newContact.save();
               client.sendMessage(
                 serialisedNumber,
-                `Hi ${notifyName},thank you for using AskMe, the AI powered virtual assistant.\n*How to use*\n1. *Simply* ask any question and wait for a response. For example you can ask "Explain the theory of relativity"or \n "Give me a step by step procedure of mounting an engine",if the response is incomplete you can just say "continue". Yes, you can chat to *AskMe* as you would to a human (*a super intelligent, all knowing human*) because *Askme* remembers topics that you talked about for the previous 30 minutes.\n\n What *Askme* cannot do\n1.Provide updates on current events (events after October 2021)\n2.Provide opinions on subjective things,\nWe hope you enjoy using the app. Please avoid making too many requests in short period of time, as this may slow down the app and cause your number to be blocked if warnings are not heeded. Your feedback is valued , please send suggestions to 0775231426`
+                `Hi ${notifyName},thank you for using AskMe, the AI powered virtual assistant.\n As a free user you are limited to 5 requests/messages per 24 hour period.\n*How to use*\n1. *Simply* ask any question and wait for a response. For example you can ask "Explain the theory of relativity"or \n "Give me a step by step procedure of mounting an engine",if the response is incomplete you can just say "continue". Yes, you can chat to *AskMe* as you would to a human (*a super intelligent, all knowing human*) because *Askme* remembers topics that you talked about for the previous 30 minutes.\n\n What *Askme* cannot do\n1.Provide updates on current events (events after October 2021)\n2.Provide opinions on subjective things,\nWe hope you enjoy using the app. Please avoid making too many requests in short period of time, as this may slow down the app and cause your number to be blocked if warnings are not heeded. Your feedback is valued , please send suggestions to 0775231426`
               );
             } catch (err) {
               console.log(err);
@@ -119,6 +121,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
         } else {
           //if found in redis DB
           console.log("user was found in the DB");
+          console.log(`TTL is now` + (await redisClient.TTL(chatID)));
           let callsMade = await redisClient.hGet(chatID, "calls");
           callsMade++;
           await redisClient.hSet(
@@ -143,7 +146,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
           //  check if blocked
           if ((await redisClient.hGet(chatID, "isBlocked")) == "1") {
             msg.reply(
-              "You have exceeded your daily quota, Please try again  tommorow.\n You are only allowed 5 requests per day, use them sparingly"
+              "You have exceeded your daily quota, Please try again  tommorow.\n You are only allowed 10 requests per day, use them sparingly.Repeated attempts will result in suspension or permanent blocking"
             );
             return;
           }
@@ -152,11 +155,14 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
           const isSubscribed = await redisClient.hGet(chatID, "isSubscribed");
           if (isSubscribed == "0") {
             console.log("user not subbed");
-            if (callsMade < 5) {
+            if (callsMade <= 10) {
               console.log("is under the quota");
-              tokenLimit = 100;
+              tokenLimit = 200;
             } else {
-              msg.reply("You have exceed your daily quota");
+              redisClient.del(chatID, "messages");
+              msg.reply(
+                "*You have exceed your daily quota*\n Users on free subscription are limited to 10 requests per 24 hour period.\nIf you are a tester from any one of the schools/institutions we are currently working with and have been mistakenly restricted please contact us on 0775231426"
+              );
               await redisClient.hSet(chatID, "isBlocked", "1");
               return;
             }
@@ -175,13 +181,30 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
         1. Use good information as input - The better the starting point, the better results you'll get. Give examples of what you want, writing style , level etc\n\n2. Choose suitable prompts/messages - Choosing useful sentences or phrases will help get a good response from AI model. Instead of "osmosis", send useful questions such as "Please explain osmosis in point form and provide  3 examples" \n      
         3.Check responses carefully and give feedback. If you did not get the exact answer you needed , you can refine the question or ask for further explanation – Taking time when reviewing output helps detect errors that can be corrected via consistent feedback.\n\nEg you can ask for a shortend response or ask for emphasis on a certain point \n If you have the exact answer you want you can save it in a word document by quoting the message (click on the message dropdown and click on "reply") and typing "createDoc".\n *AskMe* can keep track of messages sent within the latest 2 minutes, so you dont have to start afresh if you dont get what you want, just correct where correction is needed`;
         const ignorePatterns =
-          /^(ok|thank you|Youre welcome|welcome|you welcome|thanks?|k|[hi]+|\bhey\b)\W*$/i;
+          /^(ok|thank you|noted|good night|ok thank you|k|night|Youre welcome|welcome|you welcome|thanks?|k|[hi]+|\bhey\b)\W*$/i;
         if (ignorePatterns.test(msgBody.toLowerCase())) {
           msg.reply(defaultRes);
           return;
         } //for tracking messages, check if there is an existing call log for the chat ID
         // check if message has any flagged word
+        if (/createDoc/gi.test(msgBody.trim()) && msg.hasQuotedMsg) {
+          const message = await msg.getQuotedMessage();
+          const qtdMsgBody = message.body;
+          const timestamp = message.timestamp;
+          console.log(qtdMsgBody);
+          console.log(timestamp);
+          msg.reply("Please be patient while system generates your docx file");
+          const pathRet = await docxCreator(qtdMsgBody, chatID, timestamp);
 
+          client.sendMessage(chatID, MessageMedia.fromFilePath(pathRet));
+          return;
+        }
+        if (msg.hasMedia) {
+          msg.reply(
+            "Our apologies, current version is not yet able to process media such as images and audio, please make a textual request"
+          );
+          return;
+        }
         const openAiCall = require("./openai");
 
         let prompt = await msgBody.replace(/openAi:|createDoc/gi, "");
