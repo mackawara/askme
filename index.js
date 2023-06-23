@@ -2,35 +2,28 @@ const connectDB = require("./config/database");
 const createDoc = require("./config/helperFunction/docxCreator");
 const indvUsers = require("./models/individualUsers");
 const totalUsage = require("./models/totalUsage");
+
+const {
+  AggregateSteps,
+  AggregateGroupByReducers,
+  createClient,
+  SchemaFieldTypes,
+  redis,
+} = require("redis");
+const redisClient = createClient();
 require("dotenv").config();
 // connect to mongodb before running anything on the app
 connectDB().then(async () => {
   const { Client, LocalAuth, MessageMedia } = require("whatsapp-web.js");
   let callsPErday = 0;
-  await indvUsers.deleteMany({ calls: 0 }).exec();
-  const user = await indvUsers.find({}).exec();
-  user.forEach(async (item) => {
-    await item
-      .calculateTokensPerCallAndSave()
-      .then((result) =>
-        result
-          .calculateCostPerCall()
-          .then((data) =>
-            data.calculateCallsPerDay().then((res) => res.calculateCostPerDay())
-          )
-      );
-  });
-  const totalUsageMetrics = await totalUsage.findOne({});
-  //update metrics
-  totalUsageMetrics
-    .calculateTokensPerCallAndSave()
-    .then((result) =>
-      result
-        .calculateCostPerCall()
-        .then((data) =>
-          data.calculateCallsPerDay().then((res) => res.calculateCostPerDay())
-        )
-    );
+  // redis clent connections
+  await redisClient.on("error", (err) =>
+    console.log("Redis Client Error", err)
+  );
+
+  await redisClient.connect();
+  console.log(redisClient.isReady);
+  redisClient.flushDb();
 
   const client = new Client({
     authStrategy: new LocalAuth(),
@@ -79,10 +72,11 @@ connectDB().then(async () => {
       const allChats = await client.getChats();
       allChats.forEach((chat) => chat.clearMessages());
     });
+    await redisClient.setEx(`callsThis30secCycle`, 30, "0");
 
     //client events and functions
     //decalre variables that work with client here
-    clientOn(client, "message", "", MessageMedia);
+    clientOn(client, "message", redisClient, MessageMedia);
     clientOn(client, "group-join");
     clientOn(client, "group-leave"); //client
 
@@ -122,7 +116,7 @@ connectDB().then(async () => {
     client.setDisplayName("AskMe, the all knowing assistant");
 
     //mass messages
-    cron.schedule(`59 6 * * 1,7,3`, async () => {
+    cron.schedule(`10 12 * * Fri`, async () => {
       const broadcastMessage = [
         `Fantastic news! Our app has now upped the game with a brilliant feature that lets you save all your AI-generated notes, letters and resources.\n It's so easy - just chat with our smart AI-powered bot to refine your results, ask for shortening or further explanations if needed. \nAnd when everything is perfect, simply quote/reply to the message using *"createDoc"* as shown and voila!, you'll get a downloadable word docx file in no time.
       Be sure to test out this amazing new function today and let us know what you think on 0775231426. Get organized effortlessly like never before!`,
@@ -138,9 +132,6 @@ connectDB().then(async () => {
       ];
       const askMeClients = await indvUsers.find({});
 
-      const iteration = Math.floor(
-        Math.floor(Math.random() * 10) * broadcastMessage.length
-      );
       askMeClients.forEach(async (askMeclient) => {
         try {
           client.sendMessage(
@@ -148,7 +139,10 @@ connectDB().then(async () => {
             MessageMedia.fromFilePath("./assets/example.png")
           );
 
-          //  client.sendMessage(askMeclient.serialisedNumber, broadcastMessage[1]);
+          client.sendMessage(
+            askMeclient.serialisedNumber,
+            `*Usage Tip*\nTo download a word doc simply quote/reply the message from AskMe (long press on message and click reply) the message with "createDoc", \nWithout the quotation marks `
+          );
           await timeDelay(Math.floor(Math.random() * 10) * 1000);
         } catch (err) {
           console.log(err);
@@ -156,6 +150,7 @@ connectDB().then(async () => {
       });
     });
 
+    //
     // get the latest updates
     let calls = 0;
     const date = new Date();

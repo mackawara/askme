@@ -63,14 +63,12 @@ usersSchema.methods.calculateTokensPerCallAndSave = function () {
   return this.save();
 };
 usersSchema.methods.calculateCallsPerDay = function () {
-  const dateNOW = parseInt(new Date().toISOString().slice(8, 10));
   const dateToday = Date.now();
-  const initialDate = parseInt(this.date.slice(8, 10));
 
   const dayElapsed = (dateToday - this.timestamp) / 1000 / 86400;
-  console.log(dayElapsed)
-  this.callsPerDay = this.calls / dayElapsed;
 
+  this.callsPerDay = this.calls / dayElapsed;
+console.log(dayElapsed)
   return this.save();
 };
 usersSchema.methods.calculateCostPerCall = function () {
