@@ -9,6 +9,7 @@ const chats = require("../../chats");
 
 //helper Functions
 const getSecsToMidNight = require("./getSecsToMidnight");
+const isSystemNotBusy = require("./isSystemNotBusy");
 
 let messages = [];
 const timeDelay = (ms) => new Promise((res) => setTimeout(res, ms));
@@ -43,58 +44,44 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
       const chat = await msg.getChat();
       const contact = await msg.getContact();
       const chatID = msg.from;
+      const user = await usersModel
+        .findOne({ serialisedNumber: chatID })
+        .exec();
       let tokenLimit = 150;
 
       const expTime = getSecsToMidNight();
       //  console.log(`the user ${user}`);
 
       const msgBody = msg.body;
+      let prompt = await msgBody.replace(/openAi:|createDoc/gi, "");
       //only use on direct messages
-
       if (!chat.isGroup && !msg.isStatus) {
-        console.log(chatID);
-
-        const getNestedValue = async (key, subKey) => {
-          return new Promise((resolve, reject) => {
-            redisClient.hGetAll(key, (err, result) => {
-              if (err || !result[subKey]) {
-                reject(err);
-              } else {
-                resolve(result[subKey]);
-              }
-            });
-          });
-        };
-        console.log("line 93");
-
         // if user is not already in
         const exists = await redisClient.exists(chatID);
-        console.log(exists);
+        //check the redis DB if there is an entry from the number
         if (!exists) {
-          console.log("user not found");
+          await redisClient.setEx(`${chatID}shortTTL`, 30, "1"); //keep count of calls from 1 user within 30 sec period
+          //  await redisClient.expire(`${chatID}shortTTL`, 25);
 
           if (chatID == "263775231426@c.us") {
             await redisClient.hSet(chatID, {
               isBlocked: "0",
               calls: 1,
               isSubscribed: "1",
-              messages: JSON.stringify([{ role: "user", content: msgBody }]),
+              messages: JSON.stringify([{ role: "user", content: prompt }]),
             });
           } else {
             await redisClient.hSet(chatID, {
               isBlocked: "0",
               calls: 1,
               isSubscribed: "0",
-              messages: JSON.stringify([{ role: "user", content: msgBody }]),
+              messages: JSON.stringify([{ role: "user", content: prompt }]),
             });
           }
           await redisClient.expire(chatID, 86400);
-          console.log(`Time to live is ` + (await redisClient.TTL(chatID)));
-          console.log(await redisClient.hGetAll(chatID));
+
           //check if user exists already in the database
-          const contacts = await usersModel
-            .find({ serialisedNumber: chatID })
-            .exec();
+
           //means in each conversation there is only 1 DB check meaning subsequent calls are faster
 
           let serialisedNumber, notifyName, number;
@@ -102,7 +89,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
           notifyName = contact.pushname;
           number = contact.number;
           // if contact is not already saved save to DB
-          if (contacts.length < 1) {
+          if (!user) {
             const newContact = new usersModel({
               date: new Date().toISOString().slice(0, 10),
               isBlocked: false,
@@ -129,10 +116,24 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
               console.log(err);
             }
           }
-        } else {
+        }
+        //else if the user is already logged
+        else {
+          //check if short term TTL
+
+          await redisClient.INCRBY(`${chatID}shortTTL`, 1);
+          const shortTTL = await redisClient.get(`${chatID}shortTTL`);
+          console.log(shortTTL);
+          if (parseInt(shortTTL) > 2) {
+            console.log("is more than 2");
+            msg.reply(
+              `*Error*, you have made too many requests within a short space of time, Wait at least 1 minute!!`
+            );
+            return;
+          }
           //if found in redis DB
-          console.log("user was found in the DB");
-          console.log(`TTL is now` + (await redisClient.TTL(chatID)));
+          // update the number of calls made
+
           let callsMade = await redisClient.hGet(chatID, "calls");
           callsMade++;
           await redisClient.hSet(
@@ -143,7 +144,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
             // console.log("calls updated to " + this.callsMade)
           );
           let messages = JSON.parse(await redisClient.hGet(chatID, "messages"));
-          messages.push({ role: "user", content: msgBody });
+          messages.push({ role: "user", content: prompt });
           await redisClient.hSet(
             chatID,
             "messages",
@@ -151,9 +152,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
             (result) => console.log(result)
             // console.log("calls updated to " + this.callsMade)
           );
-          console.log("line 140");
-          console.log(await redisClient.hGetAll(chatID));
-          //  await redisClient.incr(chatID, "calls");
+
           //  check if blocked
           if ((await redisClient.hGet(chatID, "isBlocked")) == "1") {
             msg.reply(
@@ -161,14 +160,14 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
             );
             return;
           }
-          console.log("line 149");
+
           //for unsubscribed users check if they have exceeded daily limit of 5 calls
           const isSubscribed = await redisClient.hGet(chatID, "isSubscribed");
           if (isSubscribed == "0") {
             console.log("user not subbed");
             if (callsMade <= 10) {
               console.log("is under the quota");
-              tokenLimit = 200;
+              tokenLimit = 150;
             } else {
               redisClient.del(chatID, "messages");
               msg.reply(
@@ -187,24 +186,24 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
             }
           }
         }
-        console.log("line 168");
-        console.log(tokenLimit);
+        if (!isSystemNotBusy(msg, redisClient)) {
+          return;
+        }
         const defaultRes = `Thank you for using AskMe, the number 1 app for Students,Parents and Teacher/Lecturers\n*How to get the best results from our AI model*\nYou can use our app to generate almost any written text as long as you povide proper context and use the guidelines below.
         1. Use good information as input - The better the starting point, the better results you'll get. Give examples of what you want, writing style , level etc\n\n2. Choose suitable prompts/messages - Choosing useful sentences or phrases will help get a good response from AI model. Instead of "osmosis", send useful questions such as "Please explain osmosis in point form and provide  3 examples" \n      
         3.Check responses carefully and give feedback. If you did not get the exact answer you needed , you can refine the question or ask for further explanation – Taking time when reviewing output helps detect errors that can be corrected via consistent feedback.\n\nEg you can ask for a shortend response or ask for emphasis on a certain point \n If you have the exact answer you want you can save it in a word document by quoting the message (click on the message dropdown and click on "reply") and typing "createDoc".\n *AskMe* can keep track of messages sent within the latest 2 minutes, so you dont have to start afresh if you dont get what you want, just correct where correction is needed`;
         const ignorePatterns =
-          /^(ok|oky|thank you|noted|good night|ok thank you|k|night|Youre welcome|welcome|you welcome|thanks?|k|[hi]+|\bhey\b)\W*$/i;
+          /^(ok|oky|thank you|hi ask me|noted|good night|ok thank you|k|night|Youre welcome|welcome|you welcome|thanks?|k|[hi]+|\bhey\b)\W*$/i;
         if (ignorePatterns.test(msgBody.toLowerCase())) {
           msg.reply(defaultRes);
           return;
-        } //for tracking messages, check if there is an existing call log for the chat ID
-        // check if message has any flagged word
+        }
+
         if (/createDoc/gi.test(msgBody.trim()) && msg.hasQuotedMsg) {
           const message = await msg.getQuotedMessage();
           const qtdMsgBody = message.body;
           const timestamp = message.timestamp;
-          console.log(qtdMsgBody);
-          console.log(timestamp);
+
           msg.reply("Please be patient while system generates your docx file");
           const pathRet = await docxCreator(qtdMsgBody, chatID, timestamp);
 
@@ -219,13 +218,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
         }
         const openAiCall = require("./openai");
 
-        let prompt = await msgBody.replace(/openAi:|createDoc/gi, "");
-        const response = await openAiCall(
-          prompt,
-          chatID,
-          tokenLimit,
-          redisClient
-        );
+        const response = await openAiCall(chatID, tokenLimit, redisClient);
         msg.reply(response);
       }
     });

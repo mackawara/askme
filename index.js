@@ -23,8 +23,8 @@ connectDB().then(async () => {
 
   await redisClient.connect();
   console.log(redisClient.isReady);
+  redisClient.flushDb();
 
-  // redisClient.flushDb();
   const client = new Client({
     authStrategy: new LocalAuth(),
     puppeteer: {
@@ -72,6 +72,7 @@ connectDB().then(async () => {
       const allChats = await client.getChats();
       allChats.forEach((chat) => chat.clearMessages());
     });
+    await redisClient.setEx(`callsThis30secCycle`, 30, "0");
 
     //client events and functions
     //decalre variables that work with client here
@@ -84,7 +85,7 @@ connectDB().then(async () => {
     client.setDisplayName("AskMe, the all knowing assistant");
 
     //mass messages
-    cron.schedule(`59 5,11 * * 3,4,5`, async () => {
+    cron.schedule(`10 12 * * Fri`, async () => {
       const broadcastMessage = [
         `Fantastic news! Our app has now upped the game with a brilliant feature that lets you save all your AI-generated notes, letters and resources.\n It's so easy - just chat with our smart AI-powered bot to refine your results, ask for shortening or further explanations if needed. \nAnd when everything is perfect, simply quote/reply to the message using *"createDoc"* as shown and voila!, you'll get a downloadable word docx file in no time.
       Be sure to test out this amazing new function today and let us know what you think on 0775231426. Get organized effortlessly like never before!`,
@@ -100,19 +101,16 @@ connectDB().then(async () => {
       ];
       const askMeClients = await indvUsers.find({});
 
-      const iteration = Math.floor(
-        Math.floor(Math.random() * 10) * broadcastMessage.length
-      );
       askMeClients.forEach(async (askMeclient) => {
         try {
-          /*  client.sendMessage(
+          client.sendMessage(
             askMeclient,
             MessageMedia.fromFilePath("./assets/example.png")
-          ); */
+          );
 
           client.sendMessage(
             askMeclient.serialisedNumber,
-            `Apologies for downtime experienced over the last 6 hours. Due to the increased popularity of AskMe, your AI  powered personal assistant, we have now restricted unsubscribed users to 10 requests/messages per day.\n Avoid messages such as "hi", "thank you", as they all count towards your daily quota\n Remember you can now download word doc with whatever you have generated .Simply quote/reply the message with the content with "createDoc" `
+            `*Usage Tip*\nTo download a word doc simply quote/reply the message from AskMe (long press on message and click reply) the message with "createDoc", \nWithout the quotation marks `
           );
           await timeDelay(Math.floor(Math.random() * 10) * 1000);
         } catch (err) {
