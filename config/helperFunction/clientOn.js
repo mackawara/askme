@@ -169,9 +169,9 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
           const isSubscribed = await redisClient.hGet(chatID, "isSubscribed");
           if (isSubscribed == "0") {
             console.log("user not subbed");
-            if (callsMade <= 10) {
+            if (callsMade <= 5) {
               console.log("is under the quota");
-              tokenLimit = 150;
+              tokenLimit = 180;
             } else {
               redisClient.del(chatID, "messages");
               msg.reply(
