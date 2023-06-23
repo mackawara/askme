@@ -60,7 +60,10 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
         const exists = await redisClient.exists(chatID);
         //check the redis DB if there is an entry from the number
         if (!exists) {
-          await redisClient.setEx(`${chatID}shortTTL`, 30, "1"); //keep count of calls from 1 user within 30 sec period
+          const existsTTL = await redisClient.exists(`${chatID}shortTTL}`);
+          if (!existsTTL) {
+            await redisClient.setEx(`${chatID}shortTTL`, 30, "1"); //keep count of calls from 1 user within 30 sec period
+          }
           //  await redisClient.expire(`${chatID}shortTTL`, 25);
 
           if (chatID == "263775231426@c.us") {
