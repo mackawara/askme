@@ -3,6 +3,7 @@ const createDoc = require("./config/helperFunction/docxCreator");
 const indvUsers = require("./models/individualUsers");
 const totalUsage = require("./models/totalUsage");
 
+const qrcode = require("qrcode-terminal");
 const {
   AggregateSteps,
   AggregateGroupByReducers,
@@ -10,6 +11,8 @@ const {
   SchemaFieldTypes,
   redis,
 } = require("redis");
+
+//initialise redis
 const redisClient = createClient();
 require("dotenv").config();
 // connect to mongodb before running anything on the app
@@ -17,13 +20,9 @@ connectDB().then(async () => {
   const { Client, LocalAuth, MessageMedia } = require("whatsapp-web.js");
   let callsPErday = 0;
   // redis clent connections
-  await redisClient.on("error", (err) =>
-    console.log("Redis Client Error", err)
-  );
+  redisClient.on("error", (err) => console.log("Redis Client Error", err));
 
   await redisClient.connect();
-  console.log(redisClient.isReady);
-  redisClient.flushDb();
 
   const client = new Client({
     authStrategy: new LocalAuth(),
@@ -57,9 +56,18 @@ connectDB().then(async () => {
 
   //messaging client resources
   const clientOn = require("./config/helperFunction/clientOn");
-  clientOn(client, "authenticated");
-  clientOn(client, "auth_failure");
-  clientOn(client, "qr");
+
+  client.on("auth_failure", (msg) => {
+    console.error("AUTHENTICATION FAILURE", msg);
+  });
+  client.on("authenticated", async (session) => {
+    console.log(`client authenticated`);
+  });
+
+  client.on("qr", (qr) => {
+    qrcode.generate(qr, { small: true });
+    console.log(qr);
+  });
 
   client.on("ready", async () => {
     const timeDelay = (ms) => new Promise((res) => setTimeout(res, ms));
@@ -76,9 +84,8 @@ connectDB().then(async () => {
 
     //client events and functions
     //decalre variables that work with client here
-    clientOn(client, "message", redisClient, MessageMedia);
-    clientOn(client, "group-join");
-    clientOn(client, "group-leave"); //client
+     clientOn(client, "message", redisClient, MessageMedia);
+    //client
 
     //Db models
     //decalre variables that work with client here
