@@ -47,32 +47,8 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
         const exists = await redisClient.exists(chatID);
         //check the redis DB if there is an entry from the number
 
-        await redisClient
-          .incrBy(`${chatID}shortTTL`, 1)
-          .then(async (result) => {
-            console.log(result);
-            await redisClient.expire(`${chatID}shortTTL`, 30);
-          });
-
         if (!exists) {
           //  await redisClient.expire(`${chatID}shortTTL`, 25);
-
-          if (chatID == process.env.ME) {
-            await redisClient.hSet(chatID, {
-              isBlocked: "0",
-              calls: 1,
-              isSubscribed: "1",
-              messages: JSON.stringify([{ role: "user", content: prompt }]),
-            });
-          } else {
-            await redisClient.hSet(chatID, {
-              isBlocked: "0",
-              calls: 1,
-              isSubscribed: "0",
-              messages: JSON.stringify([{ role: "user", content: prompt }]),
-            });
-          }
-          await redisClient.expire(chatID, 86400);
 
           //check if user exists already in the database
 
@@ -110,6 +86,18 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
               console.log(err);
             }
           }
+          const isSubscribed = (await user.isSubscribed) == true ? "1" : "0";
+          const isBlocked = (await user.isBlocked) == true ? "1" : "0";
+
+          console.log(isSubscribed);
+          await redisClient.hSet(chatID, {
+            isBlocked: isBlocked,
+            calls: 1,
+            isSubscribed: isSubscribed,
+            messages: JSON.stringify([{ role: "user", content: prompt }]),
+          });
+
+          await redisClient.expire(chatID, 86400);
         }
         //else if the user is already logged
         else {
@@ -126,16 +114,13 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
           }
           //if found in redis DB
           // update the number of calls made
-
+          await redisClient
+            .incrBy(`${chatID}shortTTL`, 1)
+            .then(async (result) => {
+              console.log(result);
+            });
           let callsMade = await redisClient.hGet(chatID, "calls");
-          callsMade++;
-          await redisClient.hSet(
-            chatID,
-            "calls",
-            callsMade,
-            (result) => console.log(result)
-            // console.log("calls updated to " + this.callsMade)
-          );
+
           let messages = JSON.parse(await redisClient.hGet(chatID, "messages"));
           messages.push({ role: "user", content: prompt });
           await redisClient.hSet(
