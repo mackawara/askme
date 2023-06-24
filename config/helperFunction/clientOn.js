@@ -48,6 +48,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
         .findOne({ serialisedNumber: chatID })
         .exec();
       let tokenLimit = 150;
+      let completion = "completion";
 
       const expTime = getSecsToMidNight();
       //  console.log(`the user ${user}`);
@@ -131,9 +132,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
         }
         //else if the user is already logged
         else {
-          //check if short term TTL
-
-          const shortTTL = await redisClient.get(`${chatID}shortTTL`);
+          //check if short term TTL    const shortTTL = await redisClient.get(`${chatID}shortTTL`);
           console.log(shortTTL);
           if (parseInt(shortTTL) > 2) {
             console.log("is more than 2");
@@ -194,6 +193,14 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
               console.log("and is subscribed so set limit to 500");
               //set token limits based on subscription
               tokenLimit = 400;
+              completion = "chat";
+            } else {
+              redisClient.del(chatID, "messages");
+              msg.reply(
+                "*You have exceed your daily quota*\n Users on free subscription are limited to 10 requests per 24 hour period.\nIf you are a tester from any one of the schools/institutions we are currently working with and have been mistakenly restricted please contact us on 0775231426"
+              );
+              await redisClient.hSet(chatID, "isBlocked", "1");
+              return;
             }
           }
         }
@@ -229,7 +236,12 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
         }
         const openAiCall = require("./openai");
 
-        const response = await openAiCall(chatID, tokenLimit, redisClient);
+        const response = await openAiCall(
+          chatID,
+          tokenLimit,
+          redisClient,
+          completion
+        );
         msg.reply(response);
       }
     });
