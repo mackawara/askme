@@ -43,7 +43,9 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
     client.on(`message`, async (msg) => {
       const chat = await msg.getChat();
       const contact = await msg.getContact();
+      const msgBody = msg.body;
       const chatID = msg.from;
+
       const user = await usersModel
         .findOne({ serialisedNumber: chatID })
         .exec();
@@ -52,7 +54,6 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
       const expTime = getSecsToMidNight();
       //  console.log(`the user ${user}`);
 
-      const msgBody = msg.body;
       let prompt = await msgBody.replace(/openAi:|createDoc/gi, "");
       //only use on direct messages
       if (!chat.isGroup && !msg.isStatus) {
