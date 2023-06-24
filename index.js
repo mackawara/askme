@@ -2,6 +2,7 @@ const connectDB = require("./config/database");
 const createDoc = require("./config/helperFunction/docxCreator");
 const indvUsers = require("./models/individualUsers");
 const totalUsage = require("./models/totalUsage");
+const makePayment = require("./middleware/paynow");
 
 const {
   AggregateSteps,
@@ -12,6 +13,8 @@ const {
 } = require("redis");
 const redisClient = createClient();
 require("dotenv").config();
+
+console.log(makePayment());
 // connect to mongodb before running anything on the app
 connectDB().then(async () => {
   const { Client, LocalAuth, MessageMedia } = require("whatsapp-web.js");
@@ -23,12 +26,12 @@ connectDB().then(async () => {
 
   await redisClient.connect();
   console.log(redisClient.isReady);
-  redisClient.flushDb();
+  //redisClient.flushDb();
 
   const client = new Client({
     authStrategy: new LocalAuth(),
     puppeteer: {
-       executablePath: process.env.EXECPATH,
+      executablePath: process.env.EXECPATH,
       handleSIGINT: true,
       headless: true,
       args: [
@@ -53,7 +56,7 @@ connectDB().then(async () => {
   });
 
   //client2.initialize();
-  client.initialize();
+  //client.initialize();
 
   //messaging client resources
   const clientOn = require("./config/helperFunction/clientOn");
@@ -73,7 +76,7 @@ connectDB().then(async () => {
       allChats.forEach((chat) => chat.clearMessages());
     });
     await redisClient.setEx(`callsThis30secCycle`, 30, "0");
-
+    // client.setStatus("Unsubscribed users");
     //client events and functions
     //decalre variables that work with client here
     clientOn(client, "message", redisClient, MessageMedia);
