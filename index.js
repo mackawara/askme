@@ -27,7 +27,7 @@ connectDB().then(async () => {
   const client = new Client({
     authStrategy: new LocalAuth(),
     puppeteer: {
-      //  executablePath: process.env.EXECPATH,
+      executablePath: process.env.EXECPATH,
       handleSIGINT: true,
       headless: true,
       args: [
@@ -84,7 +84,7 @@ connectDB().then(async () => {
 
     //client events and functions
     //decalre variables that work with client here
-     clientOn(client, "message", redisClient, MessageMedia);
+    clientOn(client, "message", redisClient, MessageMedia);
     //client
 
     //Db models
