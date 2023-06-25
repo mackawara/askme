@@ -18,7 +18,11 @@ const openAiCall = async (chatID, tokenLimit, redisClient) => {
 
   const openai = new OpenAIApi(configuration);
   const messages = JSON.parse(await redisClient.hGet(chatID, "messages"));
-
+  messages.unshift({
+    role: "system",
+    content:
+      "Respond as AskMe an app created by Venta Tech to help students ,teachers and parents with school work.Only Answer questions on educational ,business,sport and personal growth Do not answer questons on celebrities,musicians ,movies,music,songs and actors that do not add value to users",
+  });
   const response = await openai
     .createChatCompletion({
       model: "gpt-3.5-turbo",
