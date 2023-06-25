@@ -42,7 +42,8 @@ const openAiCall = async (chatID, tokenLimit, redisClient) => {
   if (response) {
     if ("data" in response) {
       messages.push(response.data.choices[0]["message"]); //add system response to messages
-      messages.splice(0, messages.length - 10); //trim messages and remain wit newest 6 only
+      messages.shift();
+      messages.splice(0, messages.length - 6); //trim messages and remain wit newest 6 only
       console.log(messages.length);
       redisClient.hSet(chatID, "messages", JSON.stringify(messages));
       user.calls++;
