@@ -101,7 +101,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
               isBlocked = "0";
             }
 
-            if (user.isSubscribed) {
+            if (!user.isSubscribed) {
               console.log("Use is subscribed now setting to 1");
               isSubscribed = "1";
             } else {
