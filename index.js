@@ -21,7 +21,6 @@ connectDB().then(async () => {
   let callsPErday = 0;
   // redis clent connections
   redisClient.on("error", (err) => console.log("Redis Client Error", err));
-
   await redisClient.connect();
 
   const client = new Client({
@@ -126,6 +125,18 @@ connectDB().then(async () => {
       });
     });
 
+    cron.schedule(`2 2 * * *`, async () => {
+      askMeClients.forEach((client) => {
+        (client.isBlocked = false),
+          (client.isSubscribed = false),
+          (client.referalList = []);
+        try {
+          client.save();
+        } catch (err) {
+          console.log(err);
+        }
+      });
+    });
     //
     // get the latest updates
     let calls = 0;

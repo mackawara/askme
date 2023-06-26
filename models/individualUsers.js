@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const { arrayBuffer } = require("node:stream/consumers");
 
 const usersSchema = new mongoose.Schema({
   date: {
@@ -6,7 +7,7 @@ const usersSchema = new mongoose.Schema({
     required: false,
   },
   isBlocked: {
-    type: String,
+    type: Boolean,
     required: true,
   },
   calls: { type: Number, required: true },
@@ -27,7 +28,7 @@ const usersSchema = new mongoose.Schema({
     required: true,
   },
   isSubscribed: {
-    type: String,
+    type: Boolean,
     required: true,
   },
   totalTokens: {
@@ -54,6 +55,10 @@ const usersSchema = new mongoose.Schema({
     type: Number,
     required: false,
   },
+  referalList: {
+    type: Array,
+    required: false,
+  },
   costPerCall: { type: Number, required: false },
   costPerDay: { type: Number, required: false },
 });
@@ -68,7 +73,7 @@ usersSchema.methods.calculateCallsPerDay = function () {
   const dayElapsed = (dateToday - this.timestamp) / 1000 / 86400;
 
   this.callsPerDay = this.calls / dayElapsed;
-console.log(dayElapsed)
+  console.log(dayElapsed);
   return this.save();
 };
 usersSchema.methods.calculateCostPerCall = function () {
