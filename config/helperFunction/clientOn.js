@@ -218,8 +218,8 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
         }
 
         //add messages to list in prep for AI call
-        await redisClient.HINCRBY(chatID, "calls");
-
+        let callsMade = JSON.parse(await redisClient.hGet(chatID, "calls"));
+        callsMade = parseInt(callsMade) + 1;
         let messages = JSON.parse(await redisClient.hGet(chatID, "messages"));
         messages.push({ role: "user", content: prompt });
         await redisClient.hSet(
@@ -232,7 +232,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
 
         //for unsubscribed users check if they have exceeded daily limit of 3 calls
         const isSubscribed = await redisClient.hGet(chatID, "isSubscribed");
-        const callsMade = await redisClient.hGet(chatID, "calls");
+
         if (isSubscribed == "0") {
           console.log("user not subbed");
           if (callsMade <= 3) {
