@@ -23,12 +23,11 @@ connectDB().then(async () => {
   redisClient.on("error", (err) => console.log("Redis Client Error", err));
 
   await redisClient.connect();
-  redisClient.flushDb();
 
   const client = new Client({
     authStrategy: new LocalAuth(),
     puppeteer: {
-      //  executablePath: process.env.EXECPATH,
+      executablePath: process.env.EXECPATH,
       handleSIGINT: true,
       headless: true,
       args: [

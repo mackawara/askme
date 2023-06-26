@@ -4,7 +4,6 @@ const isFlagged = (string) => {
     "xxx",
     "LGBT",
     "gay",
-    "games",
     "movies",
     "boyfriend",
     "girlfirend",
