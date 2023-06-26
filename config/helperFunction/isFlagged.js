@@ -3,12 +3,10 @@ const isFlagged = (string) => {
     "porn",
     "xxx",
     "LGBT",
-    "gay",
     "movies",
     "boyfriend",
     "girlfirend",
-    "gal",
-    "bae",
+    "my bae",
     "sex",
     "sexual",
   ];

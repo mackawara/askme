@@ -219,7 +219,8 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
 
         //add messages to list in prep for AI call
         let callsMade = JSON.parse(await redisClient.hGet(chatID, "calls"));
-        callsMade = parseInt(callsMade) + 1;
+        callsMade = (await parseInt(callsMade)) + 1;
+       await redisClient.hSet(chatID, "calls",callsMade))
         let messages = JSON.parse(await redisClient.hGet(chatID, "messages"));
         messages.push({ role: "user", content: prompt });
         await redisClient.hSet(

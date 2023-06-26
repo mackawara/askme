@@ -18,7 +18,7 @@ const openAiCall = async (chatID, tokenLimit, redisClient) => {
 
   const openai = new OpenAIApi(configuration);
   const messages = JSON.parse(await redisClient.hGet(chatID, "messages"));
-  messages.push({
+  messages.unshift({
     role: "system",
     content:
       "Respond as AskMe an app created by Venta Tech to help students ,teachers and parents with school work.Only Answer questions on educational ,business,sport and personal growth Do not answer questons on celebrities,musicians ,movies,music,songs and actors that do not add value to users",
@@ -41,7 +41,7 @@ const openAiCall = async (chatID, tokenLimit, redisClient) => {
   //check if there is any response
   if (response) {
     if ("data" in response) {
-      messages.pop();
+      messages.shift();
       messages.push(response.data.choices[0]["message"]); //add system response to messages
 
       messages.splice(0, messages.length - 6); //trim messages and remain wit newest 6 only
