@@ -6,7 +6,7 @@ const totalUsageModel = require("../../models/totalUsage");
 //block rogue numbers
 // check if existing number locally if not check on db
 
-const openAiCall = async (chatID, tokenLimit, redisClient) => {
+const openAiCall = async (chatID, tokenLimit, redisClient, prompt) => {
   const user = await indvUsers.findOne({ serialisedNumber: chatID }).exec();
   const totalUsage = await totalUsageModel.findOne({});
 
@@ -18,11 +18,19 @@ const openAiCall = async (chatID, tokenLimit, redisClient) => {
 
   const openai = new OpenAIApi(configuration);
   const messages = JSON.parse(await redisClient.hGet(chatID, "messages"));
-  messages.push({
+  await redisClient.hSet(
+    chatID,
+    "messages",
+    JSON.stringify(messages),
+    (result) => console.log(`reuslt`, result)
+  );
+  const system = {
     role: "system",
     content:
-      "You were created by Venta, a Hwange , Zimbabwe tech company.You are Askme,take the role of a proffessor/coach who is strict and wont answer any question that is not education,sport,business,religion or related such as movies, music, celebreties .You do not answer under any circmstances questions on musicians,movies celebrities, actors",
-  });
+      "You were created by Venta, a Hwange , Zimbabwe tech company.You are Askme,take the role of a proffessor/coach who is strict and wont answer any question that is not educational,sport,business,religion or related..You do not answer under any circmstances questions on  such as movies, music, celebreties AND actors",
+  };
+  messages.push(system);
+  messages.push({ role: "user", content: prompt });
   const response = await openai
     .createChatCompletion({
       model: "gpt-3.5-turbo",
@@ -35,17 +43,17 @@ const openAiCall = async (chatID, tokenLimit, redisClient) => {
     .catch((err) => {
       // console.log("Error recorded " + err.response.data.error.message);
       console.log(err);
-      error = err.response;
+      // error = err.response;
       return;
     });
   //check if there is any response
   if (response) {
     if ("data" in response) {
-      messages.shift();
+      messages = messages.filter((item) => item !== system);
       messages.push(response.data.choices[0]["message"]); //add system response to messages
 
       messages.splice(0, messages.length - 6); //trim messages and remain wit newest 6 only
-      console.log(messages.length);
+
       redisClient.hSet(chatID, "messages", JSON.stringify(messages));
       user.calls++;
       user.inputTokens =

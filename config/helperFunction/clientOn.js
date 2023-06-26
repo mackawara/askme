@@ -83,7 +83,11 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
               timestamp: Date.now(),
             });
             try {
-              await newContact.save();
+              await newContact
+                .save()
+                .then((result) =>
+                  client.sendMessage(me, "New user added  " + chatID)
+                );
               client.sendMessage(
                 serialisedNumber,
                 `Hi ${notifyName},thank you for using AskMe, the AI powered virtual assistant.\n As a free user you are limited to 3 requests/messages per 24 hour period.\n*How to use*\n1. *Simply* ask any question and wait for a response. For example you can ask "Explain the theory of relativity"or \n "Give me a step by step procedure of mounting an engine",if the response is incomplete you can just say "continue". Yes, you can chat to *AskMe* as you would to a human (*a super intelligent, all knowing human*) because *Askme* remembers topics that you talked about for the previous 30 minutes.\n\n What *Askme* cannot do\n1.Provide updates on current events (events after October 2021)\n2.Provide opinions on subjective things,\nWe hope you enjoy using the app. Please avoid making too many requests in short period of time, as this may slow down the app and cause your number to be blocked if warnings are not heeded. Your feedback is valued , please send suggestions to 0775231426`
@@ -222,15 +226,8 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
         let callsMade = JSON.parse(await redisClient.hGet(chatID, "calls"));
         callsMade = (await parseInt(callsMade)) + 1;
         await redisClient.hSet(chatID, "calls", callsMade);
-        let messages = JSON.parse(await redisClient.hGet(chatID, "messages"));
-        messages.push({ role: "user", content: prompt });
-        await redisClient.hSet(
-          chatID,
-          "messages",
-          JSON.stringify(messages),
-          (result) => console.log(`reuslt`, result)
-          // console.log("calls updated to " + this.callsMade)
-        );
+        //let messages = JSON.parse(await redisClient.hGet(chatID, "messages"));
+        //messages.push({ role: "user", content: prompt });
 
         //for unsubscribed users check if they have exceeded daily limit of 3 calls
         const isSubscribed = await redisClient.hGet(chatID, "isSubscribed");
@@ -261,7 +258,12 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
         //make opena API cal
         const openAiCall = require("./openai");
         console.log("test line 222");
-        const response = await openAiCall(chatID, tokenLimit, redisClient);
+        const response = await openAiCall(
+          chatID,
+          tokenLimit,
+          redisClient,
+          prompt
+        );
         msg.reply(response);
       }
     });
