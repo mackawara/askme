@@ -12,6 +12,7 @@ const elevate = async (msg, redisClient) => {
     } else {
       const user = await indvUsers.findOne({ serialisedNumber: number }).exec();
       user.isSubscribed = true;
+      user.isBlocked = false;
       try {
         user.save().then((result) => {
           msg.reply(`${number}, is now elevated`);

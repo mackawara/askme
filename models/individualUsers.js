@@ -21,7 +21,7 @@ const usersSchema = new mongoose.Schema({
   },
   notifyName: {
     type: String,
-    required: true,
+    required: false,
   },
   serialisedNumber: {
     type: String,
@@ -49,7 +49,7 @@ const usersSchema = new mongoose.Schema({
   },
   timestamp: {
     required: true,
-    type: Number,
+    type: String,
   },
   callsPerDay: {
     type: Number,

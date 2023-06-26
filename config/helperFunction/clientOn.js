@@ -99,7 +99,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
             console.log("not found in redis but ther in DB");
             console.log(`Line subscribed`, user.isBlocked, user.isSubscribed);
 
-            if (!user.isBlocked) {
+            if (user.isBlocked) {
               console.log("user is blocke" + user.isBlocked);
               isBlocked = "1";
             } else {
@@ -119,7 +119,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
               isBlocked: isBlocked,
               calls: 1,
               isSubscribed: isSubscribed,
-              messages: JSON.stringify([{ role: "user", content: prompt }]),
+              messages: JSON.stringify([]),
             });
 
             await redisClient.expire(chatID, 86400);
@@ -224,7 +224,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
 
         //add messages to list in prep for AI call
         let callsMade = JSON.parse(await redisClient.hGet(chatID, "calls"));
-        callsMade = (await parseInt(callsMade)) + 1;
+        callsMade = parseInt(callsMade) + 1;
         await redisClient.hSet(chatID, "calls", callsMade);
         //let messages = JSON.parse(await redisClient.hGet(chatID, "messages"));
         //messages.push({ role: "user", content: prompt });
@@ -234,7 +234,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
 
         if (isSubscribed == "0") {
           console.log("user not subbed");
-          if (callsMade <= 3) {
+          if (callsMade < 3) {
             console.log("is under the quota");
             tokenLimit = 100;
           } else {
@@ -248,10 +248,12 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
         }
         // if user is subscribed
         else {
-          if (callsMade < 30) {
+          if (callsMade < 20) {
             console.log("and is subscribed so set limit to 500");
             //set token limits based on subscription
             tokenLimit = 400;
+          } else {
+            return;
           }
         }
 

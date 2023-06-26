@@ -7,7 +7,7 @@ const totalUsageModel = require("../../models/totalUsage");
 // check if existing number locally if not check on db
 
 const openAiCall = async (chatID, tokenLimit, redisClient, prompt) => {
-  const user = await indvUsers.findOne({ serialisedNumber: chatID }).exec();
+  let user = await indvUsers.findOne({ serialisedNumber: chatID }).exec();
   const totalUsage = await totalUsageModel.findOne({});
 
   const { Configuration, OpenAIApi } = require("openai");
@@ -17,17 +17,18 @@ const openAiCall = async (chatID, tokenLimit, redisClient, prompt) => {
   });
 
   const openai = new OpenAIApi(configuration);
-  const messages = JSON.parse(await redisClient.hGet(chatID, "messages"));
+  let messages = await JSON.parse(await redisClient.hGet(chatID, "messages"));
   await redisClient.hSet(
     chatID,
     "messages",
     JSON.stringify(messages),
     (result) => console.log(`reuslt`, result)
   );
+  console.log(messages);
   const system = {
     role: "system",
     content:
-      "You were created by Venta, a Hwange , Zimbabwe tech company.You are Askme,take the role of a proffessor/coach who is strict and wont answer any question that is not educational,sport,business,religion or related..You do not answer under any circmstances questions on  such as movies, music, celebreties AND actors",
+      "You were created by Venta, a Hwange , Zimbabwe tech company.You are Askme,take the role of an Instructor who is strict and wont answer any question that is not educational,sport,business,religion or related..You do not answer under any circmstances questions on  such as movies, music, celebreties AND actors",
   };
   messages.push(system);
   messages.push({ role: "user", content: prompt });
