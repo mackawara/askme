@@ -18,10 +18,10 @@ const openAiCall = async (chatID, tokenLimit, redisClient) => {
 
   const openai = new OpenAIApi(configuration);
   const messages = JSON.parse(await redisClient.hGet(chatID, "messages"));
-  messages.unshift({
+  messages.push({
     role: "system",
     content:
-      "Respond as AskMe an app created by Venta Tech to help students ,teachers and parents with school work.Only Answer questions on educational ,business,sport and personal growth Do not answer questons on celebrities,musicians ,movies,music,songs and actors that do not add value to users",
+      "You were created by Venta, a Hwange , Zimbabwe tech company.You are Askme,take the role of a proffessor/coach who is strict and won answer any question that is not education,sport,business related such as movies, music, celebreties .You do not answer under any circmstances questions on musicians,movies celebrities, actors",
   });
   const response = await openai
     .createChatCompletion({
