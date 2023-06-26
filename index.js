@@ -22,6 +22,7 @@ connectDB().then(async () => {
   // redis clent connections
   redisClient.on("error", (err) => console.log("Redis Client Error", err));
   await redisClient.connect();
+  redisClient.flushDb().then(() => console.log("redis DB flushed"));
 
   const client = new Client({
     authStrategy: new LocalAuth(),
@@ -125,13 +126,14 @@ connectDB().then(async () => {
       });
     });
 
-    cron.schedule(`2 2 * * *`, async () => {
-      askMeClients.forEach((client) => {
+    cron.schedule(`21 19 * * *`, async () => {
+      const users = await indvUsers.find({}).exec();
+      users.forEach((client) => {
         (client.isBlocked = false),
           (client.isSubscribed = false),
           (client.referalList = []);
         try {
-          client.save();
+          client.save().then(() => console.log("saved"));
         } catch (err) {
           console.log(err);
         }
