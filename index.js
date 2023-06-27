@@ -29,7 +29,7 @@ connectDB().then(async () => {
     puppeteer: {
       executablePath: process.env.EXECPATH,
       handleSIGINT: true,
-      headless: false,
+      headless: true,
       args: [
         "--log-level=3", // fatal only
         "--start-maximized",
