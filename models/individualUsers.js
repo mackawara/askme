@@ -9,6 +9,7 @@ const usersSchema = new mongoose.Schema({
   isBlocked: {
     type: Boolean,
     required: true,
+    default: false,
   },
   calls: { type: Number, required: true },
   number: {
@@ -30,6 +31,7 @@ const usersSchema = new mongoose.Schema({
   isSubscribed: {
     type: Boolean,
     required: true,
+    default: false,
   },
   totalTokens: {
     type: Number,
