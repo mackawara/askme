@@ -282,13 +282,16 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
         }
         // if user is subscribed
         else {
-          if (parseInt(JSON.parse(calls)) < 20) {
+          if (parseInt(JSON.parse(calls)) < 15) {
             console.log("and is subscribed so set limit to 500");
             //set token limits based on subscription
-            tokenLimit = 400;
+            tokenLimit = 260;
           } else {
             return;
           }
+        }
+        if (msgBody.length > 300) {
+          msg.reply("For best results avoid long messages");
         }
 
         //make opena API cal
@@ -300,7 +303,9 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
           redisClient,
           prompt
         );
-        msg.reply(`*AskMe* Your personal Tutor\n ${response}`);
+        msg.reply(
+          `*AskMe!*\n ${response}\n To download this as a word doc swipe this message to the right and reply with *createDoc*`
+        );
       }
     });
   }
