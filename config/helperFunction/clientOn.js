@@ -102,15 +102,24 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
               isSubscribed: "0",
               messages: JSON.stringify([]),
             });
+            await redisClient.expire(chatID, 86400);
           } else {
-            console.log("not found in redis but ther in DB");
-            console.log(`Line subscribed`, user.isBlocked, user.isSubscribed);
+            await redisClient
+              .set(`${chatID}shortTTL`, 1)
+              .then(async (result) => {
+                console.log(`short ttl`, result);
+              });
+            await redisClient.expire(`${chatID}shortTTL`, 30);
 
-            if (!user.isBlocked) {
-              isBlocked = "0";
-            } else {
-              console.log("user is blocke" + user.isBlocked);
+            console.log("not found in redis but ther in DB");
+            // console.log(`Line subscribed`, user.isBlocked, user.isSubscribed);
+
+            if (user.isBlocked) {
+              console.log("use is blocke in mongodb");
               isBlocked = "1";
+            } else {
+              console.log("user is not blocke" + user.isBlocked);
+              isBlocked = "0";
             }
 
             if (user.isSubscribed) {
@@ -124,17 +133,12 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
             console.log(isBlocked, isSubscribed);
             await redisClient.hSet(chatID, {
               isBlocked: isBlocked,
-              calls: 1,
+              calls: 0,
               isSubscribed: isSubscribed,
               messages: JSON.stringify([]),
             });
-
             await redisClient.expire(chatID, 86400);
           }
-          await redisClient.set(`${chatID}shortTTL`, 1).then(async (result) => {
-            console.log(`short ttl`, result);
-          });
-          await redisClient.expire(`${chatID}shortTTL`, 30);
         }
         //else if the user is already logged IN
         else {
@@ -155,6 +159,12 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
             msg.reply(
               `*Error*, you have made too many requests within a short space of time, Wait at least 1 minute!!`
             );
+            user.warnings++;
+            try {
+              user.save();
+            } catch (err) {
+              console.log(err);
+            }
             return;
           }
           //if found in redis DB
@@ -184,9 +194,10 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
             // for sending Broadcast messages
             const broadcast = msgBody.replace(/broadcast:/gi, "");
             const users = await usersModel.find().exec();
-            users.forEach((user) => {
+            users.forEach(async (user) => {
               try {
                 client.sendMessage(user.serialisedNumber, broadcast);
+                await timeDelay(Math.floor(Math.random() * 10) * 1000);
               } catch (err) {
                 console.log(err);
               }
@@ -219,7 +230,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
           }
           return;
         }
-        //Check if message has media
+        //Check if melissage has media
         if (msg.hasMedia) {
           msg.reply(
             "Our apologies, current version is not yet able to process media such as images and audio, please make a textual request"
@@ -242,19 +253,22 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
           return;
         }
 
-        //add messages to list in prep for AI call
-        let callsMade = await redisClient.hGet(chatID, "calls");
-        callsMade = parseInt(callsMade) + 1;
-        await redisClient.hSet(chatID, "calls", callsMade);
+        //aINCREASE THE COUNT
+        await redisClient.HINCRBY(chatID, "calls", 1);
+        const calls = await redisClient.hGet(chatID, "calls");
         //let messages = JSON.parse(await redisClient.hGet(chatID, "messages"));
         //messages.push({ role: "user", content: prompt });
 
         //for unsubscribed users check if they have exceeded daily limit of 3 calls
         const isSubscribed = await redisClient.hGet(chatID, "isSubscribed");
+        console.log(
+          `current call s are`,
+          await redisClient.hGet(chatID, "calls")
+        );
 
         if (isSubscribed == "0") {
           console.log("user not subbed");
-          if (callsMade < 3) {
+          if (parseInt(JSON.parse(calls)) <= 3) {
             console.log("is under the quota");
             tokenLimit = 100;
           } else {
@@ -268,7 +282,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
         }
         // if user is subscribed
         else {
-          if (callsMade < 20) {
+          if (parseInt(JSON.parse(calls)) < 20) {
             console.log("and is subscribed so set limit to 500");
             //set token limits based on subscription
             tokenLimit = 400;
@@ -286,7 +300,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
           redisClient,
           prompt
         );
-        msg.reply(response);
+        msg.reply(`*AskMe* Your personal Tutor\n ${response}`);
       }
     });
   }

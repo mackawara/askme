@@ -24,13 +24,14 @@ const openAiCall = async (chatID, tokenLimit, redisClient, prompt) => {
     JSON.stringify(messages),
     (result) => console.log(`reuslt`, result)
   );
-  console.log(messages);
+  //console.log(messages);
   const system = {
     role: "system",
     content:
-      "You are Askme,take the role of an Instructor who is strict and will only answer on educational,sport,business,religion or related issues",
+      "Take the role of AskMe and answer as a strict Tutor who only answers questions on educational,sport,business,religion or related issues. You strictly dont answer on movies,music, celebrities,relationships",
   };
   messages.push(system);
+  console.log(messages);
   messages.push({ role: "user", content: prompt });
   const response = await openai
     .createChatCompletion({
