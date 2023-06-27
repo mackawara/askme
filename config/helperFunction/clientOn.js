@@ -191,6 +191,8 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
                 console.log(err);
               }
             });
+
+            return;
           }
         }
 
