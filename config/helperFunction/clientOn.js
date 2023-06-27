@@ -42,6 +42,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
 
       let prompt = await msgBody.replace(/openAi:|createDoc/gi, "");
       //only use on direct messages
+      console.log(chatID, msgBody);
       if (!chat.isGroup && !msg.isStatus) {
         // if user is not already in
         const exists = await redisClient.exists(chatID);
@@ -95,15 +96,21 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
             } catch (err) {
               console.log(err);
             }
+            await redisClient.hSet(chatID, {
+              isBlocked: "0",
+              calls: 1,
+              isSubscribed: "0",
+              messages: JSON.stringify([]),
+            });
           } else {
             console.log("not found in redis but ther in DB");
             console.log(`Line subscribed`, user.isBlocked, user.isSubscribed);
 
-            if (user.isBlocked) {
+            if (!user.isBlocked) {
+              isBlocked = "0";
+            } else {
               console.log("user is blocke" + user.isBlocked);
               isBlocked = "1";
-            } else {
-              isBlocked = "0";
             }
 
             if (user.isSubscribed) {
@@ -173,6 +180,17 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
         if (chatID == process.env.ME) {
           if (await elevate(msg, redisClient)) {
             return;
+          } else if (msgBody.startsWith("broadcast:")) {
+            // for sending Broadcast messages
+            const broadcast = msgBody.replace(/broadcast:/gi, "");
+            const users = await usersModel.find().exec();
+            users.forEach((user) => {
+              try {
+                client.sendMessage(user.serialisedNumber, broadcast);
+              } catch (err) {
+                console.log(err);
+              }
+            });
           }
         }
 
@@ -223,7 +241,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
         }
 
         //add messages to list in prep for AI call
-        let callsMade = await redisClient.hGet(chatID, "calls")
+        let callsMade = await redisClient.hGet(chatID, "calls");
         callsMade = parseInt(callsMade) + 1;
         await redisClient.hSet(chatID, "calls", callsMade);
         //let messages = JSON.parse(await redisClient.hGet(chatID, "messages"));

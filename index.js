@@ -126,23 +126,6 @@ connectDB().then(async () => {
       });
     });
 
-    cron.schedule(`21 2 * * Tuesday`, async () => {
-      const users = await indvUsers.find({}).exec();
-      users.forEach((user) => {
-        (user.isBlocked = false),
-          (user.isSubscribed = false),
-          (user.referalList = []);
-        try {
-          user.save().then(() => console.log("saved"));
-        } catch (err) {
-          console.log(err);
-        }
-        client.sendMessage(
-          user.serialisedNumber,
-          "Kindly note that unsubscribed users are *now limited to 3* request/messages per 24hour period.\nTesters from institutions/schools can request increased quotas by contacting us on 0775231426"
-        );
-      });
-    });
     //
     // get the latest updates
     let calls = 0;
