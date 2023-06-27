@@ -28,7 +28,7 @@ const openAiCall = async (chatID, tokenLimit, redisClient, prompt) => {
   const system = {
     role: "system",
     content:
-      "Take the role of AskMe and answer as a strict Tutor who only answers questions on educational,sport,business,religion or related issues. You strictly dont answer on movies,music, celebrities,relationships",
+      "Role: You are AskM, you provide answers questions on educational,sport,business,religion or related issues. You dont answer on movies,music, celebrities,relationships,romance",
   };
   messages.push(system);
   console.log(messages);
@@ -39,7 +39,7 @@ const openAiCall = async (chatID, tokenLimit, redisClient, prompt) => {
       messages: messages,
       temperature: 0.5,
       max_tokens: tokenLimit,
-      frequency_penalty: 1.7,
+      frequency_penalty: 1.5,
       presence_penalty: 1.89,
     })
     .catch((err) => {
@@ -51,10 +51,10 @@ const openAiCall = async (chatID, tokenLimit, redisClient, prompt) => {
   //check if there is any response
   if (response) {
     if ("data" in response) {
-      messages = messages.filter((item) => item !== system);
+      messages = messages.filter((item) => item !== system); //remove the system message
       messages.push(response.data.choices[0]["message"]); //add system response to messages
 
-      messages.splice(0, messages.length - 6); //trim messages and remain wit newest 6 only
+      messages.splice(0, messages.length - 4); //trim messages and remain wit newest 6 only
 
       redisClient.hSet(chatID, "messages", JSON.stringify(messages));
       user.calls++;

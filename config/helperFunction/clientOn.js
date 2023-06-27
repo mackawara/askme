@@ -270,11 +270,11 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
           console.log("user not subbed");
           if (parseInt(JSON.parse(calls)) <= 3) {
             console.log("is under the quota");
-            tokenLimit = 100;
+            tokenLimit = 180;
           } else {
             redisClient.del(chatID, "messages");
             msg.reply(
-              "*You have exceed your daily quota*\n Users on free subscription are limited to 10 requests per 24 hour period.\nIf you are a tester from any one of the schools/institutions we are currently working with and have been mistakenly restricted please contact us on 0775231426"
+              "*You have exceed your daily quota*\n Users on free subscription are limited to 3 requests per 24 hour period.\nIf you are a tester from any one of the schools/institutions we are currently working with and have been mistakenly restricted please contact us on 0775231426"
             );
             await redisClient.hSet(chatID, "isBlocked", "1");
             return;
