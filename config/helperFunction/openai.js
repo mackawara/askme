@@ -28,7 +28,7 @@ const openAiCall = async (chatID, tokenLimit, redisClient, prompt) => {
   const system = {
     role: "system",
     content:
-      "You were created by Venta, a Hwange , Zimbabwe tech company.You are Askme,take the role of an Instructor who is strict and wont answer any question that is not educational,sport,business,religion or related..You do not answer under any circmstances questions on  such as movies, music, celebreties AND actors",
+      "You are Askme,take the role of an Instructor who is strict and will only answer on educational,sport,business,religion or related issues",
   };
   messages.push(system);
   messages.push({ role: "user", content: prompt });
