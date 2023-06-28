@@ -1,6 +1,7 @@
 const connectDB = require("./config/database");
 const createDoc = require("./config/helperFunction/docxCreator");
 const indvUsers = require("./models/individualUsers");
+const ReferalsModel = require("./models/referals");
 const totalUsage = require("./models/totalUsage");
 
 const qrcode = require("qrcode-terminal");
@@ -27,7 +28,7 @@ connectDB().then(async () => {
   const client = new Client({
     authStrategy: new LocalAuth(),
     puppeteer: {
-      executablePath: process.env.EXECPATH,
+      // executablePath: process.env.EXECPATH,
       handleSIGINT: true,
       headless: true,
       args: [
@@ -76,6 +77,35 @@ connectDB().then(async () => {
     //Helper Functions
 
     const cron = require("node-cron");
+    cron.schedule(`25 4 * * *`, async () => {
+      //redeem users
+      const redeemables = ReferalsModel.find({
+        isNowUser: true,
+        redeemed: false,
+      }).exec(); // array of referals that are now users but not yet redeemd
+      await indvUsers.find().forEach(async (user) => {
+        const tobeRedeemed = await redeemables.filter((item) => {
+          //find matching numbers
+          item.referingNumber == user.serialisedNumber;
+        });
+        if (tobeRedeemed.length > 3) {
+          //add 3 days
+          await redisClient.hSet(user.serialisedNumber, {
+            isBlocked: "0",
+            calls: 1,
+            isSubscribed: "1",
+            messages: JSON.stringify([]),
+          });
+          await redisClient.expire(chatID, 259200);
+
+          client.sendMessage(
+            user.serialisedNumber,
+            "Congratulations 3 of of your referals have been redeemed. You now have 2 days in which you can make up to 20 requests"
+          );
+        }
+      });
+    });
+
     cron.schedule(`42 17 * * 7`, async () => {
       const allChats = await client.getChats();
       allChats.forEach((chat) => chat.clearMessages());

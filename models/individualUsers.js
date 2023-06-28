@@ -61,6 +61,7 @@ const usersSchema = new mongoose.Schema({
     type: Array,
     required: false,
   },
+  
   costPerCall: { type: Number, required: false },
   costPerDay: { type: Number, required: false },
 });

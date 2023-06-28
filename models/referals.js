@@ -3,11 +3,15 @@ const { mongoose } = require("mongoose");
 const referalsSchema = new mongoose.Schema({
   referingNumber: {
     type: String,
-    required: trusted,
+    required: true,
+  },
+  redeemed: {
+    type: Boolean,
+    required: true,
   },
   nowUser: {
     type: Boolean,
-    required: true,
+    required: false,
   },
   targetNumber: {
     type: String,

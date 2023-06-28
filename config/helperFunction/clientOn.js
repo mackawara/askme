@@ -1,4 +1,5 @@
 const totalUsageModel = require("../../models/totalUsage");
+const ReferalsModel = require("../../models/referals");
 
 //const totalUsage = await totalUsageModel.findOne({}).exec();
 const isFlagged = require("./isFlagged");
@@ -63,7 +64,20 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
           // if contact is not already saved save to DB
           if (!user) {
             console.log(!user);
-            //check if the user is in the DB
+            //check if the user is in the referals
+            const referal = ReferalsModel.findOne({
+              targetSerialisedNumber: chatID,
+            });
+            //if it has been previously referred update to now User
+            if (referal) {
+              const referer = await referal.referingNumber;
+              ReferalsModel.updateOne(
+                { targetSerialisedNumber: chatID },
+                { $set: { isNowUser: true } }
+              ).then((result) => {
+                console.log("successfully updated");
+              });
+            }
             console.log(`${chatID}, was not found in the DB`);
             //save them to DB
             const newContact = new usersModel({
@@ -206,7 +220,12 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
             return;
           }
         }
-
+        // process referalls
+        const saveReferal = require("./saveReferal");
+        if (/referal|referral/.test(msgBody.slice(0, 6).toLowerCase())) {
+          msg.reply(saveReferal(msgBody, chatID));
+          return;
+        }
         // create docs
         if (
           /createDoc|create doc|Create doc/gi.test(msgBody.trim().toLowerCase())
