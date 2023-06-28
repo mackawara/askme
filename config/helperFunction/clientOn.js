@@ -268,9 +268,9 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
 
         if (isSubscribed == "0") {
           console.log("user not subbed");
-          if (parseInt(JSON.parse(calls)) <= 3) {
+          if (parseInt(JSON.parse(calls)) < 4) {
             console.log("is under the quota");
-            tokenLimit = 180;
+            tokenLimit = 150;
           } else {
             redisClient.del(chatID, "messages");
             msg.reply(
@@ -282,7 +282,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
         }
         // if user is subscribed
         else {
-          if (parseInt(JSON.parse(calls)) < 15) {
+          if (parseInt(JSON.parse(calls)) < 20) {
             console.log("and is subscribed so set limit to 500");
             //set token limits based on subscription
             tokenLimit = 260;
