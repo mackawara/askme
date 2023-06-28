@@ -1,7 +1,10 @@
+require("dotenv").config();
 const connectDB = require("./config/database");
 const createDoc = require("./config/helperFunction/docxCreator");
 const indvUsers = require("./models/individualUsers");
 const totalUsage = require("./models/totalUsage");
+const paynow=require("./paynow")
+paynow()
 
 const qrcode = require("qrcode-terminal");
 const {
@@ -14,7 +17,7 @@ const {
 
 //initialise redis
 const redisClient = createClient();
-require("dotenv").config();
+
 // connect to mongodb before running anything on the app
 connectDB().then(async () => {
   const { Client, LocalAuth, MessageMedia } = require("whatsapp-web.js");
