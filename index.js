@@ -28,7 +28,7 @@ connectDB().then(async () => {
   const client = new Client({
     authStrategy: new LocalAuth(),
     puppeteer: {
-      // executablePath: process.env.EXECPATH,
+     // executablePath: process.env.EXECPATH,
       handleSIGINT: true,
       headless: true,
       args: [
@@ -122,7 +122,7 @@ connectDB().then(async () => {
     client.setDisplayName("AskMe, the all knowing assistant");
 
     //mass messages
-    cron.schedule(`10 12 * * Fri`, async () => {
+    /*  cron.schedule(`10 12 * * Fri`, async () => {
       const broadcastMessage = [
         `Fantastic news! Our app has now upped the game with a brilliant feature that lets you save all your AI-generated notes, letters and resources.\n It's so easy - just chat with our smart AI-powered bot to refine your results, ask for shortening or further explanations if needed. \nAnd when everything is perfect, simply quote/reply to the message using *"createDoc"* as shown and voila!, you'll get a downloadable word docx file in no time.
       Be sure to test out this amazing new function today and let us know what you think on 0775231426. Get organized effortlessly like never before!`,
@@ -154,7 +154,7 @@ connectDB().then(async () => {
           console.log(err);
         }
       });
-    });
+    }); */
 
     //
     // get the latest updates
