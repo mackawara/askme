@@ -82,7 +82,7 @@ const openAiCall = async (chatID, tokenLimit, redisClient, prompt) => {
 
       return response.data.choices[0]["message"]["content"];
     } else {
-      return ` Error , request could not be processed, please try again later`;
+      return `Error , request could not be processed, please try again later`;
     }
   } else {
     totalUsage.errors++;

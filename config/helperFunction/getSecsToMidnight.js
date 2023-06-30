@@ -1,10 +1,14 @@
-const getSecsToMidNight = () => {
-  let now = new Date();
-  let msToMidnight =
-    ((now.getHours() * 60 + now.getMinutes()) * 60 + now.getSeconds()) * 1000 +
-    ((24 - now.getHours()) % 24);
-  console.log(msToMidnight);
-  //returns the seconds to midnight
-  return Math.floor(msToMidnight / 1000);
-};
-module.exports=getSecsToMidNight
+function getSecsToMidnight() {
+  const now = new Date(); // Get current date and time
+  const tomorrow = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate() + 1
+  ); // Set tomorrow's date
+
+  const millisecondsUntilMidnight = tomorrow - now; // Calculate milliseconds between now and midnight
+  const secondsUntilMidnight = Math.floor(millisecondsUntilMidnight / 1000); // Convert to seconds
+  console.log(secondsUntilMidnight);
+  return secondsUntilMidnight;
+}
+module.exports = getSecsToMidnight;

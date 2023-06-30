@@ -3,19 +3,28 @@ const ReferalsModel = require("../../models/referals");
 
 const saveReferal = async (msgBody, chatID, client) => {
   //remove the key word and spaces
-  console.log("save ref line 6");
-  const number = msgBody
+
+  let number = msgBody
     .replace(/referal|referral/gi, "")
     .replace(/\s/, "")
     .trim();
+
+  if (number.startsWith("+263")) {
+    console.log("does not start with 263");
+    number = number.replace(/\D/g, "").trim();
+    console.log(number);
+  } else if (number.startsWith("0")) {
+    number = number.replace("0", "263");
+    console.log(number);
+  }
   const numberSerialised = number + "@c.us";
   // we validate it as a genuine Zim number
-  console.log("save ef line 14");
   console.log(numberSerialised);
-  if (!/^(?:263)[7]\d{8}$/.test(number)) {
+  if (!/^(0|263)[7]\d{8}$/.test(number)) {
     console.log("number did not pass testt");
     return "The number is not a valid Zimbabwean mobile number . send the number in this format 263 773 111 111";
   }
+
   //check if number has already been added
   const user = await usersModel.findOne({ serialisedNumber: chatID }).exec();
   const existingUser = await usersModel
@@ -56,10 +65,12 @@ const saveReferal = async (msgBody, chatID, client) => {
       await user.save();
       client.sendMessage(
         numberSerialised,
-        `Hi ,\n Your friend with the number${chatID.slice(
-          -2,
-          -1
-        )} is already using AskMe the AI powered chatbot, the best thing since sliced bread. AskME answers all questions that you can think of, from grade 1 to University level... Just ask the question on this number \nYours \nAskME team`
+        `Hi ,\n Your friend with the number ${chatID
+          .replace("263", "0")
+          .slice(
+            0,
+            -5
+          )} is already using AskMe the AI powered chatbot, the best thing since sliced bread. AskME answers all questions that you can think of, from grade 1 to University level... Just ask the question on this number \nYours \nAskME team`
       );
       return `*Do not reply*\n Referral was successfully saved. Once you get 3 converted referrals you will get standard user prvildges for 2 days.You have referred number ${number} and AskMe team will send them an automated message to join more than 500 students that are already using AskMe.`;
 
