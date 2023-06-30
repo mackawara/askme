@@ -27,6 +27,6 @@ const referalsSchema = new mongoose.Schema({
   },
 });
 
-const ReferalsModel = mongoose.model("referalLis", referalsSchema);
+const ReferalsModel = mongoose.model("referals", referalsSchema);
 
 module.exports = ReferalsModel;

@@ -28,9 +28,9 @@ connectDB().then(async () => {
   const client = new Client({
     authStrategy: new LocalAuth(),
     puppeteer: {
-      // executablePath: process.env.EXECPATH,
+      executablePath: process.env.EXECPATH,
       handleSIGINT: true,
-      headless: true,
+      headless: false,
       args: [
         "--log-level=3", // fatal only
         "--start-maximized",
@@ -77,7 +77,7 @@ connectDB().then(async () => {
     //Helper Functions
 
     const cron = require("node-cron");
-    cron.schedule(`25 4 * * *`, async () => {
+    /*  cron.schedule(`9 1 * * *`, async () => {
       //redeem users
       const redeemables = ReferalsModel.find({
         isNowUser: true,
@@ -86,6 +86,7 @@ connectDB().then(async () => {
       await indvUsers.find().forEach(async (user) => {
         const tobeRedeemed = await redeemables.filter((item) => {
           //find matching numbers
+          
           item.referingNumber == user.serialisedNumber;
         });
         if (tobeRedeemed.length > 3) {
@@ -116,7 +117,10 @@ connectDB().then(async () => {
         }
       });
     });
-
+ */
+    cron.schedule(` 0 0 * * * `, async () => {
+      redisClient.flushDb();
+    });
     cron.schedule(`42 17 * * 7`, async () => {
       const allChats = await client.getChats();
       allChats.forEach((chat) => chat.clearMessages());
