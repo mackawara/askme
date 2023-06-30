@@ -1,7 +1,7 @@
 const usersModel = require("../../models/individualUsers");
 const ReferalsModel = require("../../models/referals");
 
-const saveReferal = async (msgBody, chatID) => {
+const saveReferal = async (msgBody, chatID, client) => {
   //remove the key word and spaces
   console.log("save ref line 6");
   const number = msgBody
@@ -46,19 +46,24 @@ const saveReferal = async (msgBody, chatID) => {
     });
     try {
       //save to the referals Document
-      newReferral.save().then((result) => {
-        console.log("referal saved");
-        if (user) {
-          user.referalList.push({
-            targetSerialisedNumber: numberSerialised,
-          });
-        }//save to users referal list
-        user.save(() => {
-          return `Please forward this to ${number}.You have referred number ${number} and AskMe team will send them an automated message to join more than 500 students that are already using AskMe. Tou use AskMe simply send whatever question you wish to get an answer.`;
+      await newReferral.save();
+      console.log("referal saved");
+      if (user) {
+        user.referalList.push({
+          targetSerialisedNumber: numberSerialised,
         });
+      } //save to users referal list
+      await user.save();
+      client.sendMessage(
+        numberSerialised,
+        `Hi ,\n Your friend with the number${chatID.slice(
+          -2,
+          -1
+        )} is already using AskMe the AI powered chatbot, the best thing since sliced bread. AskME answers all questions that you can think of, from grade 1 to University level... Just ask the question on this number \nYours \nAskME team`
+      );
+      return `*Do not reply*\n Referral was successfully saved. Once you get 3 converted referrals you will get standard user prvildges for 2 days.You have referred number ${number} and AskMe team will send them an automated message to join more than 500 students that are already using AskMe.`;
 
-        //save to the referrer
-      });
+      //save to the referrer
     } catch (err) {
       console.log(err);
       return "Error occured while processing the referal";

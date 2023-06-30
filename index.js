@@ -28,7 +28,7 @@ connectDB().then(async () => {
   const client = new Client({
     authStrategy: new LocalAuth(),
     puppeteer: {
-     // executablePath: process.env.EXECPATH,
+      // executablePath: process.env.EXECPATH,
       handleSIGINT: true,
       headless: true,
       args: [
@@ -89,10 +89,21 @@ connectDB().then(async () => {
           item.referingNumber == user.serialisedNumber;
         });
         if (tobeRedeemed.length > 3) {
-          //add 3 days
+          //account for the redemption
+          for (let index = 0; index < 2; index++) {
+            // redeem only 3
+            const referal = await tobeRedeemed[index];
+            referal.redeemed = true;
+            try {
+              referal.save(); //save to the
+            } catch (err) {
+              console.log(err);
+            }
+          }
+          //add 3 days to the user as
           await redisClient.hSet(user.serialisedNumber, {
             isBlocked: "0",
-            calls: 1,
+            calls: 0,
             isSubscribed: "1",
             messages: JSON.stringify([]),
           });

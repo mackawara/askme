@@ -80,6 +80,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
                 console.log("successfully updated");
               });
             }
+
             console.log(`${chatID}, was not found in the DB`);
             //save them to DB
             const newContact = new usersModel({
@@ -107,7 +108,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
                 );
               client.sendMessage(
                 serialisedNumber,
-                `Hi ${notifyName},thank you for using AskMe, the AI powered virtual assistant.\n As a free user you are limited to 3 requests/messages per 24 hour period.\n*How to use*\n1. *Simply* ask any question and wait for a response. For example you can ask "Explain the theory of relativity"or \n "Give me a step by step procedure of mounting an engine",if the response is incomplete you can just say "continue". Yes, you can chat to *AskMe* as you would to a human (*a super intelligent, all knowing human*) because *Askme* remembers topics that you talked about for the previous 30 minutes.\n\n What *Askme* cannot do\n1.Provide updates on current events (events after October 2021)\n2.Provide opinions on subjective things,\nWe hope you enjoy using the app. Please avoid making too many requests in short period of time, as this may slow down the app and cause your number to be blocked if warnings are not heeded. Your feedback is valued , please send suggestions to 0775231426`
+                `Hi ${notifyName},thank you for using AskMe, the AI powered virtual assistant.\n*Please Read* As a free user you are limited to 3 requests/messages per 24 hour period.\n*How to use*\n1. *Simply* ask any question and wait for a response. For example you can ask "Explain the theory of relativity"or \n "Give me a step by step procedure of mounting an engine",if the response is incomplete you can just say "continue". Yes, you can chat to *AskMe* as you would to a human (*a super intelligent, all knowing human*) because *Askme* remembers topics that you talked about for the previous 30 minutes.\n\n What *Askme* cannot do\n1.Provide updates on current events (events after October 2021)\n2.Provide opinions on subjective things,\nWe hope you enjoy using the app. Please avoid making too many requests in short period of time, as this may slow down the app and cause your number to be blocked if warnings are not heeded. Your feedback is valued , please send suggestions to 0775231426`
               );
             } catch (err) {
               console.log(err);
@@ -189,7 +190,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
           //  check if blocked
           if ((await redisClient.hGet(chatID, "isBlocked")) == "1") {
             msg.reply(
-              "You are currently blocked ,perhaps you have exceeded your daily quota, Please try again  in 24 hours.\n You are only allowed 3 requests per day, use them sparingly.Repeated attempts will result in suspension or permanent blocking.Participating tester can request for increased quotas on this number 0775231426"
+              "*Do not reply to this message* You are currently blocked ,perhaps you have exceeded your daily quota, Please try again  in 24 hours.\n You are only allowed 3 requests per day, use them sparingly.Repeated attempts will result in suspension or permanent blocking.Participating tester can request for increased quotas on this number 0775231426"
             );
             return;
           }
@@ -227,11 +228,11 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
         console.log(msgBody.slice(0, 8).toLowerCase().trim());
         if (/referal|referral/.test(msgBody.slice(0, 8).toLowerCase().trim())) {
           console.log("processing ref");
-          const res = await saveReferal(msgBody, chatID);
+          const res = await saveReferal(msgBody, chatID,client);
           msg.reply(res);
           return;
         }
-        return;
+        
         // create docs
         if (
           /createDoc|create doc|Create doc/gi.test(msgBody.trim().toLowerCase())
@@ -299,7 +300,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
           } else {
             redisClient.del(chatID, "messages");
             msg.reply(
-              "*You have exceed your daily quota*\n Users on free subscription are limited to 3 requests per 24 hour period.\nIf you are a tester from any one of the schools/institutions we are currently working with and have been mistakenly restricted please contact us on 0775231426"
+              "*Do not reply*\n You have exceed your daily quota\n Users on free subscription are limited to 3 requests per 24 hour period.\nIf you are a tester from any one of the schools/institutions we are currently working with and have been mistakenly restricted please contact us on our official number"
             );
             await redisClient.hSet(chatID, "isBlocked", "1");
             return;
