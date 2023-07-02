@@ -344,7 +344,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
           return;
         } else {
           msg.reply(
-            `*${randomAdvert()}*\n\n${response}\n \n**Unlock knowledge, AskMe!`
+            `*${randomAdvert()}*\n\n${response}\n \n*Unlock knowledge, AskMe!*`
           );
         }
       }
