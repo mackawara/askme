@@ -64,7 +64,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
           let serialisedNumber, notifyName, number;
           serialisedNumber = await contact.id._serialized;
           notifyName = await contact.pushname;
-          number = await contact.number;
+          number = chatID.slice(0, 12);
           console.log(notifyName, number, serialisedNumber);
           let isSubscribed, isBlocked;
           // if contact is not already saved save to DB
