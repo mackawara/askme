@@ -120,6 +120,11 @@ connectDB().then(async () => {
  */
     cron.schedule(` 0 0 * * * `, async () => {
       redisClient.flushDb();
+      //set Status
+      const randomStatus = require("./assets/statuses");
+      client.setStatus(randomStatus());
+      client.setStatus(randomStatus());
+      client.setStatus(randomStatus());
     });
     cron.schedule(`42 17 * * 7`, async () => {
       const allChats = await client.getChats();
