@@ -22,7 +22,7 @@ const saveReferal = async (msgBody, chatID, client) => {
   console.log(numberSerialised);
   if (!/^(0|263)[7]\d{8}$/.test(number)) {
     console.log("number did not pass testt");
-    return "The number is not a valid Zimbabwean mobile number . send the number in this format 263 773 111 111";
+    return "For your referral to be saved it has to be in the right format as in the example below. *Do not send a contact*\n\nPlease send a valid Zimbabwean mobile number . Send the your referal message like this \n referal 263773111111";
   }
 
   //check if number has already been added
