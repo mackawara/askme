@@ -318,6 +318,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
             //set token limits based on subscription
             tokenLimit = 260;
           } else {
+            msg.reply("Upgrade to standard user by subscribing");
             return;
           }
         }
@@ -343,7 +344,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
           return;
         } else {
           msg.reply(
-            `*Unlock knowledge, AskMe!*\n${response}\n \n${randomAdvert()}`
+            `*${randomAdvert()}*\n\n${response}\n \n**Unlock knowledge, AskMe!`
           );
         }
       }

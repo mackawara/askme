@@ -33,6 +33,9 @@ const openAiCall = async (chatID, tokenLimit, redisClient, prompt) => {
   messages.push(system);
   console.log(messages);
   messages.push({ role: "user", content: prompt });
+  setTimeout(async()=>{
+
+  },3000)
   const response = await openai
     .createChatCompletion({
       model: "gpt-3.5-turbo",
