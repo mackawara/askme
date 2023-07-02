@@ -9,7 +9,7 @@ const referalsSchema = new mongoose.Schema({
     type: Boolean,
     required: true,
   },
-  nowUser: {
+  isNowUser: {
     type: Boolean,
     required: false,
   },
