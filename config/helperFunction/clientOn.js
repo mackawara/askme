@@ -62,9 +62,10 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
           //means in each conversation there is only 1 DB check meaning subsequent calls are faster
 
           let serialisedNumber, notifyName, number;
-          serialisedNumber = contact.id._serialized;
-          notifyName = contact.pushname;
-          number = contact.number;
+          serialisedNumber = await contact.id._serialized;
+          notifyName = await contact.pushname;
+          number = await contact.number;
+          console.log(notifyName, number, serialisedNumber);
           let isSubscribed, isBlocked;
           // if contact is not already saved save to DB
           if (!user) {
@@ -89,8 +90,8 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
             const newContact = new usersModel({
               date: new Date().toISOString().slice(0, 10),
               isBlocked: false,
-              number: number,
               notifyName: notifyName,
+              number: number,
               serialisedNumber: serialisedNumber,
               isSubscribed: false,
               referalList: [],
@@ -115,7 +116,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
               );
             } catch (err) {
               client.sendMessage(me, "Save new user failed");
-              console.log(err);
+              console.log(err.errors);
             }
             await redisClient.hSet(chatID, {
               isBlocked: "0",
