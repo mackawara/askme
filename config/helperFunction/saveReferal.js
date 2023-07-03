@@ -70,7 +70,12 @@ const saveReferal = async (msgBody, chatID, client) => {
           .slice(
             0,
             -5
-          )} is already using AskMe the AI powered chatbot, the best thing since sliced bread. AskME answers all questions that you can think of, from grade 1 to University level... Just ask the question on this number \nYours \nAskME team`
+          )} is already using AskMe the AI powered study chatbot and has referred the app to you, the best thing since sliced bread. AskME answers all questions that you can think of, from grade 1 to University level... Just ask the question on here https://wa.me/263711489602 and join the group for updates https://chat.whatsapp.com/I5RNx9PsfYjE0NV3vNijk3.\n\n *if ${chatID
+          .replace("263", "0")
+          .slice(
+            0,
+            -5
+          )} is not yur friend/classmate/colleague and you do not wish to use AI in your study or work , simply ignore this message , you will not receive any other message!!* \nYours \nAskME team`
       );
       return `*Do not reply*\n Referral was successfully saved. Once you get 3 converted referrals you will get standard user prvildges for 2 days.You have referred number ${number} and AskMe team will send them an automated message to join more than 500 students that are already using AskMe.`;
 
