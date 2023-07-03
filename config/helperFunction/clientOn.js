@@ -347,9 +347,13 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
           msg.reply(response);
           return;
         } else {
-          msg.reply(
-            `*${randomAdvert()}*\n\n${response}\n \n*Unlock knowledge, AskMe!*`
-          );
+          if (chatID == "263775231426@c.us" || isSubscribed) {
+            msg.reply(response);
+          } else {
+            msg.reply(
+              `*${randomAdvert()}*\n\n${response}\n \n*Unlock knowledge, AskMe!*`
+            );
+          }
         }
       }
     });
