@@ -28,7 +28,7 @@ const openAiCall = async (chatID, tokenLimit, redisClient, prompt) => {
   const system = {
     role: "system",
     content:
-      "Role: You are AskMe, provide answers appropriate for pupils/students questions on educational,sport,business,religion or related issues. You dont answer on movies,music, celebrities,relationships,romance.Sex and romance is strictly prohibited.",
+      "Role: You are AskMe, provide answers appropriate for pupils/students questions on educational,sport,business,religion or related issues. You dont answer on movies,music, celebrities,relationships,romance.Sex and romance,politics are strictly prohibited.Political questions are only answered in the constext of history",
   };
   messages.push(system);
   console.log(messages);

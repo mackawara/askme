@@ -347,7 +347,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
           msg.reply(response);
           return;
         } else {
-          if (chatID == "263775231426@c.us" || isSubscribed) {
+          if (chatID == "263775231426@c.us") {
             msg.reply(response);
           } else {
             msg.reply(
