@@ -36,6 +36,7 @@ const usersSchema = new mongoose.Schema({
   subTTL: {
     type: Number,
     required: false,
+    default: 30,
   },
   totalTokens: {
     type: Number,
@@ -94,7 +95,7 @@ usersSchema.methods.calculateCostPerDay = function () {
   return this.save();
 };
 usersSchema.methods.calculateSubTTL = function () {
-  this.subScriptionTTL = this.subScriptionTTL - 1;
+  this.subTTL = this.subTTL - 1;
 
   return this.save();
 };
