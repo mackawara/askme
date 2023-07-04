@@ -41,7 +41,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
       const user = await usersModel
         .findOne({ serialisedNumber: chatID })
         .exec();
-      let tokenLimit = 150;
+      let tokenLimit = 140;
 
       const expTime = getSecsToMidNight();
       //  console.log(`the user ${user}`);
@@ -195,7 +195,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
           //  check if blocked
           if ((await redisClient.hGet(chatID, "isBlocked")) == "1") {
             msg.reply(
-              "Do not reply to this message Sorry , you have used up your quota,Try again tommorow You can gain standard user priviledges ( with up to 20 requests per day) if you refer 3 people to use AskMe\nJust send the number *referal number*\n For example \n referal 26377111111\n . Join our group to find out how it works.  https://chat.whatsapp.com/I5RNx9PsfYjE0NV3vNijk3 "
+              "*Do not reply to this message* \nSorry , you have used up your quota,Subscribe to get standard user privileges or Try again tommorow!! You can gain standard user priviledges ( with up to 20 requests per day) if you refer 3 people to use AskMe\nJust send the number *referal number*\n For example \n referal 26377111111\n . Join our group to find out how it works.  https://chat.whatsapp.com/I5RNx9PsfYjE0NV3vNijk3 "
             );
             return;
           }
@@ -303,13 +303,13 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
 
         if (isSubscribed == "0") {
           console.log("user not subbed");
-          if (parseInt(JSON.parse(calls)) < 5) {
+          if (parseInt(JSON.parse(calls)) < 3) {
             console.log("is under the quota");
             tokenLimit = 150;
           } else {
             redisClient.del(chatID, "messages");
             msg.reply(
-              "*Do not reply*\n You have exceed your daily quota\n Users on free subscription are limited to 3 requests per 24 hour period.\nTo get additional requests you can promote AskMe by sending *referal + number of a friend* whom you think can benefit from using AI in their study. Once you gain 3 converted referalls you will gain 2 days as a standard user with less restrictions"
+              "*Do not reply*\n You have exceed your daily quota\n Users on free subscription are now limited to 2,subscribe to get more tokens.\nTo get additional requests you can promote AskMe by sending *referal + number of a friend* whom you think can benefit from using AI in their study. Once you gain 3 converted referalls you will gain 2 days as a standard user with less restrictions"
             );
             await redisClient.hSet(chatID, "isBlocked", "1");
             return;
