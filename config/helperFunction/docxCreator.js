@@ -5,6 +5,7 @@ const fs = require("fs");
 const path = require("path");
 
 const createDoc = async (contentBody, chatID, timestamp) => {
+  const name = contentBody.slice(26, 51);
   // Load the docx file as binary content
   const content = fs.readFileSync(
     path.resolve(__dirname, "input.docx"),
@@ -34,19 +35,14 @@ const createDoc = async (contentBody, chatID, timestamp) => {
   fs.writeFileSync(
     path.resolve(
       __dirname,
-      `../../assets/${chatID}_${timestamp}_createdbyAskMe.docx`
+      `../../assets/${name}_${timestamp}_createdbyAskMe.docx`
     ),
     buf
   ); //the filename identies the chatID to originate the message ant he time stap
-  console.log(
-    path.resolve(
-      __dirname,
-      `../../assets/${chatID}_${timestamp}_createdbyAskMe.docx`
-    )
-  );
+
   return path.resolve(
     __dirname,
-    `../../assets/${chatID}_${timestamp}_createdbyAskMe.docx`
+    `../../assets/${name}_${timestamp}_createdbyAskMe.docx`
   );
 };
 module.exports = createDoc;

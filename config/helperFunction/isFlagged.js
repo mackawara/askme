@@ -1,12 +1,26 @@
 const isFlagged = (string) => {
-  string.split(" ").forEach(async (word) => {
-    const keywords = {
-      flags: ["porn", "xxx", "LGBT", "gay", "games", "movies"],
-    };
-
-    if (keywords.flags.includes(word)) {
-      return true;
-    } else return false;
+  const keywords = [
+    "porn",
+    "xxx",
+    "LGBT",
+    "movies",
+    "boyfriend",
+    "girlfirend",
+    "my bae",
+    "sex",
+    "sexual",
+  ];
+  let flagged = [];
+  keywords.forEach((word) => {
+    if (string.includes(word)) {
+      flagged.push(word);
+    }
   });
+  if (flagged.length >= 1) {
+    console.log;
+    return true;
+  } else {
+    return false;
+  }
 };
 module.exports = isFlagged;
