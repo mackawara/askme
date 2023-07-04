@@ -124,6 +124,7 @@ connectDB().then(async () => {
       const subscribed = await indvUsers.find({ isSubscribed: true });
       (await subscribed).forEach(async (subscriber) => {
         await subscriber.calculateSubTTL();
+
         const ttL = await subscriber.subTTL;
         const serialisedNumber = await subscriber.serialisedNumber;
         console.log(ttL);
