@@ -76,12 +76,12 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
             //if it has been previously referred update to now User
             if (referal) {
               const referer = await referal.referingNumber;
-              ReferalsModel.findOne(
-                { targetSerialisedNumber: chatID },
-                { $set: { isNowUser: true } }
-              ).then((result) => {
-                console.log("successfully updated");
-              });
+              try {
+                referal.set({ isNowUser: user });
+                referal.save();
+              } catch (err) {
+                console.log(err);
+              }
             }
 
             console.log(`${chatID}, was not found in the DB`);
@@ -307,7 +307,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
           console.log("user not subbed");
           if (parseInt(JSON.parse(calls)) < 3) {
             console.log("is under the quota");
-            tokenLimit = 150;
+            tokenLimit = 125;
           } else {
             redisClient.del(`${chatID}messages`, "messages");
             msg.reply(
