@@ -290,7 +290,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
 
         //systemoffline message
         msg.reply(
-          "System is currently offline, We will update once it is back on, In the meantime you can still download MS word docs from AskMe_AI and make referals, If you dont know how to do it checkout our demonstration here https://www.tiktok.com/@askme_ai/video/7250351673472830726?is_from_webapp=1&sender_device=pc&web_id=7250158901420410374.\n *Do not send any more messages before we update*"
+          "System is currently offline, We will update on the group once it is back on,Join here https://chat.whatsapp.com/I5RNx9PsfYjE0NV3vNijk3 In the meantime you can still download MS word docs from AskMe_AI and make referals, If you dont know how to do it checkout our demonstration here https://www.tiktok.com/@askme_ai/video/7250351673472830726?is_from_webapp=1&sender_device=pc&web_id=7250158901420410374.\n *Do not send any more messages before we update*"
         );
         return;
         //aINCREASE THE COUNT
@@ -301,10 +301,6 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
 
         //for unsubscribed users check if they have exceeded daily limit of 3 calls
         const isSubscribed = await redisClient.hGet(chatID, "isSubscribed");
-        console.log(
-          `current call s are`,
-          await redisClient.hGet(chatID, "calls")
-        );
 
         if (isSubscribed == "0") {
           console.log("user not subbed");
@@ -363,7 +359,6 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
       }
     });
   }
-  //run when group is left
 };
 
 module.exports = clientOn;
