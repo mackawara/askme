@@ -305,7 +305,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
           console.log("user not subbed");
           if (parseInt(JSON.parse(calls)) < 3) {
             console.log("is under the quota");
-            tokenLimit = 150;
+            tokenLimit = 120;
           } else {
             redisClient.del(chatID, "messages");
             msg.reply(
@@ -326,8 +326,12 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
             return;
           }
         }
-        if (msgBody.length > 300) {
-          msg.reply("For best results avoid long messages");
+
+        if (msgBody.length > 300 && isSubscribed == "0") {
+          msg.reply(
+            "Your message is too long. Upgrade to subscription service if you want longer scope and higher quotas. You can break it down into smaller bits or summarise. "
+          );
+          return;
         }
 
         //make opena API cal
