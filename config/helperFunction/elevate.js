@@ -13,7 +13,7 @@ const elevate = async (msg, chatID, redisClient) => {
       await indvUsers
         .updateOne(
           { serialisedNumber: number },
-          { $set: { isSubscribed: true, isBlocked: false } }
+          { $set: { isSubscribed: true, subTTL: 2 } }
         )
         .then((result) => {
           console.log(result);
@@ -22,7 +22,7 @@ const elevate = async (msg, chatID, redisClient) => {
             isBlocked: "0",
             isSubscribed: "1",
           });
-          redisClient.expire(number, 86400);
+          redisClient.expire(number, 176800);
           msg.reply(`${number}, is now elevated`);
         });
     }
