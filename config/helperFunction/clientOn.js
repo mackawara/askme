@@ -292,6 +292,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
         msg.reply(
           "System is currently offline, We will update once it is back on, In the meantime you can still download MS word docs from AskMe_AI and make referals, If you dont know how to do it checkout our demonstration here https://www.tiktok.com/@askme_ai/video/7250351673472830726?is_from_webapp=1&sender_device=pc&web_id=7250158901420410374.\n *Do not send any more messages before we update*"
         );
+        return;
         //aINCREASE THE COUNT
         await redisClient.HINCRBY(chatID, "calls", 1);
         const calls = await redisClient.hGet(chatID, "calls");
