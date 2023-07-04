@@ -28,7 +28,7 @@ connectDB().then(async () => {
   const client = new Client({
     authStrategy: new LocalAuth(),
     puppeteer: {
-      // executablePath: process.env.EXECPATH,
+      executablePath: process.env.EXECPATH,
       handleSIGINT: true,
       headless: true,
       args: [
@@ -118,8 +118,34 @@ connectDB().then(async () => {
       });
     });
  */
-    cron.schedule(` 0 0 * * * `, async () => {
-      redisClient.flushDb();
+
+    cron.schedule(` 5 2 * * * `, async () => {
+      // expireSubs after 1 mmonth
+      const subscribed = await indvUsers.find({ isSubscribed: true });
+      (await subscribed).forEach(async (subscriber) => {
+        await subscriber.calculateSubTTL();
+        const ttL = await subscriber.subTTL;
+        const serialisedNumber = await subscriber.serialisedNumber;
+        console.log(ttL);
+        if (ttL < 0) {
+          subscriber.set({ isSubscribed: false });
+          client.sendMessage(
+            serialisedNumber,
+            `Hi ${subscriber.notifyName}, your subscription has expired. Please renew here bit.ly/Askme_ai to continue using AskMe_AI`
+          );
+        } else if (ttL < 2) {
+          client.sendMessage(
+            serialisedNumber,
+            `Hi ${subscriber.notifyName}\n Your subscribtion to AskMe expires within the next 24 hours, \nPlease renew here bit.ly/Askme_ai to continue using AskMe`
+          );
+        } else if (ttL % 7 == 0) {
+          //
+          client.sendMessage(
+            serialisedNumber,
+            `Hey there, ${subscriber.notifyName}! Rise and shine to a world of knowledge with AskMe-AI. You've got ${ttL} days left on your standard subscription, giving you 25 chances to expand your mind through the power of AI education.Let's make every request count!`
+          );
+        }
+      });
       //set Status
       const randomStatus = require("./assets/statuses");
       client.setStatus(randomStatus());

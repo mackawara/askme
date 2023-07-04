@@ -33,6 +33,10 @@ const usersSchema = new mongoose.Schema({
     required: true,
     default: false,
   },
+  subTTL: {
+    type: Number,
+    required: false,
+  },
   totalTokens: {
     type: Number,
     required: false,
@@ -61,7 +65,7 @@ const usersSchema = new mongoose.Schema({
     type: Array,
     required: false,
   },
-  
+
   costPerCall: { type: Number, required: false },
   costPerDay: { type: Number, required: false },
 });
@@ -86,6 +90,11 @@ usersSchema.methods.calculateCostPerCall = function () {
 };
 usersSchema.methods.calculateCostPerDay = function () {
   this.costPerDay = this.costPerCall * this.callsPerDay;
+
+  return this.save();
+};
+usersSchema.methods.calculateSubTTL = function () {
+  this.subScriptionTTL = this.subScriptionTTL - 1;
 
   return this.save();
 };
