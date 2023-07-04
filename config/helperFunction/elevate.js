@@ -17,13 +17,12 @@ const elevate = async (msg, chatID, redisClient) => {
         )
         .then((result) => {
           console.log(result);
-          redisClient.hSet(chatID, {
+          redisClient.hSet(number, {
             calls: 0,
             isBlocked: "0",
             isSubscribed: "1",
-            messages: JSON.stringify([]),
           });
-          redisClient.expire(chatID, 86400);
+          redisClient.expire(number, 86400);
           msg.reply(`${number}, is now elevated`);
         });
     }

@@ -17,8 +17,7 @@ const ignorePatterns =
 //helper Functions
 const getSecsToMidNight = require("./getSecsToMidnight");
 const isSystemNotBusy = require("./isSystemNotBusy");
-
-let messages = [];
+const processSub = require("./processSub");
 
 const timeDelay = (ms) => new Promise((res) => setTimeout(res, ms));
 const clientOn = async (client, arg1, redisClient, MessageMedia) => {
@@ -50,7 +49,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
       //only use on direct messages
       console.log(chatID, msgBody);
       if (!chat.isGroup && !msg.isStatus) {
-        // if user is not already in
+        // if user is not already in Redis
         const exists = await redisClient.exists(chatID);
         console.log(`does exists `, await exists);
         //check the redis DB if there is an entry from the number
@@ -101,6 +100,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
               completionTokens: 0,
               tokensPerCall: 0,
               costPerCall: 0,
+              subTTL: 30,
               costPerDay: 0,
               callsPerDay: 0,
               warnings: 0,
@@ -112,7 +112,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
               client.sendMessage(me, "New user added  " + chatID);
               client.sendMessage(
                 serialisedNumber,
-                `Hi ${notifyName},thank you for using AskMe, the AI powered virtual study assistant.\n Join our group to stay up to date https://chat.whatsapp.com/I5RNx9PsfYjE0NV3vNijk3 \n*Please Read* As a free user you are limited to 3 requests/messages per 24 hour period.\n*How to use*\n1. *Simply* ask any question and wait for a response. For example you can ask "Explain the theory of relativity"or \n "Give me a step by step procedure of mounting an engine",if the response is incomplete you can just say "continue". Yes, you can chat to *AskMe* as you would to a human (*a super intelligent, all knowing human*) because *Askme* remembers topics that you talked about for the previous 30 minutes.\n\n What *Askme* cannot do\n1.Provide updates on current events (events after October 2021)\n2.Provide opinions on subjective things,\nWe hope you enjoy using the app. Please avoid making too many requests in short period of time, as this may slow down the app and cause your number to be blocked if warnings are not heeded. If your refer 3 people that eventually become users of AskME you fet additional usage priviledges simply send referal and their number e.g referal 263774111111`
+                `Hi ${notifyName},thank you for using AskMe, the AI powered virtual study assistant.\n Join our group to stay up to date https://chat.whatsapp.com/I5RNx9PsfYjE0NV3vNijk3 \n*Please Read* As a free user you are limited to 3 requests/messages per 24 hour period.\n Subscribe here https://bit.ly/askME_AI_payment to upgrade to 25 messages per day and longer, more complete messages\n*How to use*\n1. *Simply* ask any question and wait for a response. For example you can ask "Explain the theory of relativity"or \n "Give me a step by step procedure of mounting an engine",if the response is incomplete you can just say "continue". Yes, you can chat to *AskMe* as you would to a human (*a super intelligent, all knowing human*) because *Askme* remembers topics that you talked about for the previous 30 minutes.\n\n What *Askme* cannot do\n1.Provide updates on current events (events after October 2021)\n2.Provide opinions on subjective things,\nWe hope you enjoy using the app. Please avoid making too many requests in short period of time, as this may slow down the app and cause your number to be blocked if warnings are not heeded. If your refer 3 people that eventually become users of AskME you fet additional usage priviledges simply send referal and their number e.g referal 263774111111`
               );
             } catch (err) {
               client.sendMessage(me, "Save new user failed");
@@ -122,8 +122,8 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
               isBlocked: "0",
               calls: 0,
               isSubscribed: "0",
-              messages: JSON.stringify([]),
-            });
+            }); //
+
             await redisClient.expire(chatID, expiryTime);
           } else {
             await redisClient
@@ -157,7 +157,6 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
               isBlocked: isBlocked,
               calls: 0,
               isSubscribed: isSubscribed,
-              messages: JSON.stringify([]),
             });
             await redisClient.expire(chatID, expiryTime);
           }
@@ -228,6 +227,9 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
             });
 
             return;
+          } else if (msgBody.startsWith("processSub:")) {
+            processSub(msg, client, redisClient);
+            return;
           }
         }
         // process referalls
@@ -297,32 +299,34 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
         //for unsubscribed users check if they have exceeded daily limit of 3 calls
         const isSubscribed = await redisClient.hGet(chatID, "isSubscribed");
         console.log(
-          `current call s are`,
+          `current calls are`,
           await redisClient.hGet(chatID, "calls")
         );
-
+        //if user is not sunscribed
         if (isSubscribed == "0") {
           console.log("user not subbed");
           if (parseInt(JSON.parse(calls)) < 3) {
             console.log("is under the quota");
-            tokenLimit = 120;
+            tokenLimit = 150;
           } else {
-            redisClient.del(chatID, "messages");
+            redisClient.del(`${chatID}messages`, "messages");
             msg.reply(
-              "*Do not reply*\n You have exceed your daily quota\n Users on free subscription are now limited to 2,subscribe to get more tokens.\nTo get additional requests you can promote AskMe by sending *referal + number of a friend* whom you think can benefit from using AI in their study. Once you gain 3 converted referalls you will gain 2 days as a standard user with less restrictions"
+              "*To continue, Click here to subscribe* \n https://bit.ly/askME_AI_payment . \nStandard subcription costs 12000 Ecocash\n\n Standard users get the following \n \n*25 requests per month*\n*Access to advanced features such as image generation*\n *Longer and more complete answers*\n *No adverts*  \n\nTo get additional requests on a free tier you can promote AskMe by sending *referal + number of a friend* whom you think can benefit from using AI in their study. Once you gain 3 converted referalls you will gain 2 days as a standard user with less restrictions"
             );
             await redisClient.hSet(chatID, "isBlocked", "1");
             return;
           }
         }
         // if user is subscribed
-        else {
-          if (parseInt(JSON.parse(calls)) < 20) {
+        else if (isSubscribed == "1") {
+          if (parseInt(JSON.parse(calls)) < 26) {
             console.log("and is subscribed so set limit to 500");
             //set token limits based on subscription
-            tokenLimit = 260;
+            tokenLimit = 300;
           } else {
-            msg.reply("Upgrade to standard user by subscribing");
+            msg.reply(
+              "*Do not reply*You have exceeded your quota.Your subscription has a total of 25 requests per day. If you ne"
+            );
             return;
           }
         }
@@ -333,6 +337,8 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
           );
           return;
         }
+
+        //check if there is messages
 
         //make opena API cal
         const openAiCall = require("./openai");
@@ -345,13 +351,15 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
         );
         if (
           response ==
-          "Error , request could not be processed, please try again later"
+            "Error , request could not be processed, please try again later" ||
+          response ==
+            "I can only continue based on previous 3 messages if they were made within the last 3 minutes"
         ) {
           redisClient.HINCRBY(chatID, "calls", -1);
           msg.reply(response);
           return;
         } else {
-          if (chatID == "263775231426@c.us") {
+          if (chatID == "263775231426@c.us" || isSubscribed == "1") {
             msg.reply(response);
           } else {
             msg.reply(

@@ -17,9 +17,23 @@ const openAiCall = async (chatID, tokenLimit, redisClient, prompt) => {
   });
 
   const openai = new OpenAIApi(configuration);
-  let messages = await JSON.parse(await redisClient.hGet(chatID, "messages"));
+  const messagesExists = await redisClient.exists(`${chatID}messages`);
+  //if there are no current messages
+  if (!messagesExists) {
+    await redisClient.hSet(`${chatID}messages`, {
+      messages: JSON.stringify([]),
+    });
+    // await redisClient.expire(`${chatID}messages`,300)
+  }
+
+  let messages = await JSON.parse(
+    await redisClient.hGet(`${chatID}messages`, "messages")
+  );
+  if (/continue/gi.test(prompt) && messages == []) {
+    return "I can only continue based on previous 3 messages if they were made within the last 3 minutes";
+  }
   await redisClient.hSet(
-    chatID,
+    `${chatID}messages`,
     "messages",
     JSON.stringify(messages),
     (result) => console.log(`reuslt`, result)
@@ -28,7 +42,7 @@ const openAiCall = async (chatID, tokenLimit, redisClient, prompt) => {
   const system = {
     role: "system",
     content:
-      "Role: You are AskMe, provide answers appropriate for pupils/students questions on educational,sport,business,religion or related issues. You dont answer on movies,music, celebrities,relationships,romance.Sex and romance,politics are strictly prohibited.Political questions are only answered in the constext of history",
+      "Role: You are AskMe created by Mac Kawara (Venta) specifically for students/teachers, provide answers appropriate for education/self improvement or related issues. You dont answer on movies,music, celebrities,relationships,romance.Sex and romance,politics are strictly prohibited.Political questions are only answered in the constext of history",
   };
   messages.push(system);
   console.log(messages);
@@ -55,9 +69,14 @@ const openAiCall = async (chatID, tokenLimit, redisClient, prompt) => {
       messages = messages.filter((item) => item !== system); //remove the system message
       messages.push(response.data.choices[0]["message"]); //add system response to messages
 
-      messages.splice(0, messages.length - 4); //trim messages and remain wit newest 6 only
+      messages.splice(0, messages.length - 6); //trim messages and remain wit newest 6 only
 
-      redisClient.hSet(chatID, "messages", JSON.stringify(messages));
+      redisClient.hSet(
+        `${chatID}messages`,
+        "messages",
+        JSON.stringify(messages)
+      );
+      redisClient.expire(`${chatID}messages`, 300);
       user.calls++;
       user.inputTokens =
         parseInt(user.inputTokens) + response.data.usage.prompt_tokens;
