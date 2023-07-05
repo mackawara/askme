@@ -18,6 +18,7 @@ const ignorePatterns =
 const getSecsToMidNight = require("./getSecsToMidnight");
 const isSystemNotBusy = require("./isSystemNotBusy");
 const processSub = require("./processSub");
+const generateImage = require("./generateImage");
 
 const timeDelay = (ms) => new Promise((res) => setTimeout(res, ms));
 const clientOn = async (client, arg1, redisClient, MessageMedia) => {
@@ -47,8 +48,8 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
 
       let prompt = await msgBody.replace(/openAi:|createDoc/gi, "");
       //only use on direct messages
-      console.log(chatID, msgBody);
       if (!chat.isGroup && !msg.isStatus) {
+        console.log(chatID, msgBody);
         // if user is not already in Redis
         const exists = await redisClient.exists(chatID);
         console.log(`does exists `, await exists);
@@ -202,9 +203,9 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
         console.log("line 182");
         //check if there are ignoable message
         if (ignorePatterns.test(msgBody.toLowerCase())) {
-          msg.reply(
+          /*  msg.reply(
             "*System message*\n Thank you for using AskMe. Do not send greeting messages or messages such as thank you or you are welcome etc... The will use up your quota"
-          );
+          ); */
           return;
         }
 
@@ -311,7 +312,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
           } else {
             redisClient.del(`${chatID}messages`, "messages");
             msg.reply(
-              "*To continue, Click here to subscribe* \n https://bit.ly/askME_AI_payment . \nStandard subcription costs 12000 Ecocash\n\n Standard users get the following \n \n*25 requests per month*\n*Access to advanced features such as image generation*\n *Longer and more complete answers*\n *No adverts*  \n\nTo get additional requests on a free tier you can promote AskMe by sending *referal + number of a friend* whom you think can benefit from using AI in their study. Once you gain 3 converted referalls you will gain 2 days as a standard user with less restrictions"
+              "*Daily quota exhausted To continue, Click here to subscribe* \n https://bit.ly/askME_AI_payment . \nStandard subcription costs 12000 Ecocash\n\n Standard users get the following \n \n*25 requests per month*\n*Access to advanced features such as image generation*\n *Longer and more complete answers*\n *No adverts*  \n\nTo get additional requests on a free tier you can promote AskMe by sending *referal + number of a friend* whom you think can benefit from using AI in their study. Once you gain 3 converted referalls you will gain 2 days as a standard user with less restrictions"
             );
             await redisClient.hSet(chatID, "isBlocked", "1");
             return;
@@ -339,6 +340,26 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
         }
 
         //check if there is messages
+        if (msgBody.startsWith("createImage")) {
+          if ((await redisClient.hGet(chatID, calls)) > 15) {
+            msg.reply(
+              "Sorry you do not have enough calls remaing today to make this request. Image generation requires 10 or more remain calls per day"
+            );
+          } else {
+            msg.reply(
+              "Please wait while your image is being processed. Image generation is equivalent to 10 messages"
+            );
+          }
+          const response = await generateImage(msgBody, chatID, redisClient);
+          
+          if (response.startsWith("Error")) {
+            msg.reply(response);
+            return;
+          } else {
+            client.sendMessage(chatID, MessageMedia.fromFilePath(response));
+          }
+          return;
+        }
 
         //make opena API cal
         const openAiCall = require("./openai");
