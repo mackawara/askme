@@ -49,7 +49,7 @@ const saveReferal = async (msgBody, chatID, client) => {
       referingNumber: chatID,
       targetNumber: number,
       targetSerialisedNumber: numberSerialised,
-      nowUser: false,
+      isNowUser: false,
       date: new Date().toISOString().slice(0, 10),
       redeemed: false,
     });
