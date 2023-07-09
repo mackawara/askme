@@ -74,6 +74,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
             const referal = ReferalsModel.findOne({
               targetSerialisedNumber: chatID,
             });
+            console.log();
             //if it has been previously referred update to now User
             if (referal) {
               const referer = await referal.referingNumber;
@@ -351,12 +352,17 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
             );
           }
           const response = await generateImage(msgBody, chatID, redisClient);
-          
+          console.log(response);
           if (response.startsWith("Error")) {
             msg.reply(response);
             return;
           } else {
-            client.sendMessage(chatID, MessageMedia.fromFilePath(response));
+            client.sendMessage(
+              chatID,
+              MessageMedia.fromFilePath(
+                path.resolve(response)
+              )
+            );
           }
           return;
         }

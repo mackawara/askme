@@ -2,6 +2,12 @@ const { Configuration, OpenAIApi } = require("openai");
 const fs = require("fs");
 const { json } = require("stream/consumers");
 const convertBSonTojpeg = require("./convertBSonToJpeg");
+const { url } = require("inspector");
+const downloadImageFromURL = require("./downloadImageFromUrl");
+const http = require("http");
+const https = require("https");
+const contactsModel = require("../../models/individualUsers");
+const Stream = require("stream").Transform;
 //keyword createImage
 //remove keyword from prompt
 //process image
@@ -26,78 +32,67 @@ const createImage = async (msgBody, chatID, redisClient) => {
   }
   const openai = new OpenAIApi(configuration);
 
-  const fileNAme = prompt.slice(0, 8).replace(/\s/gi, "");
-  const filepath = `../../assets/${fileNAme}${chatID}.jpg`;
-  const imagepath = fs.readFile("../../test.b64_json", (err) => {
-    if (err) console.log(err);
-    else {
-      return;
-    }
-  });
-  try {
-    return await convertBSonTojpeg(imagepath, filepath);
-  } catch (err) {
-    console.log(err);
-    return "Error";
-  }
+  const fileName = prompt.slice(0, 8).replace(/\s/gi, "");
+  const outputPath = `../../assets/${fileName}${chatID}.jpg`;
+  //const imagepath = fs.readFile("../../test.b64_json", (err) => {
+
   try {
     const response = await openai.createImage({
       prompt: prompt,
       n: 1,
-      size: "256x256",
-      response_format: "b64_json",
+      size: "512x512",
+      response_format: "url",
       user: chatID,
     });
 
-    if (response) {
-      const image = await response.data.data[0].b64_json;
-      console.log(image);
-      fs.writeFile(`./test.b64_json`, image, function (err) {
-        if (err) throw err;
-        console.log("Image saved successfully.");
-      });
-
-      redisClient.HINCRBY(chatID, "calls", 10);
-      console.log(image);
-
-      // Step 2: Define your base64-encoded JSON string
-      const fileNAme = prompt.slice(0, 8).replace(/\s/gi, "");
-      const filepath = `../../assets/${fileNAme}${chatID}.jpg`;
-      const imagepath = await fs.readFile("../../test.b64_json");
-      try {
-        convertBSonTojpeg(imagepath, filepath);
-      } catch {
-        console.log("error happend");
-      }
-
-      // Step 3: Decode the Base-64 String
-      const jsonDataBuffer = Buffer.from(b65JsonString, "base64");
-      const jsonData = jsonDataBuffer.toString();
-
-      // Step 4: Parse the decoded JSON data into an object
-      const jsonObject = jsonData;
-
-      // Check if json contains an "image" property with valid Base-64 encoded image data.
-      if (jsonObject.image) {
-        // Write this image data to disk as .jpg file
-
-        const imageDataBuffer = Buffer.from(jsonObject.image, "base64");
-
-        fs.writeFile(filepath, imageDataBuffer, function (err) {
-          if (err) throw err;
-          console.log("Image saved successfully.");
-
-          return filepath;
-        });
-      } else {
-        console.log("Invalid or missing image data.");
-        return "Error: image could not be processed";
-      }
-    } else {
-      return "Error your image could not be generated";
+    //if (response) {
+    //  const image = response.data.data[0].b64_json;
+    // const url = response.data.data[0].url;
+    const url = `https://oaidalleapiprodscus.blob.core.windows.net/private/org-oeCrRII36xNn3U62fpPpolbS/user-91BXWXmwnqRHsuzR1Z9gEF0Q/img-cVf2NsrlXOgQgK88Ic1eDcTs.png?st=2023-07-06T09%3A14%3A33Z&se=2023-07-06T11%3A14%3A33Z&sp=r&sv=2021-08-06&sr=b&rscd=inline&rsct=image/png&skoid=6aaadede-4fb3-4698-a8f6-684d7786b067&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2023-07-05T20%3A11%3A32Z&ske=2023-07-06T20%3A11%3A32Z&sks=b&skv=2021-08-06&sig=DZNMjBwtv42v1AVnxbCc3G0CRcx6RAQ5ZUV5rMdlJjY%3D`;
+    let finalPath = `../../assets/${prompt.replace(" ", "").slice(0, 6)}`;
+    //download the url
+    let client = http;
+    if (url.toString().indexOf("https") === 0) {
+      client = https;
     }
+    return new Promise((resolve, reject) => {
+      client
+        .request(url, async function (response) {
+          const data = new Stream();
+
+          response.on("data", function (chunk) {
+            data.push(chunk);
+            console.log("adding chuck");
+          });
+
+          response.on("end", () => {
+            console.log("test for end of the function");
+            const image = data.read();
+
+            fs.writeFile("testimage.jpeg", image, (err) => {
+              console.log("complete");
+              if (err) {
+                console.log("error");
+                console.error(err);
+                reject("Error");
+              } else {
+                console.log("finished writing  the image");
+                resolve("testimage.jpeg");
+                redisClient.HINCRBY(chatID, "calls", 10);
+              }
+              // Additional logic after successful file write
+            });
+          });
+        })
+        .end(() => {
+          console.log("end of stream");
+          return "testimage.jpeg";
+        });
+    });
+
+    //console.log(image);
   } catch (err) {
-    console.log(err);
+    // console.log(err.data.error);
     //console.log(err.data.error.message);
     return `Error : there was an error processing your image please check if it has any harmful content or anything that maybe against our usage policies`;
   }
