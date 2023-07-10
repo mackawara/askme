@@ -49,46 +49,9 @@ const createImage = async (msgBody, chatID, redisClient) => {
     //  const image = response.data.data[0].b64_json;
     // const url = response.data.data[0].url;
     const url = `https://oaidalleapiprodscus.blob.core.windows.net/private/org-oeCrRII36xNn3U62fpPpolbS/user-91BXWXmwnqRHsuzR1Z9gEF0Q/img-cVf2NsrlXOgQgK88Ic1eDcTs.png?st=2023-07-06T09%3A14%3A33Z&se=2023-07-06T11%3A14%3A33Z&sp=r&sv=2021-08-06&sr=b&rscd=inline&rsct=image/png&skoid=6aaadede-4fb3-4698-a8f6-684d7786b067&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2023-07-05T20%3A11%3A32Z&ske=2023-07-06T20%3A11%3A32Z&sks=b&skv=2021-08-06&sig=DZNMjBwtv42v1AVnxbCc3G0CRcx6RAQ5ZUV5rMdlJjY%3D`;
-    let finalPath = `../../assets/${prompt.replace(" ", "").slice(0, 6)}`;
+    let finalPath = `../../assets/${prompt.replace(" ", "").slice(0, 6)}.jpeg`;
     //download the url
-    let client = http;
-    if (url.toString().indexOf("https") === 0) {
-      client = https;
-    }
-    return new Promise((resolve, reject) => {
-      client
-        .request(url, async function (response) {
-          const data = new Stream();
-
-          response.on("data", function (chunk) {
-            data.push(chunk);
-            console.log("adding chuck");
-          });
-
-          response.on("end", () => {
-            console.log("test for end of the function");
-            const image = data.read();
-
-            fs.writeFile("testimage.jpeg", image, (err) => {
-              console.log("complete");
-              if (err) {
-                console.log("error");
-                console.error(err);
-                reject("Error");
-              } else {
-                console.log("finished writing  the image");
-                resolve("testimage.jpeg");
-                redisClient.HINCRBY(chatID, "calls", 10);
-              }
-              // Additional logic after successful file write
-            });
-          });
-        })
-        .end(() => {
-          console.log("end of stream");
-          return "testimage.jpeg";
-        });
-    });
+    return await downloadImageFromURL(url, finalPath).then((result) => result);
 
     //console.log(image);
   } catch (err) {

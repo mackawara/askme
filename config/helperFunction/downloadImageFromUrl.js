@@ -1,6 +1,7 @@
 const http=require("http")
 const https=require("https")
-const fs=require("fs")
+const fs=require("fs");
+const { fileURLToPath } = require("url");
 
 const downloadUrl=async (url, outPut)=> {
   const file = fs.createWriteStream(outPut);
@@ -12,6 +13,7 @@ const downloadUrl=async (url, outPut)=> {
       file.on("finish", () => {
         file.close();
         console.log("Download Completed");
+        
       });
     });
   } else {
@@ -22,6 +24,7 @@ const downloadUrl=async (url, outPut)=> {
       file.on("finish", () => {
         file.close();
         console.log("Download Completed");
+        return outPut
       });
     });
   }
