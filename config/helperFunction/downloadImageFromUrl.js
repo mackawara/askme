@@ -1,22 +1,11 @@
-const http=require("http")
-const https=require("https")
-const fs=require("fs");
-const { fileURLToPath } = require("url");
+const http = require("http");
+const https = require("https");
 
-const downloadUrl=async (url, outPut)=> {
+const fs = require("fs");
+const downloadUrl = async (url, outPut) => {
   const file = fs.createWriteStream(outPut);
-  if (url.startsWith("http")) {
-    const request = http.get(url, function (response) {
-      response.pipe(file);
-
-      // after download completed close filestream
-      file.on("finish", () => {
-        file.close();
-        console.log("Download Completed");
-        
-      });
-    });
-  } else {
+  if (url.startsWith("https")) {
+    console.log("starts with");
     const request = https.get(url, function (response) {
       response.pipe(file);
 
@@ -24,10 +13,18 @@ const downloadUrl=async (url, outPut)=> {
       file.on("finish", () => {
         file.close();
         console.log("Download Completed");
-        return outPut
+      });
+    });
+  } else {
+    const request = http.get(url, function (response) {
+      response.pipe(file);
+
+      // after download completed close filestream
+      file.on("finish", () => {
+        file.close();
+        console.log("Download Completed");
       });
     });
   }
-}
-
-module.exports=downloadUrl
+};
+module.exports = downloadUrl;
