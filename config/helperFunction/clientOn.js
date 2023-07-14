@@ -211,7 +211,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
         //check if it is not elevation message
 
         if (chatID == process.env.ME) {
-          if (await elevate(msg, chatID, redisClient)) {
+          if (await elevate(msg,chatID, redisClient)) {
             return;
           } else if (msgBody.startsWith("broadcast:")) {
             // for sending Broadcast messages
