@@ -126,43 +126,54 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
 
             await redisClient.expire(chatID, expiryTime);
           } else {
-            await redisClient
-              .set(`${chatID}shortTTL`, 1)
-              .then(async (result) => {
-                console.log(`short ttl`, result);
-              });
-            await redisClient.expire(`${chatID}shortTTL`, 30);
-
+            if (chatID === !me) {
+              await redisClient
+                .set(`${chatID}shortTTL`, 1)
+                .then(async (result) => {
+                  console.log(`short ttl`, result);
+                });
+              await redisClient.expire(`${chatID}shortTTL`, 30);
+            }
             console.log("not found in redis but ther in DB");
             // console.log(`Line subscribed`, user.isBlocked, user.isSubscribed);
 
             if (user.isBlocked) {
-              console.log("use is blocke in mongodb");
-              isBlocked = "1";
+              await redisClient.hSet(chatID, {
+                isBlocked: "1",
+                calls: 0,
+                isSubscribed: "0",
+              });
+              await redisClient.expire(chatID, expiryTime);
             } else {
-              console.log("user is not blocke" + user.isBlocked);
-              isBlocked = "0";
+              await redisClient.hSet(chatID, {
+                isBlocked: "0",
+                calls: 0,
+                isSubscribed: "0",
+              });
+              await redisClient.expire(chatID, expiryTime);
             }
 
             if (await user.isSubscribed) {
               console.log("Use is subscribed now setting to 1");
               isSubscribed = "1";
+              await redisClient.hSet(chatID, {
+                isBlocked: "0",
+                calls: 0,
+                isSubscribed: "1",
+              });
+              await redisClient.expire(chatID, expiryTime);
             } else {
-              console.log(
-                `${await user.isSubscribed} is the one we are setting`
-              );
-              isSubscribed = "0";
+              await redisClient.hSet(chatID, {
+                isBlocked: "0",
+                calls: 0,
+                isSubscribed: "0",
+              });
+              await redisClient.expire(chatID, expiryTime);
             }
 
             console.log(
               `the user is BLOCKED ${isBlocked},SUBSCRIBED ${isSubscribed}`
             );
-            await redisClient.hSet(chatID, {
-              isBlocked: isBlocked,
-              calls: 0,
-              isSubscribed: isSubscribed,
-            });
-            await redisClient.expire(chatID, expiryTime);
           }
         }
         //else if the user is already logged IN
@@ -307,7 +318,9 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
           await redisClient.hGet(chatID, "calls")
         );
         //if user is not sunscribed
-        if (!isSubscribed == "1") {
+        if (chatID === "263775231426@c.us") {
+          tokenLimit = 2048;
+        } else if (!isSubscribed == "1") {
           console.log("user not subbed");
           if (parseInt(JSON.parse(calls)) < 3) {
             console.log("is under the quota");
@@ -333,8 +346,6 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
             );
             return;
           }
-        } else if (chatID === "263775231426@c.us") {
-          tokenLimit = 2048;
         }
 
         if (msgBody.length > 300 && !isSubscribed == "1") {
