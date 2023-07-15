@@ -4,8 +4,6 @@ const createDoc = require("./config/helperFunction/docxCreator");
 const indvUsers = require("./models/individualUsers");
 const ReferalsModel = require("./models/referals");
 const totalUsage = require("./models/totalUsage");
-const paynow = require("./paynow");
-paynow();
 
 const qrcode = require("qrcode-terminal");
 const {
