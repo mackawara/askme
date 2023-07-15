@@ -1,5 +1,5 @@
 const indvUsers = require("../../models/individualUsers");
-const elevate = async (msg,chatID redisClient) => {
+const elevate = async (msg, chatID, redisClient) => {
   const msgBody = msg.body;
   //const chatID = msg.from;
 
@@ -17,14 +17,14 @@ const elevate = async (msg,chatID redisClient) => {
         )
         .then((result) => {
           console.log(result);
-          redisClient.hSet(chatID,{
-            calls:0,
-            isBlocked:"0",
-            isSubscribed:"1",
-            messages: JSON.stringify([]),
-          })
-          redisClient.expire(chatID,86400)
+          redisClient.hSet(chatID, {
+            calls: 0,
+            isBlocked: "0",
+            isSubscribed: "1",
+          });
+          redisClient.expire(chatID, 86400);
           msg.reply(`${number}, is now elevated`);
+          
         });
     }
 
