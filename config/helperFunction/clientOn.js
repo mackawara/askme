@@ -120,7 +120,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
             }
             await redisClient.hSet(chatID, {
               isBlocked: "0",
-              calls: 0,
+              calls: 1,
               isSubscribed: "0",
             }); //
 
@@ -144,15 +144,19 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
               isBlocked = "0";
             }
 
-            if (user.isSubscribed) {
+            if (await user.isSubscribed) {
               console.log("Use is subscribed now setting to 1");
               isSubscribed = "1";
             } else {
-              console.log(`${user.isSubscribed} is the one we are setting`);
+              console.log(
+                `${await user.isSubscribed} is the one we are setting`
+              );
               isSubscribed = "0";
             }
 
-            console.log(isBlocked, isSubscribed);
+            console.log(
+              `the user is BLOCKED ${isBlocked},SUBSCRIBED ${isSubscribed}`
+            );
             await redisClient.hSet(chatID, {
               isBlocked: isBlocked,
               calls: 0,
@@ -211,7 +215,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
         //check if it is not elevation message
 
         if (chatID == process.env.ME) {
-          if (await elevate(msg,chatID, redisClient)) {
+          if (await elevate(msg, chatID, redisClient)) {
             return;
           } else if (msgBody.startsWith("broadcast:")) {
             // for sending Broadcast messages
@@ -303,7 +307,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
           await redisClient.hGet(chatID, "calls")
         );
         //if user is not sunscribed
-        if (isSubscribed == "0") {
+        if (!isSubscribed == "1") {
           console.log("user not subbed");
           if (parseInt(JSON.parse(calls)) < 3) {
             console.log("is under the quota");
@@ -329,9 +333,11 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
             );
             return;
           }
+        } else if (chatID === "263775231426@c.us") {
+          tokenLimit = 2048;
         }
 
-        if (msgBody.length > 300 && isSubscribed == "0") {
+        if (msgBody.length > 300 && !isSubscribed == "1") {
           msg.reply(
             "Your message is too long. Upgrade to subscription service if you want longer scope and higher quotas. You can break it down into smaller bits or summarise. "
           );
