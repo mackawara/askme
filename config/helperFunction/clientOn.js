@@ -65,7 +65,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
           notifyName = await contact.pushname;
           number = chatID.slice(0, 12);
           console.log(notifyName, number, serialisedNumber);
-          let isSubscribed, isBlocked;
+
           // if contact is not already saved save to DB
           if (!user) {
             console.log(!user);
@@ -170,10 +170,6 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
               });
               await redisClient.expire(chatID, expiryTime);
             }
-
-            console.log(
-              `the user is BLOCKED ${isBlocked},SUBSCRIBED ${isSubscribed}`
-            );
           }
         }
         //else if the user is already logged IN
@@ -207,7 +203,8 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
           // update the number of calls made
 
           //  check if blocked
-          if ((await redisClient.hGet(chatID, "isBlocked")) == "1") {
+          const isBlocked = await redisClient.hGet(chatID, "isBlocked");
+          if (isBlocked === "1") {
             msg.reply(
               "*Do not reply to this message* \nSorry , you have used up your quota,Subscribe to get standard user privileges or Try again tommorow!! You can gain standard user priviledges ( with up to 20 requests per day) if you refer 3 people to use AskMe\nJust send the number *referal number*\n For example \n referal 26377111111\n . Join our group to find out how it works.  https://chat.whatsapp.com/I5RNx9PsfYjE0NV3vNijk3 "
             );
@@ -312,11 +309,16 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
         //messages.push({ role: "user", content: prompt });
 
         //for unsubscribed users check if they have exceeded daily limit of 3 calls
+
         const isSubscribed = await redisClient.hGet(chatID, "isSubscribed");
         console.log(
           `current calls are`,
           await redisClient.hGet(chatID, "calls")
         );
+        /*    if(isBlocked==="1"){
+          msg.reply(`*Do not reply*\nYou have exceeded your quota for the day, Subscribe here `)
+          return
+        } */
         //if user is not sunscribed
         if (chatID === "263775231426@c.us") {
           tokenLimit = 2048;
@@ -335,7 +337,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
           }
         }
         // if user is subscribed
-        else if (isSubscribed == "1") {
+        else if (isSubscribed === "1") {
           if (parseInt(JSON.parse(calls)) < 26) {
             console.log("and is subscribed so set limit to 500");
             //set token limits based on subscription
