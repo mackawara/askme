@@ -185,6 +185,15 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
 
           const shortTTL = await redisClient.get(`${chatID}shortTTL`);
           console.log(`line 108`, shortTTL);
+          if (
+            /referal|referral/.test(msgBody.slice(0, 8).toLowerCase().trim())
+          ) {
+            console.log("processing ref");
+            const res = await saveReferal(msgBody, chatID, client);
+            msg.reply(res);
+            return;
+          }
+
           if (parseInt(shortTTL) > 2) {
             //if user has made  more than  2 block
             console.log("is more than 2");
@@ -247,12 +256,6 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
         // process referalls
 
         console.log(msgBody.slice(0, 8).toLowerCase().trim());
-        if (/referal|referral/.test(msgBody.slice(0, 8).toLowerCase().trim())) {
-          console.log("processing ref");
-          const res = await saveReferal(msgBody, chatID, client);
-          msg.reply(res);
-          return;
-        }
 
         // create docs
         if (
