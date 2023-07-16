@@ -209,9 +209,27 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
           //  check if blocked
           const isBlocked = await redisClient.hGet(chatID, "isBlocked");
           if (isBlocked === "1") {
-            msg.reply(
-              "*Do not reply to this message* \nSorry , you have used up your quota,Subscribe to get standard user privileges or Try again tommorow!! You can gain standard user priviledges ( with up to 20 requests per day) if you refer 3 people to use AskMe\nJust send the number *referal number*\n For example \n referal 26377111111\n . Join our group to find out how it works.  https://chat.whatsapp.com/I5RNx9PsfYjE0NV3vNijk3 "
-            );
+            if (calls > 3) {
+              msg.reply(
+                "*Warning , do not send any further messages else you will be blocked from using the platform for at least 48 hours* \nYou have used up your quota. Subscribe to get standard user privileges or Try again tommorow!! You can gain standard user priviledges ( with up to 20 requests per day) if you refer 3 people to use AskMe\nJust send the number *referal number*\n For example \n referal 26377111111\n . Join our group to find out how it works.  https://chat.whatsapp.com/I5RNx9PsfYjE0NV3vNijk3 "
+              );
+            }
+            if (calls > 6) {
+              return;
+            }
+            if (calls > 5) {
+              msg.reply(
+                "You have now been *blocked* for abusing the system and will not be able to use the platform for the next 48 hours, Further messages will result in permanent blocking "
+              );
+              redisClient.expire(chatID, 172800);
+              user.warnings += 3;
+              try {
+                user.save();
+              } catch (err) {
+                console.log(err);
+              }
+            }
+
             return;
           }
         }
@@ -339,7 +357,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
             tokenLimit = 125;
           } else if (calls > 2) {
             msg.reply(
-              "*To continue, Click here to subscribe* \n https://bit.ly/askME_AI_payment . \nStandard subcription costs 12000 Ecocash\n\n Standard users get the following \n \n*25 requests per month*\n*Access to advanced features such as image generation*\n *Longer and more complete answers*\n *No adverts*  \n\nTo get additional requests on a free tier you can promote AskMe by sending *referal + number of a friend* whom you think can benefit from using AI in their study. Once you gain 3 converted referalls you will gain 2 days as a standard user with less restrictions"
+              "*You have used up your daily quota, do not send any further messages,To continue, Click here to subscribe* \n https://bit.ly/askME_AI_payment . \nStandard subcription costs 12000 Ecocash\n\n Standard users get the following \n \n*25 requests per month*\n*Access to advanced features such as image generation*\n *Longer and more complete answers*\n *No adverts*  \n\nTo get additional requests on a free tier you can promote AskMe by sending *referal + number of a friend* whom you think can benefit from using AI in their study. Once you gain 3 converted referalls you will gain 2 days as a standard user with less restrictions"
             );
             redisClient.del(`${chatID}messages`, "messages");
             await redisClient.hSet(chatID, "isBlocked", "1");
