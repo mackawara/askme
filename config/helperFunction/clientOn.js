@@ -141,19 +141,17 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
               await redisClient.hSet(chatID, {
                 isBlocked: "1",
                 calls: 0,
-                isSubscribed: "0",
               });
               await redisClient.expire(chatID, expiryTime);
             } else {
               await redisClient.hSet(chatID, {
                 isBlocked: "0",
                 calls: 0,
-                isSubscribed: "0",
               });
               await redisClient.expire(chatID, expiryTime);
             }
             //check in mongoDb if is Subscibed
-            if (await user.isSubscribed) {
+            if (user.isSubscribed) {
               console.log("Use is subscribed now setting to 1");
 
               await redisClient.hSet(chatID, {
