@@ -71,7 +71,8 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
             //check if the user is in the referals
             const referal = ReferalsModel.findOne({
               targetSerialisedNumber: chatID,
-            });
+            }).exec()
+            consol.log()
             //if it has been previously referred update to now User
             if (referal) {
               const referer = await referal.referingNumber;
@@ -291,9 +292,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
           }
 
           //aINCREASE THE COUNT
-          await redisClient.HINCRBY(chatID, "calls", 1);
-          const calls = await redisClient.hGet(chatID, "calls");
-
+         
           // check if blocked   const isBlocked = await redisClient.hGet(chatID, "isBlocked");
           if (isBlocked === "1") {
             if (calls > 3) {
@@ -320,6 +319,9 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
             return;
           }
         }
+        await redisClient.HINCRBY(chatID, "calls", 1);
+        const calls = await redisClient.hGet(chatID, "calls");
+        const isBlocked =await redisClient.hGet(chatID, "isBlocked");
 
         //let messages = JSON.parse(await redisClient.hGet(chatID, "messages"));
         //messages.push({ role: "user", content: prompt });
