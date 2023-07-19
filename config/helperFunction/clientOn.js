@@ -353,7 +353,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
             tokenLimit = 125;
           } else if (calls > 2) {
             msg.reply(
-              "*You have used up your daily quota, do not send any further messages,To continue, Click here to subscribe* \n https://bit.ly/AskMeSub. \nStandard subcription costs 12000 Ecocash\n\n Standard users get the following \n \n*25 requests per month*\n*Access to advanced features such as image generation*\n *Longer and more complete answers*\n *No adverts*  \n\nTo get additional requests on a free tier you can promote AskMe by sending *referal + number of a friend* whom you think can benefit from using AI in their study. Once you gain 3 converted referalls you will gain 2 days as a standard user with less restrictions"
+              `To continue using AskMe_AI, subscribe here https://bit.ly/AskMeSub : \n*For only 6000 Ecocash you get up to 25 requests per day*. As a free user you only get 3 requests per day`
             );
             redisClient.del(`${chatID}messages`, "messages");
             await redisClient.hSet(chatID, "isBlocked", "1");
