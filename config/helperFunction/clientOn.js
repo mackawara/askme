@@ -299,13 +299,13 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
         if (isBlocked === "1") {
           if (calls > 3) {
             msg.reply(
-              "*Warning , do not send any further messages else you will be blocked from using the platform for at least 48 hours* \nYou have used up your quota. Subscribe here https://bit.ly/AskMeSub to get standard user privileges or Try again tommorow!! You can gain standard user priviledges ( with up to 25 requests per day) if you refer 3 people to use AskMe\nJust send the number *referal number*\n For example \n referal 26377111111\n . Join our group to find out how it works.  https://chat.whatsapp.com/I5RNx9PsfYjE0NV3vNijk3 "
+              "*Warning , do not send any further messages else you will be blocked from using the platform for at least 48 hours* \nYou have used up your quota. Subscribe here https://bit.ly/AskMeSub to get standard user privileges or Try again tommorow! "
             );
           }
-          if (calls > 6) {
+          if (calls > 5) {
             return;
           }
-          if (calls > 5) {
+          if (calls > 6) {
             msg.reply(
               "You have now been *blocked* for abusing the system and will not be able to use the platform for the next 48 hours, Further messages will result in permanent blocking "
             );

@@ -7,8 +7,7 @@ const isFlagged = (string) => {
     "boyfriend",
     "girlfirend",
     "my bae",
-    "sex",
-    "sexual",
+    ,
   ];
   let flagged = [];
   keywords.forEach((word) => {
