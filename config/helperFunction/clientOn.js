@@ -72,7 +72,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
             const referal = ReferalsModel.findOne({
               targetSerialisedNumber: chatID,
             }).exec();
-            consol.log();
+            console.log();
             //if it has been previously referred update to now User
             if (referal) {
               const referer = await referal.referingNumber;
