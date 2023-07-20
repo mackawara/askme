@@ -9,11 +9,8 @@ const randomAdvert = require("./randomAdvert");
 
 const saveReferal = require("./saveReferal");
 
-const defaultRes = `Thank you for using AskMe, the number 1 app for Students,Parents and Teacher/Lecturers\n*How to get the best results from our AI model*\nYou can use our app to generate almost any written text as long as you povide proper context and use the guidelines below.
-        1. Use good information as input - The better the starting point, the better results you'll get. Give examples of what you want, writing style , level etc\n\n2. Choose suitable prompts/messages - Choosing useful sentences or phrases will help get a good response from AI model. Instead of "osmosis", send useful questions such as "Please explain osmosis in point form and provide  3 examples" \n      
-        3.Check responses carefully and give feedback. If you did not get the exact answer you needed , you can refine the question or ask for further explanation – Taking time when reviewing output helps detect errors that can be corrected via consistent feedback.\n\nEg you can ask for a shortend response or ask for emphasis on a certain point \n If you have the exact answer you want you can save it in a word document by quoting the message (click on the message dropdown and click on "reply") and typing "createDoc".\n *AskMe* can keep track of messages sent within the latest 2 minutes, so you dont have to start afresh if you dont get what you want, just correct where correction is needed`;
 const ignorePatterns =
-  /^(ok|oky|thank you|ok thank you|ouky|thanx|It's ok. Thank you so much|hi ask me|noted|hello|good night|ok thank you|k|night|Youre welcome|welcome|you welcome|Hie|hy|thanks?|k|[hi]+|\bhey\b)\W*$/gi;
+  /^(ok|oky|thank you|ok thank you|ouky|thanx|It's ok. Thank you so much|hey|hi ask me|noted|hello|good night|ok thank you|k|night|Youre welcome|welcome|you welcome|Hie|hy|thanks?|k|[hi]+|\bhey\b)\W*$/gi;
 //helper Functions
 const getSecsToMidNight = require("./getSecsToMidnight");
 const isSystemNotBusy = require("./isSystemNotBusy");
@@ -35,7 +32,6 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
       const msgBody = msg.body;
       const chatID = msg.from;
       const expiryTime = await getSecsToMidNight();
-      console.log(expiryTime);
 
       const user = await usersModel
         .findOne({ serialisedNumber: chatID })
@@ -64,21 +60,21 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
           serialisedNumber = await contact.id._serialized;
           notifyName = await contact.pushname;
           number = chatID.slice(0, 12);
-          console.log(notifyName, number, serialisedNumber);
+          console.log(notifyName, msgBody);
 
           // if contact is not already saved save to DB
           if (!user) {
             //check if the user is in the referals
-            const referal = ReferalsModel.findOne({
+            const referal = await ReferalsModel.findOne({
               targetSerialisedNumber: chatID,
             }).exec();
-            console.log();
+
             //if it has been previously referred update to now User
             if (referal) {
               const referer = await referal.referingNumber;
               try {
-                referal.set({ isNowUser: user });
-                referal.save();
+                await referal.set({ isNowUser: true });
+                await referal.save();
               } catch (err) {
                 console.log(err);
               }

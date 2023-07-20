@@ -1,10 +1,6 @@
 //openai
 const indvUsers = require("../../models/individualUsers.js");
 const totalUsageModel = require("../../models/totalUsage");
-// keep track of token usage per day,best save in DB
-// block brute forcers
-//block rogue numbers
-// check if existing number locally if not check on db
 
 const openAiCall = async (chatID, tokenLimit, redisClient, prompt) => {
   let user = await indvUsers.findOne({ serialisedNumber: chatID }).exec();
@@ -29,7 +25,7 @@ const openAiCall = async (chatID, tokenLimit, redisClient, prompt) => {
   let messages = await JSON.parse(
     await redisClient.hGet(`${chatID}messages`, "messages")
   );
-  if (/continue/gi.test(prompt) && messages == []) {
+  if (prompt == "Continue" && messages == []) {
     return "I can only continue based on previous 3 messages if they were made within the last 3 minutes";
   }
   await redisClient.hSet(
@@ -50,7 +46,7 @@ const openAiCall = async (chatID, tokenLimit, redisClient, prompt) => {
   setTimeout(async () => {}, 3000);
   const response = await openai
     .createChatCompletion({
-      model: "gpt-3.5-turbo",
+      model: "gpt-3.5-turbo-0613",
       messages: messages,
       temperature: 0.5,
       max_tokens: tokenLimit,
