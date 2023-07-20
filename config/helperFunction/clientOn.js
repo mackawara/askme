@@ -43,7 +43,9 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
 
       let prompt = await msgBody.replace(/openAi:|createDoc/gi, "");
       //only use on direct messages
-
+      if (chat.isGroup) {
+        console.log(msg);
+      }
       if (!chat.isGroup && !msg.isStatus) {
         // if user is not already in Redis
         const exists = await redisClient.exists(chatID);
