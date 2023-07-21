@@ -214,6 +214,8 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
           console.log(totalCalls);
           return totalCalls;
         };
+        const maxCallsAllowed = maxCalls();
+        console.log(maxCallsAllowed);
         console.log(
           `current calls are`,
           await redisClient.hGet(chatID, "calls")
@@ -358,7 +360,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
           //check if admin and set admin level limits
           tokenLimit = 2048;
         } else if (isSubscribed === "1") {
-          if (calls < 26) {
+          if (calls < maxCallsAllowed) {
             console.log("and is subscribed so set limit to 500");
             //set token limits based on subscription
             tokenLimit = 300;
@@ -370,12 +372,12 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
           }
         } else if (isSubscribed == "0") {
           console.log("user not subbed");
-          if (parseInt(JSON.parse(calls)) < 2) {
+          if (parseInt(JSON.parse(calls)) < maxCallsAllowed) {
             console.log(calls);
             console.log("is under the quota");
-          } else if (calls > 2) {
+          } else if (calls > maxCallsAllowed) {
             msg.reply(
-              `To continue using AskMe_AI, subscribe here https://bit.ly/AskMeSub : \n*For only 6000 Ecocash you get up to 25 requests per day*. As a free user you only get 2 requests per day.\n Alternatively you can support our page by https://www.facebook.com/askmeAI by following and liking.Leave you whatsapp number in our facebook DM and after reviewing we will grant extra requests`
+              `To continue using AskMe_AI, subscribe here https://bit.ly/AskMeSub : \n*For only 6000 Ecocash you get up to 25 requests per day*. As a free user you only get 1 requests per day.\n Alternatively you can support our page by https://www.facebook.com/askmeAI by following and liking.Leave you whatsapp number in our facebook DM and after reviewing we will grant you "follower" status, which has extra requests`
             );
             redisClient.del(`${chatID}messages`, "messages");
             await redisClient.hSet(chatID, "isBlocked", "1");
