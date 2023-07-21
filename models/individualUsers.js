@@ -11,6 +11,11 @@ const usersSchema = new mongoose.Schema({
     required: true,
     default: false,
   },
+  isFollower: {
+    type: Boolean,
+    required: true,
+    default: false,
+  },
   calls: { type: Number, required: true },
   number: {
     type: String,
