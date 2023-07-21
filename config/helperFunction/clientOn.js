@@ -118,7 +118,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
               isBlocked: "0",
               calls: 0,
               isSubscribed: "0",
-              isFollower: "0",
+              isFollower: "1",
             }); //
 
             await redisClient.expire(chatID, expiryTime);
