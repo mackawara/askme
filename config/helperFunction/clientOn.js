@@ -15,7 +15,7 @@ const ignorePatterns =
 const getSecsToMidNight = require("./getSecsToMidnight");
 const isSystemNotBusy = require("./isSystemNotBusy");
 const processSub = require("./processSub");
-
+const processFollower = require("./processFollower");
 const timeDelay = (ms) => new Promise((res) => setTimeout(res, ms));
 const clientOn = async (client, arg1, redisClient, MessageMedia) => {
   const fs = require("fs/promises");
@@ -264,6 +264,9 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
             return;
           } else if (msgBody.startsWith("processSub:")) {
             processSub(msg, client, redisClient);
+            return;
+          } else if (msgBody.startsWith("processFollower:")) {
+            processFollower(msg, client, redisClient);
             return;
           }
         }
