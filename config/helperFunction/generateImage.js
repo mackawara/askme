@@ -40,19 +40,19 @@ const createImage = async (msgBody, chatID, redisClient) => {
     const response = await openai.createImage({
       prompt: prompt,
       n: 1,
-      size: "512x512",
+      size: "256x256",
       response_format: "url",
       user: chatID,
     });
 
-    //if (response) {
+    if (response) {
     //  const image = response.data.data[0].b64_json;
-    // const url = response.data.data[0].url;
-    const url = `https://oaidalleapiprodscus.blob.core.windows.net/private/org-oeCrRII36xNn3U62fpPpolbS/user-91BXWXmwnqRHsuzR1Z9gEF0Q/img-cVf2NsrlXOgQgK88Ic1eDcTs.png?st=2023-07-06T09%3A14%3A33Z&se=2023-07-06T11%3A14%3A33Z&sp=r&sv=2021-08-06&sr=b&rscd=inline&rsct=image/png&skoid=6aaadede-4fb3-4698-a8f6-684d7786b067&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2023-07-05T20%3A11%3A32Z&ske=2023-07-06T20%3A11%3A32Z&sks=b&skv=2021-08-06&sig=DZNMjBwtv42v1AVnxbCc3G0CRcx6RAQ5ZUV5rMdlJjY%3D`;
+     const url = response.data.data[0].url;
+    //const url = `ttps://oaidalleapiprodscus.blob.core.windows.net/private/org-oeCrRII36xNn3U62fpPpolbS/user-91BXWXmwnqRHsuzR1Z9gEF0Q/img-cVf2NsrlXOgQgK88Ic1eDcTs.png?st=2023-07-06T09%3A14%3A33Z&se=2023-07-06T11%3A14%3A33Z&sp=r&sv=2021-08-06&sr=b&rscd=inline&rsct=image/png&skoid=6aaadede-4fb3-4698-a8f6-684d7786b067&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2023-07-05T20%3A11%3A32Z&ske=2023-07-06T20%3A11%3A32Z&sks=b&skv=2021-08-06&sig=DZNMjBwtv42v1AVnxbCc3G0CRcx6RAQ5ZUV5rMdlJjY%3D`;
     let finalPath = `../../assets/${prompt.replace(" ", "").slice(0, 6)}.jpeg`;
     //download the url
-    return await downloadImageFromURL(url, finalPath).then((result) => result);
-
+    return await downloadImageFromURL(url, finalPath)
+    }
     //console.log(image);
   } catch (err) {
     // console.log(err.data.error);
