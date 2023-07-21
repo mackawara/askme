@@ -116,7 +116,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
             }
             await redisClient.hSet(chatID, {
               isBlocked: "0",
-              calls: 1,
+              calls: 0,
               isSubscribed: "0",
               isFollower: "0",
             }); //
@@ -202,7 +202,6 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
           return;
         }
 
-        const calls = await redisClient.hGet(chatID, "calls");
         const isSubscribed = await redisClient.hGet(chatID, "isSubscribed");
         const isFollower = await redisClient.hGet(chatID, "isFollower");
         let maxCalls = () => {
@@ -215,11 +214,8 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
           return totalCalls;
         };
         const maxCallsAllowed = maxCalls();
-        console.log(maxCallsAllowed);
-        console.log(
-          `current calls are`,
-          await redisClient.hGet(chatID, "calls")
-        );
+        console.log(`This is the max calls ${maxCallsAllowed}`);
+
         if (parseInt(shortTTL) > 2) {
           //if user has made  more than  2 block
 
@@ -323,6 +319,8 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
         //aINCREASE THE COUNT
 
         await redisClient.HINCRBY(chatID, "calls", 1);
+        const calls = await redisClient.hGet(chatID, "calls");
+        console.log(`current calls are ${calls}`);
         // check if blocked   const isBlocked = await redisClient.hGet(chatID, "isBlocked");
         if (isBlocked === "1") {
           if (calls > 3) {
@@ -349,16 +347,6 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
           return;
         }
 
-        //let messages = JSON.parse(await redisClient.hGet(chatID, "messages"));
-        //messages.push({ role: "user", content: prompt });
-
-        //for unsubscribed users check if they have exceeded daily limit of 3 calls
-
-        /*    if(isBlocked==="1"){
-          msg.reply(`*Do not reply*\nYou have exceeded your quota for the day, Subscribe here `)
-          return
-        } */
-        //if user is not sunscribed
         if (chatID === "263775231426@c.us") {
           //check if admin and set admin level limits
           tokenLimit = 2048;
@@ -399,7 +387,15 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
           );
           return;
         }
-
+        if (/continue/gi.test(msgBody)) {
+          if (await redisClient.exists(`${chatID}messages`)) {
+            msg.reply(
+              `Sorry , there is no history to continue from, Messages are only kept in the system for 5 minutes,After that you canoot use the *continue* keyword`
+            );
+            redisClient.HINCRBY(chatID, "calls", -1);
+            return;
+          }
+        }
         //check if there is messages
 
         //make opena API cal
@@ -425,7 +421,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
             msg.reply(response);
           } else {
             msg.reply(
-              `*${randomAdvert()}*\n\n${response}\n \n*Unlock knowledge, AskMe!*`
+              `*${randomAdvert()}*\n\n${response}\n \n*AskMe_AI a VentaAI production :\n*Call us n 0775231426 (for enquiries only) for Website and software development*`
             );
           }
         }
