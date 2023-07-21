@@ -29,7 +29,7 @@ connectDB().then(async () => {
   const client = new Client({
     authStrategy: new LocalAuth(),
     puppeteer: {
-      //   executablePath: process.env.EXECPATH,
+      executablePath: process.env.EXECPATH,
       handleSIGINT: true,
       headless: true,
       args: [
