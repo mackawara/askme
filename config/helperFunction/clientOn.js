@@ -421,7 +421,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
             msg.reply(response);
           } else {
             msg.reply(
-              `*${randomAdvert()}*\n\n${response}\n \n*AskMe_AI a VentaAI production :\n*Call us n 0775231426 (for enquiries only) for Website and software development*`
+              `*${randomAdvert()}*\n\n${response}\n \n*AskMe_AI a VentaAI production*\nCall us on 0775231426 (for enquiries only) for Website and software development*`
             );
           }
         }
