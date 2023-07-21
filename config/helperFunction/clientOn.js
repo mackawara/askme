@@ -36,7 +36,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
       const user = await usersModel
         .findOne({ serialisedNumber: chatID })
         .exec();
-      let tokenLimit = 120;
+      let tokenLimit = 100;
 
       const expTime = getSecsToMidNight();
       //  console.log(`the user ${user}`);
@@ -118,7 +118,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
               isBlocked: "0",
               calls: 1,
               isSubscribed: "0",
-             
+              isFollower: "0",
             }); //
 
             await redisClient.expire(chatID, expiryTime);
@@ -167,6 +167,21 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
               });
               await redisClient.expire(chatID, expiryTime);
             }
+            //check if is a follower
+            if (user.isFollower) {
+              console.log("Use is a follower 1");
+
+              await redisClient.hSet(chatID, {
+                isFollower: "1",
+              });
+              await redisClient.expire(chatID, expiryTime);
+            } else {
+              console.log(`is not a follower`);
+              await redisClient.hSet(chatID, {
+                isFollower: "0",
+              });
+              await redisClient.expire(chatID, expiryTime);
+            }
           }
         }
         //else if the user is already logged IN
@@ -189,6 +204,16 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
 
         const calls = await redisClient.hGet(chatID, "calls");
         const isSubscribed = await redisClient.hGet(chatID, "isSubscribed");
+        const isFollower = await redisClient.hGet(chatID, "isFollower");
+        let maxCalls = () => {
+          let totalCalls;
+          const base = 1;
+          const subscriber = isSubscribed === "1" ? 25 : 0;
+          const follower = isFollower === "1" ? 2 : 0;
+          totalCalls = base + subscriber + follower;
+          console.log(totalCalls);
+          return totalCalls;
+        };
         console.log(
           `current calls are`,
           await redisClient.hGet(chatID, "calls")
@@ -348,7 +373,6 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
           if (parseInt(JSON.parse(calls)) < 2) {
             console.log(calls);
             console.log("is under the quota");
-            tokenLimit = 125;
           } else if (calls > 2) {
             msg.reply(
               `To continue using AskMe_AI, subscribe here https://bit.ly/AskMeSub : \n*For only 6000 Ecocash you get up to 25 requests per day*. As a free user you only get 2 requests per day.\n Alternatively you can support our page by https://www.facebook.com/askmeAI by following and liking.Leave you whatsapp number in our facebook DM and after reviewing we will grant extra requests`
