@@ -8,7 +8,7 @@ function getSecsToMidnight() {
 
   const millisecondsUntilMidnight = tomorrow - now; // Calculate milliseconds between now and midnight
   const tommorrowCAT = millisecondsUntilMidnight - 7200000;
-  const secondsUntilMidnight = Math.floor(tommorrowCAT / 1000); // Convert to seconds
+  const secondsUntilMidnight = Math.floor(millisecondsUntilMidnight / 1000); // Convert to seconds
   console.log(secondsUntilMidnight);
   return secondsUntilMidnight;
 }

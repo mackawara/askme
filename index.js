@@ -1,3 +1,4 @@
+require("dotenv").config();
 const connectDB = require("./config/database");
 const createDoc = require("./config/helperFunction/docxCreator");
 const indvUsers = require("./models/individualUsers");
@@ -36,7 +37,7 @@ const {
 
 //initialise redis
 const redisClient = createClient();
-require("dotenv").config();
+
 // connect to mongodb before running anything on the app
 connectDB().then(async () => {
   const { Client, LocalAuth, MessageMedia } = require("whatsapp-web.js");
@@ -151,6 +152,11 @@ connectDB().then(async () => {
         console.log(ttL);
         if (ttL < 0) {
           subscriber.set({ isSubscribed: false });
+          try {
+            subscriber.save();
+          } catch (err) {
+            console.log(err);
+          }
           client.sendMessage(
             serialisedNumber,
             `Hi ${subscriber.notifyName}, your subscription has expired. Please renew here bit.ly/Askme_ai to continue using AskMe_AI`
@@ -170,9 +176,9 @@ connectDB().then(async () => {
       });
       //set Status
       const randomStatus = require("./assets/statuses");
-      client.setStatus(randomStatus());
-      client.setStatus(randomStatus());
-      client.setStatus(randomStatus());
+      client.setStatus(
+        `Support AskMe by following us on social media channels \nFacebook https://www.facebook.com/askmeAI,\n Tiktok https://www.tiktok.com/@askme_ai .Send whatsapp number to our inbox and we will grant you extra quota`
+      );
     });
     cron.schedule(`42 17 * * 7`, async () => {
       const allChats = await client.getChats();
