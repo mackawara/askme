@@ -36,7 +36,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
       const user = await usersModel
         .findOne({ serialisedNumber: chatID })
         .exec();
-      let tokenLimit = 140;
+      let tokenLimit = 120;
 
       const expTime = getSecsToMidNight();
       //  console.log(`the user ${user}`);
@@ -343,13 +343,13 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
           }
         } else if (isSubscribed == "0") {
           console.log("user not subbed");
-          if (parseInt(JSON.parse(calls)) < 3) {
+          if (parseInt(JSON.parse(calls)) < 2) {
             console.log(calls);
             console.log("is under the quota");
             tokenLimit = 125;
           } else if (calls > 2) {
             msg.reply(
-              `To continue using AskMe_AI, subscribe here https://bit.ly/AskMeSub : \n*For only 6000 Ecocash you get up to 25 requests per day*. As a free user you only get 3 requests per day`
+              `To continue using AskMe_AI, subscribe here https://bit.ly/AskMeSub : \n*For only 6000 Ecocash you get up to 25 requests per day*. As a free user you only get 2 requests per day.\n Alternatively you can support our page by https://www.facebook.com/askmeAI by following and liking.Leave you whatsapp number in our facebook DM and after reviewing we will grant extra requests`
             );
             redisClient.del(`${chatID}messages`, "messages");
             await redisClient.hSet(chatID, "isBlocked", "1");
