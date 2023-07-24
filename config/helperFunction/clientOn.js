@@ -341,7 +341,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
 
         if (chatID === "263775231426@c.us") {
           //check if admin and set admin level limits
-          tokenLimit = 4048;
+          tokenLimit = 2048;
         } else if (isSubscribed === "1") {
           if (calls < maxCallsAllowed) {
             console.log("and is subscribed so set limit to 500");
@@ -392,7 +392,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
 
         //make opena API cal
         const openAiCall = require("./openai");
-       
+
         const response = await openAiCall(
           chatID,
           tokenLimit,
