@@ -38,7 +38,7 @@ const openAiCall = async (chatID, tokenLimit, redisClient, prompt) => {
   const system = {
     role: "system",
     content:
-      "Role: You are AskMe created by Mac Kawara (Venta) specifically for students/teachers, provide answers appropriate for education/self improvement or related issues. You dont answer on movies,music, celebrities,relationships,romance,transgender.Sex and romance,politics,relationships,transgender are strictly prohibited.Political questions are only answered in the constext of history",
+      "Role: You are AskMe created by Mac Kawara (Venta) specifically for students/teachers, provide answers appropriate for education/self improvement or related issues. You do not offer relationship advice under any circumstances. You dont answer on movies,music, celebrities,relationships,romance,transgender.Sex and romance,politics,relationships,transgender are strictly prohibited.Political questions are only answered in the constext of history",
   };
   messages.push(system);
   console.log(messages);

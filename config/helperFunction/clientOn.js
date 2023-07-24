@@ -18,12 +18,9 @@ const processSub = require("./processSub");
 const processFollower = require("./processFollower");
 const timeDelay = (ms) => new Promise((res) => setTimeout(res, ms));
 const clientOn = async (client, arg1, redisClient, MessageMedia) => {
-  const fs = require("fs/promises");
   const me = process.env.ME;
   const usersModel = require("../../models/individualUsers");
-  //const { MessageMedia } = require("whatsapp-web.js");
 
-  // let groupName, grpDescription;
   if (arg1 == "message") {
     client.on(`message`, async (msg) => {
       const elevate = require("./elevate");
@@ -31,15 +28,11 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
       const contact = await msg.getContact();
       const msgBody = msg.body;
       const chatID = msg.from;
-      const expiryTime = await getSecsToMidNight();
+      const expiryTime = getSecsToMidNight();
 
-      const user = await usersModel
-        .findOne({ serialisedNumber: chatID })
-        .exec();
       let tokenLimit = 100;
 
       const expTime = getSecsToMidNight();
-      //  console.log(`the user ${user}`);
 
       let prompt = await msgBody.replace(/openAi:|createDoc/gi, "");
       //only use on direct messages
@@ -47,6 +40,9 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
       if (!chat.isGroup && !msg.isStatus) {
         // if user is not already in Redis
         const exists = await redisClient.exists(chatID);
+        const user = await usersModel
+          .findOne({ serialisedNumber: chatID })
+          .exec();
 
         //check the redis DB if there is an entry from the number
 
@@ -60,9 +56,10 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
           serialisedNumber = await contact.id._serialized;
           notifyName = await contact.pushname;
           number = chatID.slice(0, 12);
-          console.log(notifyName, msgBody);
+          // console.log(notifyName, msgBody);
 
           // if contact is not already saved save to DB
+
           if (!user) {
             //check if the user is in the referals
             const referal = await ReferalsModel.findOne({
@@ -151,8 +148,6 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
             }
             //check in mongoDb if is Subscibed
             if (user.isSubscribed) {
-              console.log("Use is subscribed now setting to 1");
-
               await redisClient.hSet(chatID, {
                 isBlocked: "0",
                 calls: 0,
@@ -169,14 +164,11 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
             }
             //check if is a follower
             if (user.isFollower) {
-              console.log("Use is a follower 1");
-
               await redisClient.hSet(chatID, {
                 isFollower: "1",
               });
               await redisClient.expire(chatID, expiryTime);
             } else {
-              console.log(`is not a follower`);
               await redisClient.hSet(chatID, {
                 isFollower: "0",
               });
@@ -184,7 +176,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
             }
           }
         }
-        //else if the user is already logged IN
+        //else if the user is already logged IN redis memory cache
 
         //  the  shortTTL represents the number of calls in previos 30 secons
         //check if short term TTL
@@ -304,7 +296,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
         if (!isSystemNotBusy(msg, redisClient)) {
           return;
         }
-        console.log(`is flagged`, isFlagged(msgBody));
+
         if (isFlagged(msgBody)) {
           msg.reply(
             "Sorry!,Your request has been flagged because it has words identified as having potential to be used for illicit/immoral uses and has been sent to the adminstrator for review. If you feel you have been wrongly flagged do appeal to our admin on this number 0775231426"
@@ -349,7 +341,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
 
         if (chatID === "263775231426@c.us") {
           //check if admin and set admin level limits
-          tokenLimit = 2048;
+          tokenLimit = 4048;
         } else if (isSubscribed === "1") {
           if (calls < maxCallsAllowed) {
             console.log("and is subscribed so set limit to 500");
@@ -361,14 +353,14 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
             );
             return;
           }
-        } else if (isSubscribed == "0") {
+        } else if (isSubscribed === "0") {
           console.log("user not subbed");
           if (parseInt(JSON.parse(calls)) < maxCallsAllowed) {
             console.log(calls);
             console.log("is under the quota");
           } else if (calls > maxCallsAllowed) {
             msg.reply(
-              `To continue using AskMe_AI, subscribe here https://bit.ly/AskMeSub : \n*For only 6000 Ecocash you get up to 25 requests per day*. As a free user you only get 1 requests per day.\n Alternatively you can support our page by https://www.facebook.com/askmeAI by following and liking.Leave you whatsapp number in our facebook DM and after reviewing we will grant you "follower" status, which has extra requests`
+              `To continue using AskMe_AI, subscribe here https://bit.ly/AskMeSub : \n*For only 6000 Ecocash you get up to 25 requests per day for 30 days*. As a free user you only get 1 requests per day.\n Alternatively you can support our page by https://www.facebook.com/askmeAI by following and liking.Leave you whatsapp number in our facebook DM and after reviewing we will grant you "follower" status, which has extra requests`
             );
             redisClient.del(`${chatID}messages`, "messages");
             await redisClient.hSet(chatID, "isBlocked", "1");
@@ -400,7 +392,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
 
         //make opena API cal
         const openAiCall = require("./openai");
-        console.log("test line 222");
+       
         const response = await openAiCall(
           chatID,
           tokenLimit,

@@ -1,4 +1,3 @@
-const indvUsers = require("../../models/individualUsers");
 const elevate = async (msg, chatID, redisClient) => {
   const msgBody = msg.body;
   //const chatID = msg.from;
@@ -10,22 +9,14 @@ const elevate = async (msg, chatID, redisClient) => {
     if (!/^2637\d{8}@c\.us$/.test(number)) {
       msg.reply("The number is inaccurately formmatted");
     } else {
-      await indvUsers
-        .updateOne(
-          { serialisedNumber: number },
-          { $set: { isSubscribed: true, subTTL: 2 } }
-        )
-        .then((result) => {
-          console.log(result);
-          redisClient.hSet(chatID, {
-            calls: 0,
-            isBlocked: "0",
-            isSubscribed: "1",
-          });
-          redisClient.expire(chatID, 86400);
-          msg.reply(`${number}, is now elevated`);
-          
-        });
+      console.log(result);
+      redisClient.hSet(chatID, {
+        calls: 0,
+        isBlocked: "0",
+        isSubscribed: "1",
+      });
+      redisClient.expire(chatID, 86400);
+      msg.reply(`${number}, is now elevated`);
     }
 
     return true;
