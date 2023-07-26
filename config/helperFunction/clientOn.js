@@ -360,7 +360,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
             console.log("is under the quota");
           } else if (calls > maxCallsAllowed) {
             msg.reply(
-              `To continue using AskMe_AI, subscribe here https://bit.ly/AskMeSub : \n*For only 6000 Ecocash you get up to 25 requests per day for 30 days*. As a free user you only get 1 requests per day.\n Alternatively you can support our page by https://www.facebook.com/askmeAI by following and liking.Leave you whatsapp number in our facebook DM and after reviewing we will grant you "follower" status, which has extra requests`
+              `To continue using AskMe_AI click  here https://bit.ly/AskMeSub  and subscribe: \n*For only 6000 Ecocash you get up to 25 requests everyday for 30 days*.`
             );
             redisClient.del(`${chatID}messages`, "messages");
             await redisClient.hSet(chatID, "isBlocked", "1");

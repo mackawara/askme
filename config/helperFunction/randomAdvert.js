@@ -1,5 +1,5 @@
 const adverts = [
-  `*Support AskMe by following us on social media channels* \nFacebook https://www.facebook.com/askmeAI,\n Tiktok https://www.tiktok.com/@askme_ai .*Send whatsapp number to our social media inbox and we will grant you extra quota*`,
+  `*For tips and more,Follow us on* \nFacebook https://www.facebook.com/askmeAI,\n Tiktok https://www.tiktok.com/@askme_ai .*Send whatsapp number to our social media inbox and we will grant you extra quota*`,
   /*  "Follow AskMe on tiktok to find cool ways of using AI to enhance you study.You have no excuse for failing https://www.tiktok.com/@askme_ai",
   "To download this as a word doc swipe this message to the right and reply with createDoc",
   "Help your friends discover AskMe share this link with them https://chat.whatsapp.com/I5RNx9PsfYjE0NV3vNijk3*",
