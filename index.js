@@ -119,7 +119,10 @@ connectDB().then(async () => {
       });
     });
  */
-
+    /* cron.schedule(` 5 2 * * * `, async () => {
+      const usersToday=await redisClient.KEYS()
+      console.log
+    }) */
     cron.schedule(` 5 2 * * * `, async () => {
       // expireSubs after 1 mmonth
       const subscribed = await indvUsers.find({ isSubscribed: true });

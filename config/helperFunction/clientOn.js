@@ -113,7 +113,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
             }
             await redisClient.hSet(chatID, {
               isBlocked: "0",
-              calls: 0,
+              calls: -1,
               isSubscribed: "0",
               isFollower: "1",
             }); //
