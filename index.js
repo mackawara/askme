@@ -76,10 +76,13 @@ connectDB().then(async () => {
     console.log("Client is ready!");
     //functions abd resources
     //Helper Functions
-
+    client.on("call", async (call) => {
+      call.reject()
+      client.sendMessage(call.from, "*System message*:\n This number does not take calls, please refrain from calling")
+    })
     const cron = require("node-cron");
     /*  cron.schedule(`9 1 * * *`, async () => {
-      //redeem users
+      //redeem uasyncsers
       const redeemables = ReferalsModel.find({
         isNowUser: true,
         redeemed: false,
