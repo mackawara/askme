@@ -6,7 +6,7 @@ const isFlagged = require("./isFlagged");
 const docxCreator = require("./docxCreator");
 const path = require("path");
 const randomAdvert = require("./randomAdvert");
-const generateImage=require("./generateImage")
+const generateImage = require("./generateImage")
 
 const saveReferal = require("./saveReferal");
 
@@ -311,7 +311,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
           } else {
             client.sendMessage(
               chatID,
-              MessageMedia.fromFilePath(path.resolve(response))
+              MessageMedia.fromUrl(response)
             );
           }
           return;
