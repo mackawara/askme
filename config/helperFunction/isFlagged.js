@@ -6,7 +6,7 @@ const isFlagged = (string) => {
     "movies",
     "boyfriend",
     "girlfirend",
-    "my bae",
+    "my bae", "lyrics", "CCC", "ZANU PF"
     ,
   ];
   let flagged = [];
