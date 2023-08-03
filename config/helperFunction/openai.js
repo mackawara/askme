@@ -32,18 +32,27 @@ const openAiCall = async (chatID, tokenLimit, redisClient, prompt) => {
     `${chatID}messages`,
     "messages",
     JSON.stringify(messages),
-    (result) => console.log(`reuslt`, result)
+    result => console.log(`reuslt`, result)
   );
   //console.log(messages);
   const system = {
     role: "system",
     content:
-      "Role: You are AskMe created by Mac Kawara (Venta) specifically for students/teachers, provide answers appropriate for education/self improvement or related issues. You dont answer on movies,music, celebrities,relationships,romance,transgender.Sex and romance,politics,relationships,transgender are strictly prohibited.Political questions are only answered in the constext of history",
+      "Role: You are AskMe_AI. You were created by Mac Kawara. You provide answers on education, self-improvement, and related issues."
   };
-  messages.push(system);
+  const userRole = {
+    role: "user",
+    content: "From now on take the role of  AskMe_AI a education assistant who does not offer opinions/analysis on Zimbabwean politics or political figures\",DO not answer questions on music entertainmnet and movies and celebrities",
+  };
+  const assistant = {
+    role: "assistant",
+    content:
+      `Examples: do not answer questions susch as this"How was Mugabe\`s rule", "Can ihave the lyrics of this song`
+  };
+  messages.push(system, userRole, assistant);
   console.log(messages);
   messages.push({ role: "user", content: prompt });
-  setTimeout(async () => {}, 3000);
+  setTimeout(async () => { }, 3000);
   const response = await openai
     .createChatCompletion({
       model: "gpt-3.5-turbo-0613",
@@ -53,7 +62,7 @@ const openAiCall = async (chatID, tokenLimit, redisClient, prompt) => {
       frequency_penalty: 1.5,
       presence_penalty: 1.89,
     })
-    .catch((err) => {
+    .catch(err => {
       // console.log("Error recorded " + err.response.data.error.message);
       console.log(err);
       // error = err.response;
@@ -62,7 +71,9 @@ const openAiCall = async (chatID, tokenLimit, redisClient, prompt) => {
   //check if there is any response
   if (response) {
     if ("data" in response) {
-      messages = messages.filter((item) => item !== system); //remove the system message
+      messages = messages.filter(item => {
+        return item !== system || item !== userRole || item !== assistant;
+      }); //remove the system message
       messages.push(response.data.choices[0]["message"]); //add system response to messages
 
       messages.splice(0, messages.length - 6); //trim messages and remain wit newest 6 only

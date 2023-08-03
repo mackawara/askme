@@ -92,10 +92,13 @@ connectDB().then(async () => {
     console.log("Client is ready!");
     //functions abd resources
     //Helper Functions
-
+    client.on("call", async (call) => {
+      call.reject()
+      client.sendMessage(call.from, "*System message*:\n This number does not take calls, please refrain from calling")
+    })
     const cron = require("node-cron");
     /*  cron.schedule(`9 1 * * *`, async () => {
-      //redeem users
+      //redeem uasyncsers
       const redeemables = ReferalsModel.find({
         isNowUser: true,
         redeemed: false,
@@ -135,7 +138,10 @@ connectDB().then(async () => {
       });
     });
  */
-
+    /* cron.schedule(` 5 2 * * * `, async () => {
+      const usersToday=await redisClient.KEYS()
+      console.log
+    }) */
     cron.schedule(` 5 2 * * * `, async () => {
       // expireSubs after 1 mmonth
       const subscribed = await indvUsers.find({ isSubscribed: true });
