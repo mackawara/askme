@@ -10,7 +10,7 @@ const randomAdvert = require("./randomAdvert");
 const saveReferal = require("./saveReferal");
 
 const ignorePatterns =
-  /^(ok|oky|thank you|ok thank you|ouky|thanx|It's ok. Thank you so much|hey|hi ask me|noted|hello|good night|ok thank you|k|night|Youre welcome|welcome|you welcome|Hie|hy|thanks?|k|[hi]+|\bhey\b)\W*$/gi;
+  /^(ok|oky|thank you|ok thank you|ouky|thanx|It's ok. Thank you so much|hey|hi ask me|noted|hello|good night|ok thank you|k|night|Youre welcome|welcome|hey|you welcome|Hie|hy|thanks?|k|[hi]+|\bhey\b)\W*$/gi;
 //helper Functions
 const getSecsToMidNight = require("./getSecsToMidnight");
 const isSystemNotBusy = require("./isSystemNotBusy");
