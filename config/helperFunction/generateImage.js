@@ -1,21 +1,5 @@
 const { Configuration, OpenAIApi } = require("openai");
-const fs = require("fs");
-const { json } = require("stream/consumers");
-const convertBSonTojpeg = require("./convertBSonToJpeg");
-const { url } = require("inspector");
-const downloadImageFromURL = require("./downloadImageFromUrl");
-const http = require("http");
-const https = require("https");
-const contactsModel = require("../../models/individualUsers");
-const Stream = require("stream").Transform;
-//keyword createImage
-//remove keyword from prompt
-//process image
-//end back
-//housekeeping
-//only subscribers
-//equal to 10 calls
-// params chatID,redis,msg
+
 const configuration = new Configuration({
   apiKey: process.env.OPENAI_API_KEY,
 });
@@ -34,7 +18,6 @@ const createImage = async (msgBody, chatID, redisClient) => {
 
   const fileName = prompt.slice(0, 8).replace(/\s/gi, "");
   const outputPath = `../../assets/${fileName}${chatID}.jpg`;
-  //const imagepath = fs.readFile("../../test.b64_json", (err) => {
 
   try {
     const response = await openai.createImage({
@@ -46,12 +29,10 @@ const createImage = async (msgBody, chatID, redisClient) => {
     });
 
     if (response) {
-    //  const image = response.data.data[0].b64_json;
-     const url = response.data.data[0].url;
-    //const url = `ttps://oaidalleapiprodscus.blob.core.windows.net/private/org-oeCrRII36xNn3U62fpPpolbS/user-91BXWXmwnqRHsuzR1Z9gEF0Q/img-cVf2NsrlXOgQgK88Ic1eDcTs.png?st=2023-07-06T09%3A14%3A33Z&se=2023-07-06T11%3A14%3A33Z&sp=r&sv=2021-08-06&sr=b&rscd=inline&rsct=image/png&skoid=6aaadede-4fb3-4698-a8f6-684d7786b067&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2023-07-05T20%3A11%3A32Z&ske=2023-07-06T20%3A11%3A32Z&sks=b&skv=2021-08-06&sig=DZNMjBwtv42v1AVnxbCc3G0CRcx6RAQ5ZUV5rMdlJjY%3D`;
-    let finalPath = `../../assets/${prompt.replace(" ", "").slice(0, 6)}.jpeg`;
-    //download the url
-    return  url
+
+      const url = response.data.data[0].url;
+      await redisClient.HINCRBY(chatID, "calls", 15);
+      return url
     }
     //console.log(image);
   } catch (err) {

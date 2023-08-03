@@ -293,14 +293,18 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
           );
           return;
         }
+
+        if (!isSystemNotBusy(msg, redisClient)) {
+          return;
+        }
         if (msgBody.startsWith("createImage")) {
-          if ((await redisClient.hGet(chatID, calls)) > 15) {
+          if ((await redisClient.hGet(chatID, calls)) > 12) {
             msg.reply(
               "Sorry you do not have enough calls remaing today to make this request. Image generation requires 10 or more remain calls per day"
             );
           } else {
             msg.reply(
-              "Please wait while your image is being processed. Image generation is equivalent to 10 messages"
+              "Please wait while your image is being processed. Image generation is equivalent to 15 messages on your quota"
             );
           }
           const response = await generateImage(msgBody, chatID, redisClient);
@@ -318,9 +322,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
         }
 
         //Check if system is not going over API limits
-        if (!isSystemNotBusy(msg, redisClient)) {
-          return;
-        }
+
 
         if (isFlagged(msgBody)) {
           msg.reply(
