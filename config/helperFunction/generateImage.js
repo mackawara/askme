@@ -36,6 +36,7 @@ const createImage = async (msgBody, chatID, redisClient) => {
     }
     //console.log(image);
   } catch (err) {
+    console.log(err)
     return `Error : there was an error processing your image please check if it has any harmful content or anything that maybe against our usage policies`;
   }
 };

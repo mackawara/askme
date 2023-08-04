@@ -318,6 +318,10 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
         const calls = await redisClient.hGet(chatID, "calls");
 
         if (msgBody.startsWith("createImage")) {
+          if (isSubscribed === "0") {
+            msg.reply("Sorry this service is only available for subscribed users, please subscribe by clicking here https://bit.ly/AskMeSub and processing your payment of only $6000 ecocash , or contact us on 0775231426 to make other arrangements")
+            return
+          }
           if ((await redisClient.hGet(chatID, calls)) > 12) {
             msg.reply(
               "Sorry you do not have enough calls remaing today to make this request. Image generation requires 10 or more remain calls per day"
