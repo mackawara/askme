@@ -5,22 +5,6 @@ const indvUsers = require("./models/individualUsers");
 const ReferalsModel = require("./models/referals");
 const totalUsage = require("./models/totalUsage");
 
-/* 
-const bsonConverter = async (bsonString, outputPath) => {
-  const decoded = Buffer.from(bsonString, `base64`).toString();
-  console.log(decoded)
-  //const jsonData=JSON.parse(decoded)
-  //const imageData = jsonData.image;
-  //const base64Image = bsonString.split(`;base64,`).pop();
-  try {
-    fs.writeFileSync(outputPath, Buffer.from(decoded), `base64`);
-    console.log("conveterd and saved the file");
-  } catch (err) {
-    console.error("Error converting and saving the jpeg Image");
-  }
-};
-bsonConverter(string, "./image5.jpeg"); */
-
 const qrcode = require("qrcode-terminal");
 const {
   AggregateSteps,
@@ -45,9 +29,9 @@ connectDB().then(async () => {
   const client = new Client({
     authStrategy: new LocalAuth(),
     puppeteer: {
-      //  executablePath: process.env.EXECPATH,
+      executablePath: process.env.EXECPATH,
       handleSIGINT: true,
-      headless: false,
+      headless: true,
       args: [
         "--log-level=3", // fatal only
         "--start-maximized",
