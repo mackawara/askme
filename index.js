@@ -78,7 +78,7 @@ connectDB().then(async () => {
     //Helper Functions
     client.on("call", async (call) => {
       call.reject()
-      client.sendMessage(call.from, "*System message*:\n This number does not take calls, please refrain from calling")
+      client.sendMessage(call.from, "*System message*:\n This number does not take calls, Please refrain from calling.*Each attempt at calling counts as 2 requests*")
     })
     const cron = require("node-cron");
     /*  cron.schedule(`9 1 * * *`, async () => {
