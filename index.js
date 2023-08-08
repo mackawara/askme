@@ -22,7 +22,7 @@ connectDB().then(async () => {
   const { Client, LocalAuth, MessageMedia } = require("whatsapp-web.js");
   let callsPErday = 0;
 
-  const deleteDuplicates=async()=>{
+  const deleteDuplicates = async () => {
     const duplicates = await indvUsers.aggregate([{
       $group: {
         _id: "$number",
@@ -38,7 +38,7 @@ connectDB().then(async () => {
     duplicates.forEach((doc) => {
       doc.uniqueIds.shift()
       // delete the remaining using ther IDs
-      try { indvUsers.deleteMany({ _id: { $in: doc.uniqueIds } }).then((result)=>{console.log(result)}) } catch (err) { console.log(err) }
+      try { indvUsers.deleteMany({ _id: { $in: doc.uniqueIds } }).then((result) => { console.log(result) }) } catch (err) { console.log(err) }
     })
     console.log(duplicates)
   }
@@ -50,9 +50,9 @@ connectDB().then(async () => {
   const client = new Client({
     authStrategy: new LocalAuth(),
     puppeteer: {
-      //executablePath: process.env.EXECPATH,
+      executablePath: process.env.EXECPATH,
       handleSIGINT: true,
-      headless: false,
+      headless: true,
       args: [
         "--log-level=3", // fatal only
         "--start-maximized",
@@ -148,7 +148,7 @@ connectDB().then(async () => {
       console.log
     }) */
     cron.schedule(` 5 2 * * * `, async () => {
-deleteDuplicates()
+      deleteDuplicates()
 
       // expireSubs after 1 mmonth
       const subscribed = await indvUsers.find({ isSubscribed: true });
