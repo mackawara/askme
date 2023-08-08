@@ -382,12 +382,13 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
 
           return;
         }
-
+        console.log(isSubscribed)
+        console.log(isFollower)
         if (chatID === "263775231426@c.us") {
           //check if admin and set admin level limits
           tokenLimit = 2048;
         }
-        if (isSubscribed == "1") {
+        else if (isSubscribed == "1") {
           if (calls > minCallsAllowed) {
             console.log("and is subscribed so set limit to 500");
             //set token limits based on subscription
