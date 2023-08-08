@@ -160,7 +160,6 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
             } else {
               await redisClient.hSet(chatID, {
                 isBlocked: "0",
-
                 isSubscribed: "0",
               });
               await redisClient.expire(chatID, expiryTime);
@@ -193,6 +192,8 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
           await redisClient.hSet(chatID, "calls", maxCallsAllowed)
         }
         const minCallsAllowed = 0
+        isSubscribed = await redisClient.hGet(chatID, "isSubscribed");
+
         //else if the user is already logged IN redis memory cache
 
         //  the  shortTTL represents the number of calls in previos 30 secons
