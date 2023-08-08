@@ -32,6 +32,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
       const expiryTime = getSecsToMidNight();
 
       let tokenLimit = 180;
+      let maxCalls = 1
 
       const expTime = getSecsToMidNight();
 
@@ -69,7 +70,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
 
             //if it has been previously referred update to now User
             if (referal) {
-              const referer = await referal.referingNumber;
+
               try {
                 await referal.set({ isNowUser: true });
                 await referal.save();
@@ -114,13 +115,13 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
             }
             await redisClient.hSet(chatID, {
               isBlocked: "0",
-              calls: -1,
               isSubscribed: "0",
               isFollower: "1",
             }); //
 
             await redisClient.expire(chatID, expiryTime);
-          } else {
+          }
+          else {
             //user is saved in mongoDB
             if (chatID === !me) {
               await redisClient
@@ -134,16 +135,16 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
 
             //Check if blocked in mongoodb
 
-            if (await user.isBlocked) {
+            if (user.isBlocked) {
               await redisClient.hSet(chatID, {
                 isBlocked: "1",
-                calls: 0,
+
               });
               await redisClient.expire(chatID, expiryTime);
             } else {
               await redisClient.hSet(chatID, {
                 isBlocked: "0",
-                calls: 0,
+
               });
               await redisClient.expire(chatID, expiryTime);
             }
@@ -151,14 +152,14 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
             if (user.isSubscribed) {
               await redisClient.hSet(chatID, {
                 isBlocked: "0",
-                calls: 0,
+
                 isSubscribed: "1",
               });
               await redisClient.expire(chatID, expiryTime);
             } else {
               await redisClient.hSet(chatID, {
                 isBlocked: "0",
-                calls: 0,
+
                 isSubscribed: "0",
               });
               await redisClient.expire(chatID, expiryTime);
@@ -176,7 +177,21 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
               await redisClient.expire(chatID, expiryTime);
             }
           }
+          const isSubscribed = await redisClient.hGet(chatID, "isSubscribed");
+          const isFollower = await redisClient.hGet(chatID, "isFollower");
+          maxCalls = () => {
+            let totalCalls;
+            const base = 1;
+            const subscriber = isSubscribed === "1" ? 25 : 0;
+            const follower = isFollower === "1" ? 2 : 0;
+            totalCalls = base + subscriber + follower;
+            console.log(totalCalls);
+            return totalCalls;
+          };
+          const maxCallsAllowed = maxCalls();
+          await redisClient.hSet(chatID, "calls", maxCallsAllowed)
         }
+        const minCallsAllowed = 0
         //else if the user is already logged IN redis memory cache
 
         //  the  shortTTL represents the number of calls in previos 30 secons
@@ -195,19 +210,9 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
           return;
         }
 
-        const isSubscribed = await redisClient.hGet(chatID, "isSubscribed");
-        const isFollower = await redisClient.hGet(chatID, "isFollower");
-        let maxCalls = () => {
-          let totalCalls;
-          const base = 1;
-          const subscriber = isSubscribed === "1" ? 25 : 0;
-          const follower = isFollower === "1" ? 2 : 0;
-          totalCalls = base + subscriber + follower;
-          console.log(totalCalls);
-          return totalCalls;
-        };
-        const maxCallsAllowed = maxCalls();
-        console.log(`This is the max calls ${maxCallsAllowed}`);
+
+
+        // console.log(`This is the max calls ${maxCallsAllowed}`);
 
         if (parseInt(shortTTL) > 2) {
           //if user has made  more than  2 block
@@ -322,7 +327,8 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
             msg.reply("Sorry this service is only available for subscribed users, please subscribe by clicking here https://bit.ly/AskMeSub and processing your payment of only $6000 ecocash , or contact us on 0775231426 to make other arrangements")
             return
           }
-          if ((await redisClient.hGet(chatID, calls)) > 12) {
+          const callsNeedForImageGen = 12
+          if ((await redisClient.hGet(chatID, calls)) < callsNeedForImageGen) {
             msg.reply(
               "Sorry you do not have enough calls remaing today to make this request. Image generation requires 10 or more remain calls per day"
             );
@@ -347,17 +353,20 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
         }
 
         // check if blocked   const isBlocked = await redisClient.hGet(chatID, "isBlocked");
-        await redisClient.HINCRBY(chatID, "calls", 1);
+        //subtract 1 usage call
+        await redisClient.HINCRBY(chatID, "calls", -1);
+        console.log("remaining calls=" + await redisClient.hGet(chatID, "calls"))
         if (isBlocked === "1") {
-          if (calls > 3) {
+
+          if (calls < - 3) {
             msg.reply(
               "*Warning , do not send any further messages else you will be blocked from using the platform for at least 48 hours* \nYou have used up your quota. Subscribe here https://bit.ly/AskMeSub to get standard user privileges or Try again tommorow! "
             );
           }
-          if (calls > 5) {
+          if (calls < - 5) {
             return;
           }
-          if (calls > 6) {
+          if (calls < - 6) {
             msg.reply(
               "You have now been *blocked* for abusing the system and will not be able to use the platform for the next 48 hours, Further messages will result in permanent blocking "
             );
@@ -377,7 +386,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
           //check if admin and set admin level limits
           tokenLimit = 2048;
         } else if (isSubscribed === "1") {
-          if (calls < maxCallsAllowed) {
+          if (calls > minCallsAllowed) {
             console.log("and is subscribed so set limit to 500");
             //set token limits based on subscription
             tokenLimit = 300;
@@ -389,12 +398,12 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
           }
         } else if (isSubscribed === "0") {
           console.log("user not subbed");
-          if (parseInt(JSON.parse(calls)) < maxCallsAllowed) {
+          if (calls > minCallsAllowed) {
             console.log(calls);
             console.log("is under the quota");
-          } else if (calls > maxCallsAllowed) {
+          } else if (calls < minCallsAllowed) {
             msg.reply(
-              `To continue using AskMe_AI click  here https://bit.ly/AskMeSub  and subscribe: \n*For only 6000 Ecocash you get up to 25 requests everyday for 30 days*.`
+              `Choose from our flexible *Pay As You Use* (click here https://bit.ly/Askme-Payu ) option for just $500 Ecocash, giving you 55 message requests valid for 3 days. Or opt for the incredible value of our *monthly subscription* (click here https://bit.ly/AskMe_Monthly) at only $6000 ecocash, providing up to 25 daily requests over a span of 30 days.`
             );
             redisClient.del(`${chatID}messages`, "messages");
             await redisClient.hSet(chatID, "isBlocked", "1");
@@ -418,7 +427,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
             msg.reply(
               `Sorry , there is no history to continue from, Messages are only kept in the system for 5 minutes,After that you canoot use the *continue* keyword`
             );
-            redisClient.HINCRBY(chatID, "calls", -1);
+            redisClient.HINCRBY(chatID, "calls", +1);
             return;
           }
         }
@@ -439,7 +448,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
           response ==
           "I can only continue based on previous 3 messages if they were made within the last 3 minutes"
         ) {
-          redisClient.HINCRBY(chatID, "calls", -1);
+          redisClient.HINCRBY(chatID, "calls", +1);
           msg.reply(response);
           return;
         } else {

@@ -11,11 +11,11 @@ const elevate = async (msg, chatID, redisClient) => {
     } else {
       console.log(result);
       redisClient.hSet(chatID, {
-        calls: 0,
+        calls: 40,
         isBlocked: "0",
         isSubscribed: "1",
       });
-      redisClient.expire(chatID, 86400);
+      redisClient.expire(chatID, 259200);
       msg.reply(`${number}, is now elevated`);
     }
 

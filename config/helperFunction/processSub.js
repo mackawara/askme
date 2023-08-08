@@ -15,7 +15,7 @@ const processSub = async (msg, client, redisClient) => {
       .then((result) => {
         console.log(result);
         redisClient.hSet(number, {
-          calls: 0,
+          calls: 26,
           isBlocked: "0",
           isSubscribed: "1",
         });

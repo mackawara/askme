@@ -31,7 +31,7 @@ const createImage = async (msgBody, chatID, redisClient) => {
     if (response) {
 
       const url = response.data.data[0].url;
-      await redisClient.HINCRBY(chatID, "calls", 15);
+      await redisClient.HINCRBY(chatID, "calls", -15);
       return url
     }
     //console.log(image);
