@@ -108,7 +108,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
               client.sendMessage(me, "New user added  " + chatID);
               client.sendMessage(
                 serialisedNumber,
-                `Hi ${notifyName},thank you for using AskMe, the AI powered virtual study assistant.\n\n*Please Read* As a free user you are limited to 1 request/message per 24 hour period.\n Subscribe here https://bit.ly/askME_AI_payment to upgrade to 25 messages per day and longer, more complete messages\n*How to use*\n1. *Simply* ask any question and wait for a response. For example you can ask "Explain the theory of relativity"or \n "Give me a step by step procedure of mounting an engine",if the response is incomplete you can just say "continue". Yes, you can chat to *AskMe* as you would to a human (*a super intelligent, all knowing human*) because *Askme* remembers topics that you talked about for the previous 30 minutes.\n\n What *Askme* cannot do\n1.Provide updates on current events (events after October 2021)\n2.Provide opinions on subjective things,\nWe hope you enjoy using the app. Please avoid making too many requests in short period of time, as this may slow down the app and cause your number to be blocked if warnings are not heeded. If your refer 3 people that eventually become users of AskME you fet additional usage priviledges simply send referal and their number e.g referal 263774111111,  Join our group to stay up to date https://chat.whatsapp.com/I5RNx9PsfYjE0NV3vNijk3 `
+                `Hi ${notifyName},thank you for using AskMe, the AI powered virtual study assistant.\n\n*Please Read* As a free user you are limited to 1 request/message per 24 hour period.\n . *Simply* ask any question and wait for a response. For example you can ask "Explain the theory of relativity"or \n "Give me a step by step procedure of mounting an engine",if the response is incomplete you can just say "continue". Yes, you can chat to *AskMe* as you would to a human (*a super intelligent, all knowing human*) because *Askme* remembers topics that you talked about for the previous 30 minutes.\n\n What *Askme* cannot do\n1.Provide updates on current events (events after October 2021)\n2.Provide opinions on subjective things,\nWe hope you enjoy using the app. Please avoid making too many requests in short period of time, as this may slow down the app and cause your number to be blocked if warnings are not heeded. If your refer 3 people that eventually become users of AskME you fet additional usage priviledges simply send referal and their number e.g referal 263774111111,  Join our group to stay up to date https://chat.whatsapp.com/I5RNx9PsfYjE0NV3vNijk3 `
               );
             } catch (err) {
               client.sendMessage(me, "Save new user failed");
@@ -325,7 +325,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
 
         if (msgBody.startsWith("createImage")) {
           if (isSubscribed === "0") {
-            msg.reply("Sorry this service is only available for subscribed users, please subscribe by clicking here https://bit.ly/AskMeSub and processing your payment of only $6000 ecocash , or contact us on 0775231426 to make other arrangements")
+            msg.reply("Sorry this service is only available for subscribed users, please subscribe by clicking here and processing your payment of only $6000 ecocash , or contact us on 0775231426 to make other arrangements")
             return
           }
           const callsNeedForImageGen = 12
@@ -361,7 +361,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
 
           if (calls < - 3) {
             msg.reply(
-              "*Warning , do not send any further messages else you will be blocked from using the platform for at least 48 hours* \nYou have used up your quota. Subscribe here https://bit.ly/AskMeSub to get standard user privileges or Try again tommorow! "
+              "*Warning , do not send any further messages else you will be blocked from using the platform for at least 48 hours* \nYou have used up your quota. Subscribe to get standard user privileges or Try again tommorow! "
             );
           }
           if (calls < - 5) {
@@ -457,7 +457,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
             msg.reply(response);
           } else {
             msg.reply(
-              `*${randomAdvert()}*\n\n${response}\n \n*AskMe_AI a VentaAI production*\nCall us on 0775231426 (for enquiries only) for Website and software development*`
+              `*${randomAdvert()}*\n\n${response}`
             );
           }
         }
