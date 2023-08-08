@@ -25,9 +25,7 @@ const openAiCall = async (chatID, tokenLimit, redisClient, prompt) => {
   let messages = await JSON.parse(
     await redisClient.hGet(`${chatID}messages`, "messages")
   );
-  if (prompt == "Continue" && messages == []) {
-    return "I can only continue based on previous 3 messages if they were made within the last 3 minutes";
-  }
+  
   await redisClient.hSet(
     `${chatID}messages`,
     "messages",

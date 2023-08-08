@@ -33,6 +33,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
 
       let tokenLimit = 180;
       let maxCalls = 1
+      let isSubscribed, isFollower
 
       const expTime = getSecsToMidNight();
 
@@ -177,8 +178,8 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
               await redisClient.expire(chatID, expiryTime);
             }
           }
-          const isSubscribed = await redisClient.hGet(chatID, "isSubscribed");
-          const isFollower = await redisClient.hGet(chatID, "isFollower");
+          isSubscribed = await redisClient.hGet(chatID, "isSubscribed");
+          isFollower = await redisClient.hGet(chatID, "isFollower");
           maxCalls = () => {
             let totalCalls;
             const base = 1;
