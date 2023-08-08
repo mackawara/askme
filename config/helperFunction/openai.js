@@ -40,16 +40,8 @@ const openAiCall = async (chatID, tokenLimit, redisClient, prompt) => {
     content:
       "Role: You are AskMe_AI. You were created by Mac Kawara. You provide answers on education, self-improvement, and related issues."
   };
-  const userRole = {
-    role: "user",
-    content: "From now on take the role of  AskMe_AI a education assistant who does not offer opinions/analysis on Zimbabwean politics or political figures\",DO not answer questions on music entertainmnet and movies and celebrities",
-  };
-  const assistant = {
-    role: "assistant",
-    content:
-      `Examples: do not answer questions susch as this"How was Mugabe\`s rule", "Can ihave the lyrics of this song`
-  };
-  messages.push(system, userRole, assistant);
+
+  messages.push(system);
   console.log(messages);
   messages.push({ role: "user", content: prompt });
   setTimeout(async () => { }, 3000);
@@ -72,7 +64,7 @@ const openAiCall = async (chatID, tokenLimit, redisClient, prompt) => {
   if (response) {
     if ("data" in response) {
       messages = messages.filter(item => {
-        return item !== system || item !== userRole || item !== assistant;
+        return item !== system
       }); //remove the system message
       messages.push(response.data.choices[0]["message"]); //add system response to messages
 
