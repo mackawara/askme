@@ -8,6 +8,7 @@ const docxCreator = require("./docxCreator");
 const randomAdvert = require("./randomAdvert");
 const generateImage = require("./generateImage")
 
+
 const saveReferal = require("./saveReferal");
 
 const ignorePatterns =
@@ -17,6 +18,7 @@ const getSecsToMidNight = require("./getSecsToMidnight");
 const isSystemNotBusy = require("./isSystemNotBusy");
 const processSub = require("./processSub");
 const processFollower = require("./processFollower");
+const processPayment = require("../paynow")
 const timeDelay = (ms) => new Promise((res) => setTimeout(res, ms));
 const clientOn = async (client, arg1, redisClient, MessageMedia) => {
   const me = process.env.ME;
@@ -266,7 +268,50 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
             return;
           }
         }
-        // process referalls
+        // process retopup
+
+        if (msgBody.toLowerCase().startsWith("Askmetopup")) {
+          const keywords = msgBody.split(" ")
+          const product = keywords[1].toLowerCase()
+          const payingNumber = keywords[2].toLowerCase()
+          const errorMessage = "*Askmetopup payu 0771234567* for `Pay As You Use` ($500 ecocash for 50 messages)\n Or Askmetopup monthly 0771234567 for monthly subscribtion (25 messages per day for 1 month)"
+          const isValidEconetNumber = /^(07[7-8])(\d{7})$/;
+
+          if (/payu|monthly|month/gi.test(product).test(product)) {
+            msg.reply(
+              `Your topup could not be captured,please use format shown \n* ${errorMessage} `)
+            return
+          }
+          //check if supplied number is ok
+          else if (!isValidEconetNumber.test(payingNumber)) {
+            `The number you entered ${payingNumber} is not a valid Econet number\nplease use format shown \n${errorMessage}`
+            return
+          }
+          else {
+            const result = await processPayment(product,payingNumber,chatID)
+            const numberToProcess = chatID.replace("@c.us", "")
+            msg.reply(`You are subscribing for ${product} subscription.Please wait while your transaction is being processed. You will be asked to confirm payment by entering your PIN`)
+            if (result) {
+              if (product == "payu") {
+                //process payu subs
+                console.log("payu prcoessed")
+                return
+
+              }
+              else if (product == "month" || product == "monthly") {
+
+                processSub(numberToProcess, client, redisClient)
+                return
+              }
+            }
+            else {
+              msg.reply("Sorry your topup was not processed successfully please try again. Use the format shown below\n" + errorMessage)
+            return
+            }
+
+
+          }
+        }
 
         // create docs
         if (
@@ -307,8 +352,6 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
         }
 
 
-
-
         if (isFlagged(msgBody)) {
           msg.reply(
             "Sorry!,Your request has been flagged because it has words identified as having potential to be used for illicit/immoral uses and has been sent to the adminstrator for review. If you feel you have been wrongly flagged do appeal to our admin on this number 0775231426"
@@ -320,7 +363,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
           return;
         }
 
-        //aINCREASE THE COUNT
+
 
         const calls = await redisClient.hGet(chatID, "calls");
 

@@ -23,7 +23,7 @@ const processSub = async (msg, client, redisClient) => {
         msg.reply(`${number}, is now subscribed`);
         client.sendMessage(
           number,
-          `*Thank you for subscribing to AskMe_AI* \nYou now have increased quota of 25 requests per day,We are building an exciting new feature for you AI image generation in which you can tell AI to create an image based on your decsription \n`
+          `*Thank you for subscribing to AskMe_AI* \nYou now have increased quota of 25 requests per day,To find out which features are now available to you type reply with features" \n`
         );
       });
   }
