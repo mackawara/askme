@@ -16,9 +16,10 @@ const ignorePatterns =
 //helper Functions
 const getSecsToMidNight = require("./getSecsToMidnight");
 const isSystemNotBusy = require("./isSystemNotBusy");
-const processSub = require("./processSub");
+const manualProcessSub = require("./manualProcessSub");
 const processFollower = require("./processFollower");
-const processPayment = require("../paynow")
+const processPayment = require("../paynow");
+const autoProcessSub = require("../autoProcessSub");
 const timeDelay = (ms) => new Promise((res) => setTimeout(res, ms));
 const clientOn = async (client, arg1, redisClient, MessageMedia) => {
   const me = process.env.ME;
@@ -52,7 +53,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
         //check the redis DB if there is an entry from the number
 
         if (!(await exists)) {
-          console.log("number not in redis DB");
+
           //check if user exists already in the database
 
           //means in each conversation there is only 1 DB check meaning subsequent calls are faster
@@ -61,7 +62,6 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
           serialisedNumber = await contact.id._serialized;
           notifyName = await contact.pushname;
           number = chatID.slice(0, 12);
-          // console.log(notifyName, msgBody);
 
           // if contact is not already saved save to DB
 
@@ -129,12 +129,8 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
             if (chatID === !me) {
               await redisClient
                 .set(`${chatID}shortTTL`, 1)
-                .then(async (result) => {
-                  console.log(`short ttl`, result);
-                });
               await redisClient.expire(`${chatID}shortTTL`, 30);
             }
-            console.log("not found in redis but ther in DB");
 
             //Check if blocked in mongoodb
 
@@ -240,6 +236,9 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
           );
           return;
         }
+        if (/\bfeatures\b/.test(msgBody)) {
+          msg.reply("Use these keywords to access features avaiable to subscribed user\n*createDoc* to create and download word documents from Askme_ai\n*createImage* to create an image rovide a description of what you would want,\n*syllabus* : to download a Zimsec syalbaus, supply the subject and the number\n*topup:* to subscribe or topup          ")
+        }
 
         //check if it is not elevation message
         //Admin level tasks
@@ -261,7 +260,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
 
             return;
           } else if (msgBody.startsWith("processSub:")) {
-            processSub(msg, client, redisClient);
+            manualProcessSub(msg, client, redisClient);
             return;
           } else if (msgBody.startsWith("processFollower:")) {
             processFollower(msg, client, redisClient);
@@ -270,47 +269,53 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
         }
         // process retopup
 
-        if (msgBody.toLowerCase().startsWith("Askmetopup")) {
-          const keywords = msgBody.split(" ")
-          const product = keywords[1].toLowerCase()
-          const payingNumber = keywords[2].toLowerCase()
-          const errorMessage = "*Askmetopup payu 0771234567* for `Pay As You Use` ($500 ecocash for 50 messages)\n Or Askmetopup monthly 0771234567 for monthly subscribtion (25 messages per day for 1 month)"
-          const isValidEconetNumber = /^(07[7-8])(\d{7})$/;
+        if (msgBody.toLowerCase().startsWith("topup")) {
+          const errorMessage = "*topup payu 0771234567* for `Pay As You Use` ($500 ecocash for 55 messages)\nOr topup monthly 0771234567 for monthly subscribtion (25 messages per day for 1 month)"
+          try {
+            const keywords = msgBody.split(" ")
+            const product = keywords[1]
+            const payingNumber = keywords[2]
+            const isValidEconetNumber = /^(07[7-8])(\d{7})$/;
 
-          if (/payu|monthly|month/gi.test(product).test(product)) {
-            msg.reply(
-              `Your topup could not be captured,please use format shown \n* ${errorMessage} `)
-            return
-          }
-          //check if supplied number is ok
-          else if (!isValidEconetNumber.test(payingNumber)) {
-            `The number you entered ${payingNumber} is not a valid Econet number\nplease use format shown \n${errorMessage}`
-            return
-          }
-          else {
-            const result = await processPayment(product,payingNumber,chatID)
-            const numberToProcess = chatID.replace("@c.us", "")
-            msg.reply(`You are subscribing for ${product} subscription.Please wait while your transaction is being processed. You will be asked to confirm payment by entering your PIN`)
-            if (result) {
-              if (product == "payu") {
-                //process payu subs
-                console.log("payu prcoessed")
-                return
-
-              }
-              else if (product == "month" || product == "monthly") {
-
-                processSub(numberToProcess, client, redisClient)
-                return
-              }
+            if (!/\b(payu|month|monthly)\b/gi.test(product)) {
+              msg.reply(
+                `Your topup could not be captured because you did not specify which *product* (between payu/monthly) please use format shown \n*${errorMessage} `)
+              return
+            }
+            //check if supplied number is ok
+            else if (!isValidEconetNumber.test(payingNumber)) {
+              msg.reply(`The number you entered ${payingNumber} is not a valid Econet number\nplease use format shown \n${errorMessage}`)
+              return
             }
             else {
-              msg.reply("Sorry your topup was not processed successfully please try again. Use the format shown below\n" + errorMessage)
-            return
+              const result = await processPayment(product, payingNumber, chatID)
+
+              msg.reply(`You are subscribing for ${product} subscription.Please wait while your transaction is being processed. You will be asked to confirm payment by entering your PIN`);
+
+              if (result) {
+
+                if (product == "payu") {
+                  //process payu subs
+                  msg.reply("payment received , now processing subscribtion")
+                  await autoProcessSub(chatID, client, redisClient, "payu")
+
+                  return
+
+                }
+                else if (product == "month" || product == "monthly") {
+
+                  autoProcessSub(chatID, client, redisClient, "monthly")
+                  return
+                }
+              }
+              else {
+                msg.reply("Sorry your topup was not processed successfully please try again. Use the format shown below\n" + errorMessage)
+                return
+              }
+
+
             }
-
-
-          }
+          } catch (err) { console.log(err); msg.reply("Sorry , there was an error processing your request, If you want to top up your account please send message as shown " + errorMessage) }
         }
 
         // create docs
@@ -383,7 +388,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
             );
           }
           const response = await generateImage(msgBody, chatID, redisClient);
-          console.log(response);
+
           if (response.startsWith("Error")) {
             msg.reply(response);
             return;
@@ -426,17 +431,16 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
 
           return;
         }
-        console.log(isSubscribed)
-        console.log(isFollower)
+
         if (chatID === "263775231426@c.us") {
           //check if admin and set admin level limits
           tokenLimit = 2048;
         }
         else if (isSubscribed == "1") {
           if (calls > minCallsAllowed) {
-            console.log("and is subscribed so set limit to 500");
+
             //set token limits based on subscription
-            tokenLimit = 300;
+            tokenLimit = 350;
           } else {
             msg.reply(
               "*Do not reply*You have exceeded your quota.Your subscription has a total of 25 requests per day. "
@@ -445,11 +449,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
           }
         }
         else if (isSubscribed == "0") {
-          console.log("user not subbed");
-          if (calls > minCallsAllowed) {
-            console.log(calls);
-            console.log("is under the quota");
-          } else if (calls < minCallsAllowed) {
+          if (calls < minCallsAllowed) {
             msg.reply(
               `*Choose from our flexible *Pay As You Use* (click here https://bit.ly/Askme-Payu ) option for just $500 Ecocash, giving you 55 message requests valid for 3 days. Or opt for the incredible value of our *monthly subscription* (click here https://bit.ly/AskMe_Monthly) at only $6000 ecocash, providing up to 25 daily requests over a span of 30 days.`
             );

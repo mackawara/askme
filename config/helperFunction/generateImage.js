@@ -4,6 +4,17 @@ const configuration = new Configuration({
   apiKey: process.env.OPENAI_API_KEY,
 });
 const createImage = async (msgBody, chatID, redisClient) => {
+
+  /* const messages=[{role:"system", content: "you will be given a prompt to create an image, this  prompt may not be having sufficent detail for creation of a good detailed, accurate image. If that is the case you will  for image generation model to"}]
+    const response = await openai
+      .createCompletion({
+        model: "gpt-4",
+        messages: messages,
+        temperature: 0.5,
+        max_tokens: tokenLimit,
+        frequency_penalty: 1.5,
+        presence_penalty: 1.89,
+      }) */
   //test if formatted well
   if (/create Image|createImage/gi.test(msgBody.slice(0, 7))) {
     return "Error Your message is not formatted correctly for createImageeration\n Use the example below\ncreateImage a white cloud covering a mountain ";
@@ -23,7 +34,7 @@ const createImage = async (msgBody, chatID, redisClient) => {
     const response = await openai.createImage({
       prompt: prompt,
       n: 1,
-      size: "256x256",
+      size: "512x512",
       response_format: "url",
       user: chatID,
     });

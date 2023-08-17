@@ -23,9 +23,10 @@ const paynowProcess = async (product, payingNumber, chatID) => {
                 let instructions = response.instructions
                 console.log(instructions)
                 const pollUrl = response.instructions
-                const status = await paynow.pollTransaction(pollUrl);
+                //const status = await paynow.pollTransaction(pollUrl);
 
-                if (status.paid()) {
+                paymentCompleted = true
+               /*  if (status.paid()) {
                     //save to DB
                     const newPayment = new PaynowPayments({
                         date: new Date().toISOString().slice(0, 10),
@@ -38,13 +39,14 @@ const paynowProcess = async (product, payingNumber, chatID) => {
                     })
                     try { newPayment.save() } catch (error) { console.log(error) }
 
-                    paymentCompleted = true
-                }
+                } */
             } else {
                 console.log(response)
             }
         }
     }).catch((err) => { console.log(err) })
+    
+    console.log(paymentCompleted)
     return paymentCompleted
 }
 module.exports = paynowProcess
