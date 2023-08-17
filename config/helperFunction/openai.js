@@ -25,7 +25,7 @@ const openAiCall = async (chatID, tokenLimit, redisClient, prompt) => {
   let messages = await JSON.parse(
     await redisClient.hGet(`${chatID}messages`, "messages")
   );
-  
+
   await redisClient.hSet(
     `${chatID}messages`,
     "messages",
@@ -66,14 +66,14 @@ const openAiCall = async (chatID, tokenLimit, redisClient, prompt) => {
       }); //remove the system message
       messages.push(response.data.choices[0]["message"]); //add system response to messages
 
-      messages.splice(0, messages.length - 6); //trim messages and remain wit newest 6 only
+      messages.splice(0, messages.length - 12); //trim messages and remain wit newest 6 only
 
       redisClient.hSet(
         `${chatID}messages`,
         "messages",
         JSON.stringify(messages)
       );
-      redisClient.expire(`${chatID}messages`, 300);
+      redisClient.expire(`${chatID}messages`, 3000);
       user.calls++;
       user.inputTokens =
         parseInt(user.inputTokens) + response.data.usage.prompt_tokens;

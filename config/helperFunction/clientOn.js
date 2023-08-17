@@ -393,7 +393,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
           if (calls > minCallsAllowed) {
             console.log("and is subscribed so set limit to 500");
             //set token limits based on subscription
-            tokenLimit = 300;
+            tokenLimit = 500;
           } else {
             msg.reply(
               "*Do not reply*You have exceeded your quota.Your subscription has a total of 25 requests per day. "
@@ -408,7 +408,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
             console.log("is under the quota");
           } else if (calls < minCallsAllowed) {
             msg.reply(
-              `*Choose from our flexible *Pay As You Use* (click here https://bit.ly/Askme-Payu ) option for just $500 Ecocash, giving you 55 message requests valid for 3 days. Or opt for the incredible value of our *monthly subscription* (click here https://bit.ly/AskMe_Monthly) at only $6000 ecocash, providing up to 25 daily requests over a span of 30 days.`
+              `Sorry you have exceeded your free quota \n*Choose from our flexible *Pay As You Use* (click here https://bit.ly/Askme-Payu ) option for just $500 Ecocash, giving you 55 message requests valid for 3 days. Or opt for the incredible value of our *monthly subscription* (click here https://bit.ly/AskMe_Monthly) at only $6000 ecocash, providing up to 25 daily requests over a span of 30 days.`
             );
             redisClient.del(`${chatID}messages`, "messages");
             await redisClient.hSet(chatID, "isBlocked", "1");
@@ -427,16 +427,6 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
           );
           return;
         }
-        if (/continue/gi.test(msgBody)) {
-          if (await redisClient.exists(`${chatID}messages`)) {
-            msg.reply(
-              `Sorry , there is no history to continue from, Messages are only kept in the system for 5 minutes,After that you canoot use the *continue* keyword`
-            );
-            redisClient.HINCRBY(chatID, "calls", +1);
-            return;
-          }
-        }
-        //check if there is messages
 
         //make opena API cal
         const openAiCall = require("./openai");
