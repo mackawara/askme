@@ -1,16 +1,17 @@
 const indvUsers = require("../../models/individualUsers");
-const manualProcessSub = async (msg, client, redisClient,product) => {
+const manualProcessSub = async (msg, client, redisClient, product) => {
   if (/payu/gi.test(product)) {
+    const chatID = msg.from
     redisClient.hSet(chatID, {
       calls: 55,
       isBlocked: "0",
       isSubscribed: "1",
     });
     redisClient.expire(chatID, 259200);
-    client.sendMessage(process.env.ME, `Automatic subscribtion alert${chatID}, is now subscribed for ${product}`);
+    client.sendMessage(process.env.ME, `Subscribtion alert${chatID}, is now subscribed for ${product}`);
     client.sendMessage(
       chatID,
-      `*Thank you for subscribing to AskMe_AI* \nYou now have purchased a quota of 55 expiring in 72 hours,To find out which features are now available to you type reply with *features*" \n`
+      `*Thank you for subscribing to AskMe_AI* \nYou now have purchased a quota of 55 expiring in 72 hours, \n`
     );
     return
   }
