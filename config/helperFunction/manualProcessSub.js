@@ -1,27 +1,34 @@
 const indvUsers = require("../../models/individualUsers");
 const manualProcessSub = async (msg, client, redisClient, product) => {
+
+  const msgBody = await msg.body;
+
   if (/payu/gi.test(product)) {
-    const chatID = msg.from
-    redisClient.hSet(chatID, {
+    let number = msgBody.replace("processPayu:", "").replace(/\s/g, "").trim();
+    number += "@c.us";
+    if (!/^2637\d{8}@c\.us$/.test(number)) {
+      msg.reply("The number is inaccurately formmatted");
+      return
+    }
+    redisClient.hSet(number, {
       calls: 55,
       isBlocked: "0",
       isSubscribed: "1",
     });
-    redisClient.expire(chatID, 259200);
-    client.sendMessage(process.env.ME, `Subscribtion alert${chatID}, is now subscribed for ${product}`);
+    redisClient.expire(number, 259200);
+    client.sendMessage(process.env.ME, `Subscribtion alert${number}, is now subscribed for ${product}`);
     client.sendMessage(
-      chatID,
+      number,
       `*Thank you for subscribing to AskMe_AI* \nYou now have purchased a quota of 55 expiring in 72 hours, \n`
     );
     return
-  }
-  const msgBody = await msg.body;
-  let number = msgBody.replace("processSub:", "").replace(/\s/g, "").trim();
-  number += "@c.us";
-  console.log(number);
-  if (!/^2637\d{8}@c\.us$/.test(number)) {
-    msg.reply("The number is inaccurately formmatted");
   } else {
+    let number = msgBody.replace("processSub:", "").replace(/\s/g, "").trim();
+    number += "@c.us";
+    if (!/^2637\d{8}@c\.us$/.test(number)) {
+      msg.reply("The number is inaccurately formmatted");
+      return
+    }
     await indvUsers
       .updateOne(
         { serialisedNumber: number },
