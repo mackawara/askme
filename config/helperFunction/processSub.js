@@ -1,5 +1,6 @@
 const indvUsers = require("../../models/individualUsers");
 const processSub = async (msg, client, redisClient) => {
+ 
   const msgBody = await msg.body;
   let number = msgBody.replace("processSub:", "").replace(/\s/g, "").trim();
   number += "@c.us";

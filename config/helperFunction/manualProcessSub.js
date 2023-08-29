@@ -1,5 +1,19 @@
 const indvUsers = require("../../models/individualUsers");
-const manualProcessSub = async (msg, client, redisClient) => {
+const manualProcessSub = async (msg, client, redisClient,product) => {
+  if (/payu/gi.test(product)) {
+    redisClient.hSet(chatID, {
+      calls: 55,
+      isBlocked: "0",
+      isSubscribed: "1",
+    });
+    redisClient.expire(chatID, 259200);
+    client.sendMessage(process.env.ME, `Automatic subscribtion alert${chatID}, is now subscribed for ${product}`);
+    client.sendMessage(
+      chatID,
+      `*Thank you for subscribing to AskMe_AI* \nYou now have purchased a quota of 55 expiring in 72 hours,To find out which features are now available to you type reply with *features*" \n`
+    );
+    return
+  }
   const msgBody = await msg.body;
   let number = msgBody.replace("processSub:", "").replace(/\s/g, "").trim();
   number += "@c.us";

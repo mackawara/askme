@@ -260,9 +260,13 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
 
             return;
           } else if (msgBody.startsWith("processSub:")) {
-            manualProcessSub(msg, client, redisClient);
+            manualProcessSub(msg, client, redisClient,"monthly");
             return;
-          } else if (msgBody.startsWith("processFollower:")) {
+          } 
+          else if (msgBody.startsWith("processPayu:")) {
+            manualProcessSub(msg, client, redisClient,"payu");
+            return;
+          }else if (msgBody.startsWith("processFollower:")) {
             processFollower(msg, client, redisClient);
             return;
           }
