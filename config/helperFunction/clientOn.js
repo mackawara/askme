@@ -292,22 +292,19 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
               return
             }
             else {
-              const result = await processPayment(product, payingNumber, chatID)
+              const result = await processPayment(product, payingNumber, msg)
 
-              msg.reply(`You are subscribing for ${product} subscription.Please wait while your transaction is being processed. You will be asked to confirm payment by entering your PIN`);
+              msg.reply(`You are subscribing for ${product} subscription. To complete the payment you will be asked to confirm payment by entering your PIN`);
 
               if (result) {
 
                 if (product == "payu") {
-                  //process payu subs
-                  msg.reply("payment received , now processing subscribtion")
                   await autoProcessSub(chatID, client, redisClient, "payu")
 
                   return
 
                 }
                 else if (product == "month" || product == "monthly") {
-
                   autoProcessSub(chatID, client, redisClient, "monthly")
                   return
                 }
