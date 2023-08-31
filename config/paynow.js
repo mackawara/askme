@@ -21,7 +21,7 @@ const paynowProcess = async (product, payingNumber, msg) => {
         if ("success" in response) {
             if (response.success) {
                 let instructions = response.instructions
-                msg.reply(instructions)
+              //  msg.reply(instructions)
                 const pollUrl = response.pollUrl
                 const status = await paynow.pollTransaction(pollUrl);
                 console.log(status)
