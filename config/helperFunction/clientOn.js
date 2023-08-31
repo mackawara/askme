@@ -452,7 +452,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
         else if (isSubscribed == "0") {
           if (!calls > minCallsAllowed) {
             msg.reply(
-              `Free messages have been exhausted,Choose from our flexible *Pay As You Use* (click here https://bit.ly/Askme-Payu ) option for just $500 Ecocash, giving you 55 message requests valid for 3 days. Or opt for the incredible value of our *monthly subscription* (click here https://bit.ly/AskMe_Monthly) at only $6000 ecocash, providing up to 25 daily requests over a span of 30 days.`
+              `Free usage has been exhausted. To topup your account using Ecocash reply with topup payu (your Ecocash number) example below \n\n*topup payu 0775 456 789*.\n\n For just $500 Ecocash you will get 55 messages/requests.` 
             );
             redisClient.del(`${chatID}messages`, "messages");
             await redisClient.hSet(chatID, "isBlocked", "1");
