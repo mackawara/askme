@@ -23,7 +23,7 @@ const paynowProcess = async (product, payingNumber, msg) => {
                 //  msg.reply(instructions)
                 const pollUrl = response.pollUrl
                 setTimeout(() => {
-                    const status = await paynow.pollTransaction(pollUrl);
+                    const status = paynow.pollTransaction(pollUrl);
                     console.log("status " + status.success)
 
                     if (status.success) {
