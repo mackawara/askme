@@ -34,7 +34,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
       const chatID = msg.from;
       const expiryTime = getSecsToMidNight();
 
-      let tokenLimit = 180;
+      let tokenLimit = 150;
       let maxCalls = 1
       let isSubscribed, isFollower
 
@@ -110,7 +110,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
               client.sendMessage(me, "New user added  " + chatID);
               client.sendMessage(
                 serialisedNumber,
-                `Hi ${notifyName},thank you for using AskMe, the AI powered virtual study assistant.\n\n*Please Read* As a free user you are limited to 1 request/message per 24 hour period.\n . *Simply* ask any question and wait for a response. For example you can ask "Explain the theory of relativity"or \n "Give me a step by step procedure of mounting an engine",if the response is incomplete you can just say "continue". Yes, you can chat to *AskMe* as you would to a human (*a super intelligent, all knowing human*) because *Askme* remembers topics that you talked about for the previous 30 minutes.\n\n What *Askme* cannot do\n1.Provide updates on current events (events after October 2021)\n2.Provide opinions on subjective things,\nWe hope you enjoy using the app. Please avoid making too many requests in short period of time, as this may slow down the app and cause your number to be blocked if warnings are not heeded. If your refer 3 people that eventually become users of AskME you fet additional usage priviledges simply send referal and their number e.g referal 263774111111,  Join our group to stay up to date https://chat.whatsapp.com/I5RNx9PsfYjE0NV3vNijk3 `
+                `Hi ${notifyName},thank you for using AskMe, the AI powered virtual study assistant.\n\n*Please Read* As a free user you are limited to 1 request/message per 24 hour period.\n . *Simply* ask any question and wait for a response. For example you can ask "Explain the theory of relativity"or \n "Give me a step by step procedure of mounting an engine",if the response is incomplete you can just say "continue". \n What *Askme* cannot do\n*Provide updates on current events (events after October 2021)*\n\nWe hope you enjoy using the app.\n\n Join our group to stay up to date https://chat.whatsapp.com/I5RNx9PsfYjE0NV3vNijk3 `
               );
             } catch (err) {
               client.sendMessage(me, "Save new user failed");
@@ -181,7 +181,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
             let totalCalls;
             const base = 1;
             const subscriber = isSubscribed === "1" ? 25 : 0;
-            const follower = isFollower === "1" ? 2 : 0;
+            const follower = isFollower === "1" ? 3 : 0;
             totalCalls = base + subscriber + follower;
             console.log(totalCalls);
             return totalCalls;
@@ -260,13 +260,13 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
 
             return;
           } else if (msgBody.startsWith("processSub:")) {
-            manualProcessSub(msg, client, redisClient,"monthly");
+            manualProcessSub(msg, client, redisClient, "monthly");
             return;
-          } 
+          }
           else if (msgBody.startsWith("processPayu:")) {
-            manualProcessSub(msg, client, redisClient,"payu");
+            manualProcessSub(msg, client, redisClient, "payu");
             return;
-          }else if (msgBody.startsWith("processFollower:")) {
+          } else if (msgBody.startsWith("processFollower:")) {
             processFollower(msg, client, redisClient);
             return;
           }
@@ -453,9 +453,9 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
           }
         }
         else if (isSubscribed == "0") {
-          if (calls < minCallsAllowed) {
+          if (!calls > minCallsAllowed) {
             msg.reply(
-              `*Choose from our flexible *Pay As You Use* (click here https://bit.ly/Askme-Payu ) option for just $500 Ecocash, giving you 55 message requests valid for 3 days. Or opt for the incredible value of our *monthly subscription* (click here https://bit.ly/AskMe_Monthly) at only $6000 ecocash, providing up to 25 daily requests over a span of 30 days.`
+              `Free messages have been exhausted,Choose from our flexible *Pay As You Use* (click here https://bit.ly/Askme-Payu ) option for just $500 Ecocash, giving you 55 message requests valid for 3 days. Or opt for the incredible value of our *monthly subscription* (click here https://bit.ly/AskMe_Monthly) at only $6000 ecocash, providing up to 25 daily requests over a span of 30 days.`
             );
             redisClient.del(`${chatID}messages`, "messages");
             await redisClient.hSet(chatID, "isBlocked", "1");
@@ -473,15 +473,6 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
             "Your message is too long. Upgrade to subscription service if you want longer scope and higher quotas. You can break it down into smaller bits or summarise. "
           );
           return;
-        }
-        if (/continue/gi.test(msgBody)) {
-          if (await redisClient.exists(`${chatID}messages`)) {
-            msg.reply(
-              `Sorry , there is no history to continue from, Messages are only kept in the system for 5 minutes,After that you canoot use the *continue* keyword`
-            );
-            redisClient.HINCRBY(chatID, "calls", +1);
-            return;
-          }
         }
         //check if there is messages
 

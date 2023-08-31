@@ -11,12 +11,17 @@ const elevate = async (msg, chatID, redisClient) => {
     } else {
       console.log(result);
       redisClient.hSet(chatID, {
-        calls: 40,
+        calls: 55,
         isBlocked: "0",
         isSubscribed: "1",
       });
       redisClient.expire(chatID, 259200);
       msg.reply(`${number}, is now elevated`);
+      client.sendMessage(
+        number,
+        `*Thank you for subscribing to AskMe_AI* \nYou now have purchased a quota of 55 expiring in 72 hours, \n`
+      );
+
     }
 
     return true;
