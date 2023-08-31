@@ -452,7 +452,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
         else if (isSubscribed == "0") {
           if (!calls > minCallsAllowed) {
             msg.reply(
-              `Free usage has been exhausted. To topup your account using Ecocash reply with topup payu (your Ecocash number) example below \n\n*topup payu 0775 456 789*.\n\n For just $500 Ecocash you will get 55 messages/requests.` 
+              `Free usage has been exhausted. To topup your account using Ecocash reply with topup payu (your Ecocash number) as in example below \n\n*topup payu 0775 456 789*.\n\n For just $500 Ecocash you will get 55 messages/requests.` 
             );
             redisClient.del(`${chatID}messages`, "messages");
             await redisClient.hSet(chatID, "isBlocked", "1");
