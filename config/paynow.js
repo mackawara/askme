@@ -10,7 +10,7 @@ const paynowProcess = async (product, payingNumber, msg) => {
     let payment = paynow.createPayment(invoiceNumber, "mkawara98@gmail.com");
     //set the product price depending
 
-    const productPrice = productName == "payu" ? 20 : 6000;
+    const productPrice = productName == "payu" ? 500 : 6000;
     payment.add(product, productPrice);
 
     const response = await paynow
