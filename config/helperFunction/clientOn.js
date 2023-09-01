@@ -292,9 +292,9 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
               return
             }
             else {
-              const result = await processPayment(product, payingNumber, msg)
-
               msg.reply(`You are subscribing for ${product} subscription. To complete the payment you will be asked to confirm payment by entering your PIN`);
+              const result = await processPayment(product, payingNumber, msg)
+console.log("result= "+ result)
 
               if (result) {
 
@@ -452,7 +452,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
         else if (isSubscribed == "0") {
           if (!calls > minCallsAllowed) {
             msg.reply(
-              `Free usage has been exhausted. To topup your account using Ecocash reply with topup payu (your Ecocash number) as in example below \n\n*topup payu 0775 456 789*.\n\n For just $500 Ecocash you will get 55 messages/requests.` 
+              ` To continue using AskMe_AI  reply with topup payu *your ecocash number*  as in example below \n\n*topup payu 0775456789*.\n\n For just $500 Ecocash you will get 55 messages/requests.`
             );
             redisClient.del(`${chatID}messages`, "messages");
             await redisClient.hSet(chatID, "isBlocked", "1");
