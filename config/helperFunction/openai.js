@@ -25,7 +25,7 @@ const openAiCall = async (chatID, tokenLimit, redisClient, prompt) => {
   let messages = await JSON.parse(
     await redisClient.hGet(`${chatID}messages`, "messages")
   );
-  
+
   await redisClient.hSet(
     `${chatID}messages`,
     "messages",
@@ -42,10 +42,11 @@ const openAiCall = async (chatID, tokenLimit, redisClient, prompt) => {
   messages.push(system);
   console.log(messages);
   messages.push({ role: "user", content: prompt });
-  setTimeout(async () => { }, 3000);
+  const modelVersion = chatID == process.env.ME ? "gpt-4" : "gpt-3.5-turbo-0613"
+
   const response = await openai
     .createChatCompletion({
-      model: "gpt-3.5-turbo-0613",
+      model: modelVersion,
       messages: messages,
       temperature: 0.5,
       max_tokens: tokenLimit,

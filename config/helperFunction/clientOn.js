@@ -179,7 +179,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
             let totalCalls;
             const base = 1;
             const subscriber = isSubscribed === "1" ? 25 : 0;
-            const follower = isFollower === "1" ? 3 : 0;
+            const follower = isFollower === "1" ? 1 : 0;
             totalCalls = base + subscriber + follower;
             console.log(totalCalls);
             return totalCalls;
@@ -187,7 +187,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
           const maxCallsAllowed = maxCalls();
           await redisClient.hSet(chatID, "calls", maxCallsAllowed)
         }
-        const minCallsAllowed = 0
+        const minAvailableCallsAllowed = 0
         isSubscribed = await redisClient.hGet(chatID, "isSubscribed");
 
         //else if the user is already logged IN redis memory cache
@@ -434,7 +434,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
           tokenLimit = 2048;
         }
         else if (isSubscribed == "1") {
-          if (calls > minCallsAllowed) {
+          if (calls > minAvailableCallsAllowed) {
 
             //set token limits based on subscription
             tokenLimit = 350;
@@ -446,7 +446,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
           }
         }
         else if (isSubscribed == "0") {
-          if (!calls > minCallsAllowed) {
+          if (!calls > minAvailableCallsAllowed) {
             msg.reply(
               ` To continue using AskMe_AI  reply with "Topup payu *your ecocash number*"  as in example below \n\n*topup payu 0775456789*.\n\n  $500 (Ecocash) gets 55 messages/requests.`
             );
