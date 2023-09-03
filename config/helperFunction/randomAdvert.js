@@ -1,5 +1,6 @@
 const adverts = [
-  `https://bit.ly/Askme-Payu *Pay as You Use:*,buy *55 message requests* for only $500 ecocash here`,
+  "Send *Topup payu (your ecocash number)*  to get the full features\nCosts only $500 ecocash"
+  //`https://bit.ly/Askme-Payu *Pay as You Use:*,buy *55 message requests* for only $500 ecocash here`,
   /*  "Follow AskMe on tiktok to find cool ways of using AI to enhance you study.You have no excuse for failing https://www.tiktok.com/@askme_ai",
   "To download this as a word doc swipe this message to the right and reply with createDoc",
   "Help your friends discover AskMe share this link with them https://chat.whatsapp.com/I5RNx9PsfYjE0NV3vNijk3*",

@@ -34,7 +34,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
       const chatID = msg.from;
       const expiryTime = getSecsToMidNight();
 
-      let tokenLimit = 150;
+      let tokenLimit = 100;
       let maxCalls = 1
       let isSubscribed, isFollower
 
@@ -110,7 +110,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
               client.sendMessage(me, "New user added  " + chatID);
               client.sendMessage(
                 serialisedNumber,
-                `Hi ${notifyName},thank you for using AskMe, the AI powered virtual study assistant.\n\n*Please Read* As a free user you are limited to 1 request/message per 24 hour period.\n . *Simply* ask any question and wait for a response. For example you can ask "Explain the theory of relativity"or \n "Give me a step by step procedure of mounting an engine",if the response is incomplete you can just say "continue". \n What *Askme* cannot do\n*Provide updates on current events (events after October 2021)*\n\nWe hope you enjoy using the app.\n\n Join our group to stay up to date https://chat.whatsapp.com/I5RNx9PsfYjE0NV3vNijk3 `
+                `Hi ${notifyName},thank you for using AskMe, the AI powered virtual study assistant.\n\n*Please Read* As a free user you are limited to 1 request/message per 24 hour period.\n . *Simply* ask any question and wait for a response. For example you can ask "Explain the theory of relativity". If the response is incomplete you can just say "continue". \n What *Askme* cannot do\n*Provide updates on current events (events after October 2021)*\n\n To subscribe send *Topup monthly (your ecocash number)* `
               );
             } catch (err) {
               client.sendMessage(me, "Save new user failed");
@@ -120,6 +120,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
               isBlocked: "0",
               isSubscribed: "0",
               isFollower: "1",
+              calls: 8
             }); //
 
             await redisClient.expire(chatID, expiryTime);
@@ -131,8 +132,6 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
                 .set(`${chatID}shortTTL`, 1)
               await redisClient.expire(`${chatID}shortTTL`, 30);
             }
-
-            //Check if blocked in mongoodb
 
             if (user.isBlocked) {
               await redisClient.hSet(chatID, {
@@ -151,7 +150,6 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
             if (user.isSubscribed) {
               await redisClient.hSet(chatID, {
                 isBlocked: "0",
-
                 isSubscribed: "1",
               });
               await redisClient.expire(chatID, expiryTime);
@@ -209,9 +207,6 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
           msg.reply(res);
           return;
         }
-
-
-
         // console.log(`This is the max calls ${maxCallsAllowed}`);
 
         if (parseInt(shortTTL) > 2) {
@@ -237,7 +232,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
           return;
         }
         if (/\bfeatures\b/.test(msgBody)) {
-          msg.reply("Use these keywords to access features avaiable to subscribed user\n*createDoc* to create and download word documents from Askme_ai\n*createImage* to create an image rovide a description of what you would want,\n*syllabus* : to download a Zimsec syalbaus, supply the subject and the number\n*topup:* to subscribe or topup          ")
+          msg.reply("Use these keywords to access features avaiable to subscribed user\n*createDoc* to create and download word documents from Askme_ai\n*createImage* to create an image provide a description of what you would want,\n*syllabus* : to download a Zimsec syalbaus, supply the subject and the number\n*topup:* to subscribe or topup          ")
         }
 
         //check if it is not elevation message
@@ -294,7 +289,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
             else {
               msg.reply(`You are subscribing for ${product} subscription. To complete the payment you will be asked to confirm payment by entering your PIN`);
               const result = await processPayment(product, payingNumber, msg)
-console.log("result= "+ result)
+              console.log("result= " + result)
 
               if (result) {
 
@@ -452,7 +447,7 @@ console.log("result= "+ result)
         else if (isSubscribed == "0") {
           if (!calls > minCallsAllowed) {
             msg.reply(
-              ` To continue using AskMe_AI  reply with topup payu *your ecocash number*  as in example below \n\n*topup payu 0775456789*.\n\n For just $500 Ecocash you will get 55 messages/requests.`
+              ` To continue using AskMe_AI  reply with "Topup payu *your ecocash number*"  as in example below \n\n*topup payu 0775456789*.\n\n  $500 (Ecocash) gets 55 messages/requests.`
             );
             redisClient.del(`${chatID}messages`, "messages");
             await redisClient.hSet(chatID, "isBlocked", "1");
