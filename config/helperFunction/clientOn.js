@@ -374,10 +374,11 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
             return
           }
           const callsNeedForImageGen = 12
-          if ((await redisClient.hGet(chatID, calls)) < callsNeedForImageGen) {
+          if ((await redisClient.hGet(chatID, calls)) < callsNeedForImageGen && !chatID == me) {
             msg.reply(
               "Sorry you do not have enough calls remaing today to make this request. Image generation requires 10 or more remain calls per day"
             );
+            return
           } else {
             msg.reply(
               "Please wait while your image is being processed, This may take several minutes, please do not send any other message before it finishes. Image generation is equivalent to 15 messages on your quota"
