@@ -34,7 +34,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
       const chatID = msg.from;
       const expiryTime = getSecsToMidNight();
 
-      let tokenLimit = 100;
+      let tokenLimit = 150;
       let maxCalls = 1
       let isSubscribed, isFollower
 
@@ -120,7 +120,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
               isBlocked: "0",
               isSubscribed: "0",
               isFollower: "1",
-              calls: 8
+              calls: 5
             }); //
 
             await redisClient.expire(chatID, expiryTime);
@@ -190,10 +190,6 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
         const minAvailableCallsAllowed = 0
         isSubscribed = await redisClient.hGet(chatID, "isSubscribed");
 
-        //else if the user is already logged IN redis memory cache
-
-        //  the  shortTTL represents the number of calls in previos 30 secons
-        //check if short term TTL
         const isBlocked = await redisClient.hGet(chatID, "isBlocked");
         await redisClient
           .incrBy(`${chatID}shortTTL`, 1)
@@ -370,7 +366,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
 
         if (msgBody.startsWith("createImage")) {
           if (isSubscribed === "0") {
-            msg.reply("Sorry this service is only available for subscribed users, please subscribe by clicking here and processing your payment of only $6000 ecocash , or contact us on 0775231426 to make other arrangements")
+            msg.reply("Sorry this service is only available for subscribed users, reply with *Topup*")
             return
           }
           const callsNeedForImageGen = 12
@@ -404,7 +400,6 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
         await redisClient.HINCRBY(chatID, "calls", -1);
         console.log("remaining calls=" + await redisClient.hGet(chatID, "calls"))
         if (isBlocked === "1") {
-
           if (calls < - 3) {
             msg.reply(
               "*Warning , do not send any further messages else you will be blocked from using the platform for at least 48 hours* \nYou have used up your quota. Subscribe to get standard user privileges or Try again tommorow! "
@@ -433,22 +428,23 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
           //check if admin and set admin level limits
           tokenLimit = 2048;
         }
+        // Subscribed users
         else if (isSubscribed == "1") {
           if (calls > minAvailableCallsAllowed) {
-
             //set token limits based on subscription
             tokenLimit = 350;
           } else {
             msg.reply(
-              "*Do not reply*You have exceeded your quota.Your subscription has a total of 25 requests per day. "
+              "*Do not reply* You have exceeded your quota.Your subscription has a total of 25 requests per day. "
             );
             return;
           }
         }
+        //free users
         else if (isSubscribed == "0") {
-          if (!calls > minAvailableCallsAllowed) {
+          if (calls < 1) {
             msg.reply(
-              ` To continue using AskMe_AI  reply with "Topup payu *your ecocash number*"  as in example below \n\n*topup payu 0775456789*.\n\n  $500 (Ecocash) gets 55 messages/requests.`
+              ` Topup to continue using AskMe_AI. \n\nReply with "Topup payu *your ecocash number*"  as in example below \n\n*topup payu 0775456789*.\n\n  $500 (Ecocash) gets 55 messages/requests.`
             );
             redisClient.del(`${chatID}messages`, "messages");
             await redisClient.hSet(chatID, "isBlocked", "1");
