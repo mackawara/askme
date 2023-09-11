@@ -1,5 +1,5 @@
 const adverts = [
-  "To topup reply with *Topup payu (your ecocash number)* eg\n*topup payu 0771234567*"
+  "Reply with Topup payu (your ecocash number)eg\ntopup payu 0771234567"
   //`https://bit.ly/Askme-Payu *Pay as You Use:*,buy *55 message requests* for only $500 ecocash here`,
   /*  "Follow AskMe on tiktok to find cool ways of using AI to enhance you study.You have no excuse for failing https://www.tiktok.com/@askme_ai",
   "To download this as a word doc swipe this message to the right and reply with createDoc",

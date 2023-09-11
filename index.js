@@ -4,6 +4,7 @@ const createDoc = require("./config/helperFunction/docxCreator");
 const indvUsers = require("./models/individualUsers");
 const ReferalsModel = require("./models/referals");
 const totalUsage = require("./models/totalUsage");
+const setStatus = require("./config/helperFunction/setStatus")
 
 const qrcode = require("qrcode-terminal");
 const {
@@ -97,6 +98,8 @@ connectDB().then(async () => {
     console.log("Client is ready!");
     //functions abd resources
     //Helper Functions
+
+    setStatus(client)
     client.on("call", async (call) => {
       call.reject()
       client.sendMessage(call.from, "*System message*:\n This number does not take calls, Please refrain from calling.*Each attempt at calling counts as 2 requests*")
@@ -167,12 +170,12 @@ connectDB().then(async () => {
           }
           client.sendMessage(
             serialisedNumber,
-            `Hi ${subscriber.notifyName}, your subscription has expired. Please renew here bit.ly/Askme_ai to continue using AskMe_AI`
+            `Hi ${subscriber.notifyName}, your subscription has expired. To renew reply with *Topup monthly (your ecocash number)* \n\n Eg *topup monthly 0771234567*`
           );
         } else if (ttL < 2) {
           client.sendMessage(
             serialisedNumber,
-            `Hi ${subscriber.notifyName}\n Your subscribtion to AskMe expires within the next 24 hours, \nPlease renew here bit.ly/Askme_ai to continue using AskMe`
+            `Hi ${subscriber.notifyName}\n Your subscribtion to AskMe expires within the next 24 hours, To renew reply with *Topup monthly (your ecocash number)* \n\n Eg *topup monthly 0771234567*`
           );
         } else if (ttL % 7 == 0) {
           //
@@ -188,6 +191,17 @@ connectDB().then(async () => {
         `Support AskMe by following us on social media channels \nFacebook https://www.facebook.com/askmeAI,\n Tiktok https://www.tiktok.com/@askme_ai .Send whatsapp number to our inbox and we will grant you extra quota`
       );
     });
+
+    //creset calls this month every start of the month
+    cron.schedule("0 0 1 * *", () => {
+      totalUsage.updateOne({}, { $set: { callsThisMonth: 0 } })
+      indvUsers.updateMany(
+        {},
+        { $set: { callsThisMonth: 0 } }
+      )
+      tot
+    });
+
     cron.schedule(`42 17 * * 7`, async () => {
       const allChats = await client.getChats();
       allChats.forEach((chat) => chat.clearMessages());

@@ -76,6 +76,7 @@ const openAiCall = async (chatID, tokenLimit, redisClient, prompt) => {
       );
       redisClient.expire(`${chatID}messages`, 300);
       user.calls++;
+      user.callsThisMonth++
       user.inputTokens =
         parseInt(user.inputTokens) + response.data.usage.prompt_tokens;
       user.completionTokens =
@@ -84,6 +85,7 @@ const openAiCall = async (chatID, tokenLimit, redisClient, prompt) => {
         parseInt(user.totalTokens) + response.data.usage.total_tokens;
       //Add to cumulatitive totals
       totalUsage.calls++;
+      totalUsage.callsThisMonth++;
       totalUsage.inputTokens =
         parseInt(totalUsage.inputTokens) + response.data.usage.prompt_tokens;
       totalUsage.completionTokens =

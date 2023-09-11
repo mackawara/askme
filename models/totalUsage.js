@@ -7,6 +7,7 @@ const totalUsageSchema = new mongoose.Schema({
   },
 
   calls: { type: Number, required: true },
+  callsThisMonth:{type: Number, required: true},
   warnings: { type: Number, required: true },
   errorsRec: { type: Number, required: true },
 
