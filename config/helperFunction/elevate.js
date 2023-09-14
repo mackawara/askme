@@ -9,19 +9,19 @@ const elevate = async (msg, chatID, redisClient) => {
     if (!/^2637\d{8}@c\.us$/.test(number)) {
       msg.reply("The number is inaccurately formmatted");
     } else {
-      console.log(result);
-      redisClient.hSet(chatID, {
+      redisClient.hSet(number, {
         calls: 55,
         isBlocked: "0",
         isSubscribed: "1",
       });
-      redisClient.expire(chatID, 259200);
+      redisClient.expire(number, 259200);
+      if (!chatID == process.env.ME) {
+        client.sendMessage(process.env.ME, (`${number}, is now elevated`))
+      }
       msg.reply(`${number}, is now elevated`);
       client.sendMessage(
-        number,
-        `*Thank you for subscribing to AskMe_AI* \nYou now have purchased a quota of 55 expiring in 72 hours, \n`
+        number,`*Thank you for subscribing to AskMe_AI* \nYou now have purchased a quota of 55 expiring in 72 hours, \n`
       );
-
     }
 
     return true;
