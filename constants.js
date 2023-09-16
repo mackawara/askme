@@ -1,2 +1,2 @@
-const topupMessage = `Topup to continue using AskMe_AI. \n\nReply with "Topup payu your ecocash number"  as in example below \ntopup payu 0775456789.\n\n  *55 messages cost only $500 Ecocash*`
-module.exports =topupMessage
+const topupMessage = `Topup to continue using AskMe_AI. \nReply to this message with "Topup payu + your ecocash number" Example, if your ecocash number is 0775456789 reply with \ntopup payu 0775456789.\n\n  *55 messages cost only $500 Ecocash*`
+module.exports = topupMessage

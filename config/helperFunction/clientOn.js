@@ -498,7 +498,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
             msg.reply(response);
           } else {
             msg.reply(
-              `*${randomAdvert()}*\n\n${response}`
+              `${randomAdvert()}\n\n${response}`
             );
           }
         }

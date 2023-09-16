@@ -4,7 +4,7 @@ const elevate = async (msg, chatID, redisClient) => {
   if (msgBody.startsWith("elevate")) {
     let number = msgBody.replace("elevate", "").replace(/\s/g, "").trim();
     number += "@c.us";
-    console.log(number);
+    
     if (!/^2637\d{8}@c\.us$/.test(number)) {
       msg.reply("The number is inaccurately formatted\nUse this format 263771231334");
       return false

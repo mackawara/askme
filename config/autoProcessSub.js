@@ -1,7 +1,6 @@
 const indvUsers = require("../models/individualUsers");
 const autoProcessSub = async (chatID, client, redisClient, product) => {
-console.log("proceccing")
-console.log(product)
+
     if (product == "monthly") {
         await indvUsers
             .updateOne(
@@ -9,7 +8,7 @@ console.log(product)
                 { $set: { isSubscribed: true, isBlocked: false, subTTL: 31 } }
             )
             .then((result) => {
-                console.log(result);
+               
                 redisClient.hSet(chatID, {
                     calls: 26,
                     isBlocked: "0",
