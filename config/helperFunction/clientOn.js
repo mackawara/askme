@@ -295,7 +295,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
         //check if it is not elevation message
         //Admin level tasks
         if (chatID == process.env.ME || chatID == process.env.PRECISE || chatID == process.env.TADIEWASHE) {
-          if (await elevate(msg, chatID, redisClient)) {
+          if (await elevate(msg, client, redisClient)) {
             return;
           } else if (msgBody.startsWith("broadcast:")) {
             // for sending Broadcast messages

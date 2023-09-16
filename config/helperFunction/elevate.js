@@ -1,4 +1,4 @@
-const elevate = async (msg, chatID, redisClient) => {
+const elevate = async (msg, client, redisClient) => {
   const msgBody = msg.body;
   //const chatID = msg.from;
   if (msgBody.startsWith("elevate")) {
@@ -15,7 +15,7 @@ const elevate = async (msg, chatID, redisClient) => {
         isSubscribed: "1",
       });
       redisClient.expire(number, 259200);
-      if (!chatID == process.env.ME) {
+      if (!msg.from == process.env.ME) {
         client.sendMessage(process.env.ME, (`${number}, is now elevated`))
       }
       msg.reply(`${number}, is now elevated`);

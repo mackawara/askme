@@ -42,7 +42,7 @@ const openAiCall = async (chatID, tokenLimit, redisClient, prompt) => {
   messages.push(system);
   console.log(messages);
   messages.push({ role: "user", content: prompt });
-  const modelVersion = chatID == process.env.ME ? "gpt-4" : "gpt-3.5-turbo-0613"
+  const modelVersion = "gpt-3.5-turbo-0613"
 
   const response = await openai
     .createChatCompletion({
