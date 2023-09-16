@@ -4,7 +4,7 @@ const timeDelay = (ms) => new Promise((res) => setTimeout(res, ms));
 
 const paynowProcess = async (product, payingNumber, msg) => {
     const existingPayments = parseInt(await PaynowPayments.count().exec());
-    const invoiceNumber = "AM" + existingPayments + 1;
+    const invoiceNumber = "AM" + (parseInt( existingPayments + 1));
     const productName = product.toLowerCase().trim();
     let paynow = new Paynow(process.env.PAYNOW_ID, process.env.PAYNOW_KEY);
     let payment = paynow.createPayment(invoiceNumber, "mkawara98@gmail.com");

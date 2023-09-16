@@ -35,7 +35,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
       const chatID = msg.from;
       const expiryTime = getSecsToMidNight();
 
-      let tokenLimit = 150;
+      let tokenLimit = 120;
       let maxCalls = 1
       let isSubscribed, isFollower
 
@@ -212,7 +212,9 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
         // process retopup
         if (msgBody.toLowerCase().startsWith("topup") ||
           msgBody.toLowerCase().startsWith("*topup") ||
-          msgBody.toLowerCase().includes("topup payu")) {
+          msgBody.toLowerCase().includes("topup payu") ||
+          msgBody.toLowerCase().includes("top-up payu")
+        ) {
           const errorMessage = "*topup payu 0771234567* for `Pay As You Use` ($500 ecocash for 55 messages)\nOr topup monthly 0771234567 for monthly subscribtion (25 messages per day for 1 month)"
           try {
             const keywords = msgBody.split(" ")
@@ -250,8 +252,6 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
                 msg.reply("Sorry your topup was not processed successfully please try again. Use the format shown below\n" + errorMessage)
                 return
               }
-
-
             }
           } catch (err) {
             console.log(err); msg.reply("Sorry , there was an error processing your request, If you want to top up your account please send message as shown " + errorMessage)
@@ -292,10 +292,9 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
         if (/\bfeatures\b/.test(msgBody)) {
           msg.reply("Use these keywords to access features avaiable to subscribed user\n*createDoc* to create and download word documents from Askme_ai\n*createImage* to create an image provide a description of what you would want,\n*syllabus* : to download a Zimsec syalbaus, supply the subject and the number\n*topup:* to subscribe or topup          ")
         }
-
         //check if it is not elevation message
         //Admin level tasks
-        if (chatID == process.env.ME|| chatID==process.env.PRECISE) {
+        if (chatID == process.env.ME || chatID == process.env.PRECISE || chatID == process.env.TADIEWASHE) {
           if (await elevate(msg, chatID, redisClient)) {
             return;
           } else if (msgBody.startsWith("broadcast:")) {
@@ -324,8 +323,6 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
             return;
           }
         }
-
-
         // create docs
         if (
           /createDoc|create doc|creat doc|Create doc/gi.test(
@@ -375,9 +372,6 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
           );
           return;
         }
-
-
-
         const calls = await redisClient.hGet(chatID, "calls");
 
         if (msgBody.startsWith("createImage")) {
