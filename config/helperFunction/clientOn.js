@@ -150,7 +150,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
             }
             //check in mongoDb if is Subscibed
             if (!user.isSubscribed && user.callsThisMonth > 5) {
-              msg.reply(topupMessage)
+              client.sendMessage(chatID, topupMessage)
               await redisClient.hSet(chatID, {
                 isBlocked: "1",
                 isSubscribed: "0",
@@ -223,17 +223,17 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
             const isValidEconetNumber = /^(07[7-8])(\d{7})$/;
 
             if (!/\b(payu|month|monthly)\b/gi.test(product)) {
-              msg.reply(
+              client.sendMessage(chatID,
                 `Your topup could not be captured because you did not specify which *product* (between payu/monthly) please use format shown \n*${errorMessage} `)
               return
             }
             //check if supplied number is ok
             else if (!isValidEconetNumber.test(payingNumber)) {
-              msg.reply(`The number you entered ${payingNumber} is not a valid Econet number\nplease use format shown \n${errorMessage}`)
+              client.sendMessage(chatID, `The number you entered ${payingNumber} is not a valid Econet number\nplease use format shown \n${errorMessage}`)
               return
             }
             else {
-              msg.reply(`You are subscribing for ${product} subscription. To complete the payment you will be asked to confirm payment by entering your PIN`);
+              client.sendMessage(chatID, `You are subscribing for ${product} subscription. To complete the payment you will be asked to confirm payment by entering your PIN`);
               const result = await processPayment(product, payingNumber, msg)
               console.log("result= " + result)
 
@@ -249,12 +249,12 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
                 }
               }
               else {
-                msg.reply("Sorry your topup was not processed successfully please try again. Use the format shown below\n" + errorMessage)
+                client.sendMessage(chatID, "Sorry your topup was not processed successfully please try again. Use the format shown below\n" + errorMessage)
                 return
               }
             }
           } catch (err) {
-            console.log(err); msg.reply("Sorry , there was an error processing your request, If you want to top up your account please send message as shown " + errorMessage)
+            console.log(err); client.sendMessage(chatID, "Sorry , there was an error processing your request, If you want to top up your account please send message as shown " + errorMessage)
             return
           }
         }
@@ -262,7 +262,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
 
         if (/referal|referral/.test(msgBody.slice(0, 8).toLowerCase().trim())) {
           const res = await saveReferal(msgBody, chatID, client);
-          msg.reply(res);
+          client.sendMessage(chatID, res);
           return;
         }
         // console.log(`This is the max calls ${maxCallsAllowed}`);
@@ -270,7 +270,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
         if (parseInt(shortTTL) > 2) {
           //if user has made  more than  2 block
 
-          msg.reply(
+          client.sendMessage(chatID,
             `*Error*, you have made too many requests within a short space of time, Wait at least 1 minute!!`
           );
           user.warnings++;
@@ -284,13 +284,13 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
 
         //check if there are ignoable message
         if (ignorePatterns.test(msgBody.toLowerCase())) {
-          msg.reply(
+          client.sendMessage(chatID,
             "*System message*\n Thank you for using AskMe. Do not send greeting messages or messages such as thank you or you are welcome etc... The will use up your quota"
           );
           return;
         }
         if (/\bfeatures\b/.test(msgBody)) {
-          msg.reply("Use these keywords to access features avaiable to subscribed user\n*createDoc* to create and download word documents from Askme_ai\n*createImage* to create an image provide a description of what you would want,\n*syllabus* : to download a Zimsec syalbaus, supply the subject and the number\n*topup:* to subscribe or topup          ")
+          client.sendMessage(chatID, "Use these keywords to access features avaiable to subscribed user\n*createDoc* to create and download word documents from Askme_ai\n*createImage* to create an image provide a description of what you would want,\n*syllabus* : to download a Zimsec syalbaus, supply the subject and the number\n*topup:* to subscribe or topup          ")
         }
         //check if it is not elevation message
         //Admin level tasks
@@ -334,7 +334,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
             const qtdMsgBody = message.body;
             const timestamp = message.timestamp;
 
-            msg.reply(
+            client.sendMessage(chatID,
               "Please be patient while system generates your docx file"
             );
             const pathRet = await docxCreator(qtdMsgBody, chatID, timestamp);
@@ -342,7 +342,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
             client.sendMessage(chatID, MessageMedia.fromFilePath(pathRet));
             return;
           } else {
-            msg.reply(
+            client.sendMessage(chatID,
               "*Error!! No quoted message found*\n If you would like to *download a word document* from the response generated by Askme , simply *reply* (by swiping right or click on reply arrow on the message with the content) and  *create doc* This will allow you to save what AskMe has given you in a word document . Watch this demonstration on our Tiktok https://vm.tiktok.com/ZM25Htygr/) "
             );
           }
@@ -350,7 +350,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
         }
         //Check if melissage has media
         if (msg.hasMedia) {
-          msg.reply(
+          client.sendMessage(chatID,
             "Our apologies, current version is not yet able to process media such as images and audio, please make a textual request"
           );
           return;
@@ -363,7 +363,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
 
 
         if (isFlagged(msgBody)) {
-          msg.reply(
+          client.sendMessage(chatID,
             "Sorry!,Your request has been flagged because it has words identified as having potential to be used for illicit/immoral uses and has been sent to the adminstrator for review. If you feel you have been wrongly flagged do appeal to our admin on this number 0775231426"
           );
           client.sendMessage(
@@ -376,24 +376,24 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
 
         if (msgBody.startsWith("createImage")) {
           if (isSubscribed === "0") {
-            msg.reply("Sorry this service is only available for subscribed users, reply with *Topup*")
+            client.sendMessage(chatID, "Sorry this service is only available for subscribed users, reply with *Topup*")
             return
           }
           const callsNeedForImageGen = 12
           if ((await redisClient.hGet(chatID, calls)) < callsNeedForImageGen && !chatID == me) {
-            msg.reply(
+            client.sendMessage(chatID,
               "Sorry you do not have enough calls remaing today to make this request. Image generation requires 10 or more remain calls per day"
             );
             return
           } else {
-            msg.reply(
+            client.sendMessage(chatID,
               "Please wait while your image is being processed, This may take several minutes, please do not send any other message before it finishes. Image generation is equivalent to 15 messages on your quota"
             );
           }
           const response = await generateImage(msgBody, chatID, redisClient);
 
           if (response.startsWith("Error")) {
-            msg.reply(response);
+            client.sendMessage(chatID, response);
             return;
           } else {
             const media = await MessageMedia.fromUrl(response)
@@ -411,7 +411,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
         console.log("remaining calls=" + await redisClient.hGet(chatID, "calls"))
         if (isBlocked === "1") {
           if (calls < - 3) {
-            msg.reply(
+            client.sendMessage(chatID,
               "*Warning , do not send any further messages else you will be blocked from using the platform for at least 48 hours* \nYou have used up your quota. Subscribe to get standard user privileges or Try again tommorow! "
             );
           }
@@ -419,7 +419,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
             return;
           }
           if (calls < - 6) {
-            msg.reply(
+            client.sendMessage(chatID,
               "You have now been *blocked* for abusing the system and will not be able to use the platform for the next 48 hours, Further messages will result in permanent blocking "
             );
             redisClient.expire(chatID, 172800);
@@ -442,9 +442,9 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
         else if (isSubscribed == "1") {
           if (calls > minAvailableCallsAllowed) {
             //set token limits based on subscription
-            tokenLimit = 350;
+            tokenLimit = 150;
           } else {
-            msg.reply(
+            client.sendMessage(chatID,
               "*Do not reply* You have exceeded your quota.Your subscription has a total of 25 requests per day. "
             );
             return;
@@ -453,7 +453,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
         //free users
         else if (isSubscribed == "0") {
           if (calls < 1) {
-            msg.reply(
+            client.sendMessage(chatID,
               topupMessage
             );
             redisClient.del(`${chatID}messages`, "messages");
@@ -463,12 +463,12 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
         }
         // if user is subscribed
         else {
-          msg.reply("sorry system was unable to complete your request");
+          client.sendMessage(chatID, "sorry system was unable to complete your request");
           return;
         }
 
         if (msgBody.length > 300 && !isSubscribed == "1") {
-          msg.reply(
+          client.sendMessage(chatID,
             "Your message is too long. Upgrade to subscription service if you want longer scope and higher quotas. You can break it down into smaller bits or summarise. "
           );
           return;
@@ -491,17 +491,18 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
           "I can only continue based on previous 3 messages if they were made within the last 3 minutes"
         ) {
           redisClient.HINCRBY(chatID, "calls", +1);
-          //msg.reply(response);
+          //client.sendMessage(chatID,response);
           client.sendMessage(chatID, response)
           return;
         } else {
           if (chatID == "263775231426@c.us" || isSubscribed == "1") {
-            //msg.reply(response);
+            client.sendMessage(chatID, response);
           } else {
             client.sendMessage(chatID, `${randomAdvert()}\n\n${response}`
             );
           }
         }
+
       }
     });
   }
