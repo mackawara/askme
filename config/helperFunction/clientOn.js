@@ -491,14 +491,14 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
           "I can only continue based on previous 3 messages if they were made within the last 3 minutes"
         ) {
           redisClient.HINCRBY(chatID, "calls", +1);
-          msg.reply(response);
+          //msg.reply(response);
+          client.sendMessage(chatID, response)
           return;
         } else {
           if (chatID == "263775231426@c.us" || isSubscribed == "1") {
-            msg.reply(response);
+            //msg.reply(response);
           } else {
-            msg.reply(
-              `${randomAdvert()}\n\n${response}`
+            client.sendMessage(chatID, `${randomAdvert()}\n\n${response}`
             );
           }
         }
