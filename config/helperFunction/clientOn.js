@@ -442,7 +442,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
         else if (isSubscribed == "1") {
           if (calls > minAvailableCallsAllowed) {
             //set token limits based on subscription
-            tokenLimit = 150;
+            tokenLimit = 300;
           } else {
             client.sendMessage(chatID,
               "*Do not reply* You have exceeded your quota.Your subscription has a total of 25 requests per day. "
