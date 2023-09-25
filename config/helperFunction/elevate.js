@@ -16,6 +16,7 @@ const elevate = async (msg, client, redisClient) => {
       });
       redisClient.expire(number, 259200);
       if (!msg.from == process.env.ME) {
+        console.log("not from me")
         client.sendMessage(process.env.ME, (`${number}, is now elevated`))
       }
       msg.reply(`${number}, is now elevated`);
