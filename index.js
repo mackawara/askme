@@ -41,7 +41,7 @@ connectDB().then(async () => {
       // delete the remaining using ther IDs
       try { indvUsers.deleteMany({ _id: { $in: doc.uniqueIds } }).then((result) => { console.log(result) }) } catch (err) { console.log(err) }
     })
-    
+
   }
   // redis clent connections
   redisClient.on("error", (err) => console.log("Redis Client Error", err));
