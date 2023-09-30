@@ -53,6 +53,7 @@ connectDB().then(async () => {
     puppeteer: {
       executablePath: process.env.EXECPATH,
       handleSIGINT: true,
+      ignoreDefaultArgs: ['--enable-automation'],
       headless: true,
       args: [
         "--log-level=3", // fatal only
@@ -100,10 +101,10 @@ connectDB().then(async () => {
     //Helper Functions
 
     setStatus(client)
-    client.on("call", async (call) => {
+    /* client.on("call", async (call) => {
       call.reject()
       client.sendMessage(call.from, "*System message*:\n This number does not take calls, Please refrain from calling.*Each attempt at calling counts as 2 requests*")
-    })
+    }) */
     const cron = require("node-cron");
     /*  cron.schedule(`9 1 * * *`, async () => {
       //redeem uasyncsers
