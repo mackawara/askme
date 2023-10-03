@@ -4,7 +4,7 @@ const ReferalsModel = require("../../models/referals");
 //const totalUsage = await totalUsageModel.findOne({}).exec();
 const isFlagged = require("./isFlagged");
 const docxCreator = require("./docxCreator");
-const messages = require('../../constants/messages').default
+const messages = require('../../constants/messages')
 
 const randomAdvert = require("./randomAdvert");
 const topupMessage = require('../../constants')
