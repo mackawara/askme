@@ -19,23 +19,23 @@ const topupHandler = async (client, msgBody, chatID) => {
         return
     }
     else if (topupField === "product") {
-        if (isValidproduct.test(msgBody)) {
+        if (!isValidproduct.test(msgBody)) {
             client.sendMessage(chatID, messages.INVALID_TOPUP_PRODUCT)
             return
         }
         await redisClient.hSet(msgBody, "product", msgBody)
-    }
-    await client.sendMessage(chatID, `You are subscribing for ${product} subscription. To complete the payment you will be asked to confirm payment by entering your PIN`);
-    const paymentResult = await processPaynowPayment(topupProduct, topupNumber, chatID)
-    if (paymentResult) {
-        await autoProcessSub(chatID, client, topupProduct)
-        redisClient.del(topupClient)
-        return
-    }
-    else {
-        client.sendMessage(chatID, "Sorry your topup was not processed successfully please try again. Use the format shown below\n" + errorMessage)
-        return
-    }
 
+        await client.sendMessage(chatID, `You are subscribing for ${topupProduct} subscription. To complete the payment you will be asked to confirm payment by entering your PIN`);
+        const paymentResult = await processPaynowPayment(topupProduct, topupNumber, chatID)
+        if (paymentResult) {
+            await autoProcessSub(chatID, client, topupProduct)
+            redisClient.del(topupClient)
+            return
+        }
+        else {
+            client.sendMessage(chatID, messages.TOPUP_WAS_NOT_PROCESSED)
+            return
+        }
+    }
 }
 module.exports = topupHandler
