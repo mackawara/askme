@@ -112,7 +112,7 @@ const clientOn = async (client, arg1, MessageMedia) => {
                 client.sendMessage(me, "New user added  " + chatID);
                 client.sendMessage(
                   serialisedNumber,
-                  `Hi ${notifyName},thank you for using AskMe, the AI powered virtual study assistant.\n\n*Please Read* As a free user you are limited to 5 free request/message per month (1 per day).\n . *Simply* ask any question and wait for a response. For example you can ask "Explain the theory of relativity". If the response is incomplete you can just say "continue". \n What *Askme* cannot do\n*Provide updates on current events (events after October 2021)*\n\n To subscribe send *Topup monthly (your ecocash number)* `
+                  `Hi ${notifyName}` + messages.WELCOME_MESSAGE
                 );
               } catch (err) {
                 client.sendMessage(me, "Save new user failed");
