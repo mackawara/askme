@@ -8,7 +8,6 @@ const messages = require('../../constants/messages')
 const topupHandler = require("./topupHandler")
 
 const randomAdvert = require("./randomAdvert");
-const topupMessage = require('../../constants')
 const generateImage = require("./generateImage");
 const saveReferal = require("./saveReferal");
 const redisClient = require("../redisConfig")
@@ -54,7 +53,7 @@ const clientOn = async (client, arg1, MessageMedia) => {
             .findOne({ serialisedNumber: chatID })
             .exec();
           if (isInTopupMode) {
-            topupHandler(client, msgBody, chatID)
+            await topupHandler(client, msgBody, chatID)
             return
           }
 
@@ -416,7 +415,7 @@ const clientOn = async (client, arg1, MessageMedia) => {
           else if (isSubscribed == "0") {
             if (calls < 1) {
               client.sendMessage(chatID,
-                topupMessage
+                messages.FREE_QUOTA_EXCEDED
               );
               redisClient.del(`${chatID}messages`, "messages");
               await redisClient.hSet(chatID, "isBlocked", "1");
@@ -460,7 +459,7 @@ const clientOn = async (client, arg1, MessageMedia) => {
             if (chatID == "263775231426@c.us" || isSubscribed == "1") {
               client.sendMessage(chatID, response);
             } else {
-              client.sendMessage(chatID, `${randomAdvert()}\n\n${response}`
+              client.sendMessage(chatID, `${messages.REPLY_WITH_TOPUP}\n\n${response}`
               );
             }
           }

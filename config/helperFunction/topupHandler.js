@@ -38,4 +38,4 @@ const topupHandler = async (client, msgBody, chatID) => {
     }
 
 }
-module.export = topupHandler
+module.exports = topupHandler
