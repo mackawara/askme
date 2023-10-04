@@ -5,12 +5,13 @@ const ReferalsModel = require("../../models/referals");
 const isFlagged = require("./isFlagged");
 const docxCreator = require("./docxCreator");
 const messages = require('../../constants/messages')
+const topupHandler = require("./topupHandler")
 
 const randomAdvert = require("./randomAdvert");
 const topupMessage = require('../../constants')
 const generateImage = require("./generateImage");
 const saveReferal = require("./saveReferal");
-
+const redisClient = require("../redisConfig")
 const ignorePatterns =
   /^(ok|oky|thank you|ok thank you|ouky|thanx|It's ok. Thank you so much|hey|hi ask me|noted|hello|good night|ok thank you|k|night|Youre welcome|welcome|hey|you welcome|Hie|hy|thanks?|k|[hi]+|\bhey\b)\W*$/gi;
 //helper Functions
@@ -18,10 +19,11 @@ const getSecsToMidNight = require("./getSecsToMidnight");
 const isSystemNotBusy = require("./isSystemNotBusy");
 const manualProcessSub = require("./manualProcessSub");
 const processFollower = require("./processFollower");
-const processPayment = require("../paynow");
+const processPaynowPayment = require("../processPaynowPayment.js");
 const autoProcessSub = require("../autoProcessSub");
+const { constants } = require("buffer");
 const timeDelay = (ms) => new Promise((res) => setTimeout(res, ms));
-const clientOn = async (client, arg1, redisClient, MessageMedia) => {
+const clientOn = async (client, arg1, MessageMedia) => {
   const me = process.env.ME;
   const usersModel = require("../../models/individualUsers");
 
@@ -47,12 +49,16 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
         if (!chat.isGroup && !msg.isStatus) {
           // if user is not already in Redis
           const exists = await redisClient.exists(chatID);
+          const isInTopupMode = await redisClient.exists(`${chatID}topup`)
           const user = await usersModel
             .findOne({ serialisedNumber: chatID })
             .exec();
+          if (isInTopupMode) {
+            topupHandler(client, msgBody, chatID)
+            return
+          }
 
           //check the redis DB if there is an entry from the number
-
           if (!(await exists)) {
             //check if user exists already in the database
             //means in each conversation there is only 1 DB check meaning subsequent calls are faster
@@ -205,55 +211,19 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
 
           const shortTTL = await redisClient.get(`${chatID}shortTTL`);
           // process retopup
+          const topupRegex = /"?top\s?up"?/gi;
+
           if (msgBody.toLowerCase().startsWith("topup") ||
             msgBody.toLowerCase().startsWith("*topup") ||
             msgBody.toLowerCase().includes("topup payu") ||
-            msgBody.toLowerCase().includes("top-up payu")
+            msgBody.toLowerCase().includes("top-up payu") ||
+            topupRegex.test(msgBody)
           ) {
-            const errorMessage = "*topup payu 0771234567* for `Pay As You Use` ($500 ecocash for 55 messages)\nOr topup monthly 0771234567 for monthly subscribtion (25 messages per day for 1 month)"
-            try {
-              const keywords = msgBody.split(" ")
-              const product = keywords[1]
-              const payingNumber = keywords[2]
-              const isValidEconetNumber = /^(07[7-8])(\d{7})$/;
-
-              if (!/\b(payu|month|monthly)\b/gi.test(product)) {
-                client.sendMessage(chatID,
-                  `Your topup could not be captured because you did not specify which *product* (between payu/monthly) please use format shown \n*${errorMessage} `)
-                return
-              }
-              //check if supplied number is ok
-              else if (!isValidEconetNumber.test(payingNumber)) {
-                client.sendMessage(chatID, `The number you entered ${payingNumber} is not a valid Econet number\nplease use format shown \n${errorMessage}`)
-                return
-              }
-              else {
-                client.sendMessage(chatID, `You are subscribing for ${product} subscription. To complete the payment you will be asked to confirm payment by entering your PIN`);
-                const result = await processPayment(product, payingNumber, msg)
-                console.log("result= " + result)
-
-                if (result) {
-                  if (product == "payu") {
-                    await autoProcessSub(chatID, client, redisClient, "payu")
-                    return
-
-                  }
-                  else if (product == "month" || product == "monthly") {
-                    autoProcessSub(chatID, client, redisClient, "monthly")
-                    return
-                  }
-                }
-                else {
-                  client.sendMessage(chatID, "Sorry your topup was not processed successfully please try again. Use the format shown below\n" + errorMessage)
-                  return
-                }
-              }
-            } catch (err) {
-              console.log(err); client.sendMessage(chatID, "Sorry , there was an error processing your request, If you want to top up your account please send message as shown " + errorMessage)
-              return
-            }
+            await redisClient.hSet(`${chatID}topup`, "field", "ecocashNumber");
+            await redisClient.expire(`${chatID}topup`, 300)
+            msg.reply(messages.ECOCASH_NUMBER)
+            return
           }
-
 
           if (/referal|referral/.test(msgBody.slice(0, 8).toLowerCase().trim())) {
             const res = await saveReferal(msgBody, chatID, client);
@@ -328,10 +298,7 @@ const clientOn = async (client, arg1, redisClient, MessageMedia) => {
               const message = await msg.getQuotedMessage();
               const qtdMsgBody = message.body;
               const timestamp = message.timestamp;
-
-              client.sendMessage(chatID,
-
-              );
+              client.sendMessage(chatID, messages.BE_PATIENT_WHILE_SYSTEM_GENERATES_DOC);
               const pathRet = await docxCreator(qtdMsgBody, chatID, timestamp);
 
               client.sendMessage(chatID, MessageMedia.fromFilePath(pathRet));

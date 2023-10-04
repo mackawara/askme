@@ -7,16 +7,10 @@ const totalUsage = require("./models/totalUsage");
 const setStatus = require("./config/helperFunction/setStatus")
 
 const qrcode = require("qrcode-terminal");
-const {
-  AggregateSteps,
-  AggregateGroupByReducers,
-  createClient,
-  SchemaFieldTypes,
-  redis,
-} = require("redis");
+
 
 //initialise redis
-const redisClient = createClient();
+const redisClient = require("./config/redisConfig")
 
 // connect to mongodb before running anything on the app
 connectDB().then(async () => {
@@ -44,7 +38,7 @@ connectDB().then(async () => {
 
   }
   // redis clent connections
-  redisClient.on("error", (err) => console.log("Redis Client Error", err));
+
   await redisClient.connect();
   // redisClient.flushDb().then(() => console.log("redis DB flushed"));
 
@@ -53,7 +47,7 @@ connectDB().then(async () => {
     puppeteer: {
       executablePath: process.env.EXECPATH,
       handleSIGINT: true,
-      ignoreDefaultArgs: ['--enable-automation'],
+      //ignoreDefaultArgs: ['--enable-automation'],
       headless: true,
       args: [
         "--log-level=3", // fatal only
@@ -211,7 +205,7 @@ connectDB().then(async () => {
 
     //client events and functions
     //decalre variables that work with client here
-    clientOn(client, "message", redisClient, MessageMedia);
+    clientOn(client, "message", MessageMedia);
     //client
 
     //Db models
