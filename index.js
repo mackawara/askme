@@ -4,8 +4,8 @@ const createDoc = require("./config/helperFunction/docxCreator");
 const indvUsers = require("./models/individualUsers");
 const ReferalsModel = require("./models/referals");
 const totalUsage = require("./models/totalUsage");
-const setStatus = require("./config/helperFunction/setStatus")
-
+//const setStatus = require("./config/helperFunction/setStatus")
+const { client, MessageMedia } = require("./config/wwebJsConfig")
 const qrcode = require("qrcode-terminal");
 
 
@@ -15,7 +15,7 @@ const messages = require("./constants/messages");
 
 // connect to mongodb before running anything on the app
 connectDB().then(async () => {
-  const { Client, LocalAuth, MessageMedia } = require("whatsapp-web.js");
+
   let callsPErday = 0;
 
   const deleteDuplicates = async () => {
@@ -42,35 +42,6 @@ connectDB().then(async () => {
 
   await redisClient.connect();
   // redisClient.flushDb().then(() => console.log("redis DB flushed"));
-
-  const client = new Client({
-    authStrategy: new LocalAuth(),
-    puppeteer: {
-      executablePath: process.env.EXECPATH,
-      //handleSIGINT: true,
-      //ignoreDefaultArgs: ['--enable-automation'],
-      headless: true,
-      args: [
-        "--log-level=3", // fatal only
-        "--start-maximized",
-        "--no-default-browser-check",
-        "--disable-infobars",
-        "--disable-web-security",
-        "--disable-site-isolation-trials",
-        "--no-experiments",
-        "--ignore-gpu-blacklist",
-        "--ignore-certificate-errors",
-        "--ignore-certificate-errors-spki-list",
-        "--disable-gpu",
-        "--disable-extensions",
-        "--disable-default-apps",
-        "--enable-features=NetworkService",
-        "--disable-setuid-sandbox",
-        "--no-sandbox",
-      ],
-    },
-  });
-
   //client2.initialize();
   client.initialize();
 
@@ -95,7 +66,7 @@ connectDB().then(async () => {
     //functions abd resources
     //Helper Functions
 
-    setStatus(client)
+
     /* client.on("call", async (call) => {
       call.reject()
       client.sendMessage(call.from, "*System message*:\n This number does not take calls, Please refrain from calling.*Each attempt at calling counts as 2 requests*")
@@ -183,9 +154,7 @@ connectDB().then(async () => {
       });
       //set Status
       const randomStatus = require("./assets/statuses");
-      client.setStatus(
-        `Support AskMe by following us on social media channels \nFacebook https://www.facebook.com/askmeAI,\n Tiktok https://www.tiktok.com/@askme_ai .Send whatsapp number to our inbox and we will grant you extra quota`
-      );
+
     });
 
     //creset calls this month every start of the month

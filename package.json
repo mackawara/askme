@@ -16,13 +16,13 @@
     "dotenv": "^16.0.3",
     "mongoose": "^7.0.0",
     "node-cron": "^3.0.2",
-    "openai": "^3.2.1",
+    "openai": "^4.11.1",
     "paynow": "^1.0.9",
     "pizzip": "^3.1.4",
     "puppeteer": "^18.0.0",
     "qrcode-terminal": "^0.12.0",
     "rate-limiter-flexible": "^2.4.1",
     "redis": "^4.6.7",
-    "whatsapp-web.js": "https://github.com/Julzk/whatsapp-web.js/tarball/jkr_hotfix_8"
+    "whatsapp-web.js": "github:Sansekai/whatsapp-web.js"
   }
 }

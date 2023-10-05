@@ -9,7 +9,6 @@ const paynowProcess = async (product, payingNumber, chatID) => {
     let paynow = new Paynow(process.env.PAYNOW_ID, process.env.PAYNOW_KEY);
     let payment = paynow.createPayment(invoiceNumber, "mkawara98@gmail.com");
     //set the product price depending
-
     const productPrice = productName == "payu" ? 500 : 6000;
     payment.add(product, productPrice);
     const response = await paynow
@@ -20,17 +19,15 @@ const paynowProcess = async (product, payingNumber, chatID) => {
 
     let paymentComplete;
 
+    await timeDelay(60000)//wait for the client to process  
     if (response.success) {
         let instructions = response.instructions;
         const pollUrl = await response.pollUrl;
         //wait some 30 secs before polling    
-        console.log(response)
-        await timeDelay(30000)
         const status = await paynow.pollTransaction(pollUrl).catch((err) => console.log(err))
-        console.log(status)
+
         if (status.status == "paid") {
             paymentComplete = true
-            console.log("in state success payment complete =" + paymentComplete);
             try {
                 const newPayment = new PaynowPayments({
                     date: new Date().toISOString().slice(0, 10),
@@ -47,7 +44,7 @@ const paynowProcess = async (product, payingNumber, chatID) => {
 
             }
             paymentComplete = true;
-            console.log("status " + status.success);
+            console.log("Payment status " + status.success);
         }
         else {
             try {
@@ -63,10 +60,9 @@ const paynowProcess = async (product, payingNumber, chatID) => {
                 newPayment.save();
             } catch (error) {
                 console.log(error);
-
             }
             paymentComplete = false;
-            console.log("In !status payment complete =" + paymentComplete);
+
         }
 
 

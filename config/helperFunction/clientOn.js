@@ -54,7 +54,7 @@ const clientOn = async (client, arg1, MessageMedia) => {
             .exec();
           if (isInTopupMode) {
             console.log("is intopup mode")
-            await topupHandler(client, msgBody, chatID)
+            await topupHandler(msgBody, chatID)
             // await redisClient.hSet()
             return
           }
@@ -444,7 +444,6 @@ const clientOn = async (client, arg1, MessageMedia) => {
           const response = await openAiCall(
             chatID,
             tokenLimit,
-            redisClient,
             prompt
           );
           if (

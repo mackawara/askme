@@ -2,14 +2,11 @@ const processPaynowPayment = require("../processPaynowPayment")
 const redisClient = require("../redisConfig")
 const messages = require("../../constants/messages")
 const autoProcessSub = require("../autoProcessSub")
-const topupHandler = async (client, msgBody, chatID) => {
-    console.log("this is msgbody" + msgBody)
+const client = require("../wwebJsConfig")
+const topupHandler = async (msgBody, chatID) => {
     const topupClient = `${chatID}topup`
     const topupField = await redisClient.hGet(topupClient, 'field')
-    console.log("this is topup field" + topupField)
     const topupNumber = await redisClient.hGet(topupClient, "ecocashNumber")
-    console.log("the number is" + topupNumber)
-    const topupProduct = await redisClient.hGet(topupClient, "product")
     const isValidEconetNumber = /^(07[7-8])(\d{7})$/;
     const isValidproduct = /(payu|month|monthly)/gi
     if (topupField == "ecocashNumber") {
