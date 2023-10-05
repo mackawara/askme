@@ -175,7 +175,7 @@ connectDB().then(async () => {
 
     //client events and functions
     //decalre variables that work with client here
-    clientOn(client, "message", MessageMedia);
+    clientOn("message");
     //client
 
     //Db models
