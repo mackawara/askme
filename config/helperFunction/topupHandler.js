@@ -1,6 +1,7 @@
 const processPaynowPayment = require("../processPaynowPayment")
 const redisClient = require("../redisConfig")
 const messages = require("../../constants/messages")
+const autoProcessSub = require("../autoProcessSub")
 const topupHandler = async (client, msgBody, chatID) => {
     console.log("this is msgbody" + msgBody)
     const topupClient = `${chatID}topup`
@@ -43,7 +44,7 @@ const topupHandler = async (client, msgBody, chatID) => {
         }
     }
     else {
-        client.sendMessage(chatID, 'Field not founf')
+        client.sendMessage(chatID, 'Topup not available for now!')
     }
 }
 module.exports = topupHandler

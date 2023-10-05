@@ -10,7 +10,8 @@ const qrcode = require("qrcode-terminal");
 
 
 //initialise redis
-const redisClient = require("./config/redisConfig")
+const redisClient = require("./config/redisConfig");
+const messages = require("./constants/messages");
 
 // connect to mongodb before running anything on the app
 connectDB().then(async () => {
@@ -50,21 +51,21 @@ connectDB().then(async () => {
       //ignoreDefaultArgs: ['--enable-automation'],
       headless: true,
       args: [
-        /*  "--log-level=3", // fatal only
-         "--start-maximized",
-         "--no-default-browser-check",
-         "--disable-infobars",
-         "--disable-web-security",
-         "--disable-site-isolation-trials",
-         "--no-experiments",
-         "--ignore-gpu-blacklist",
-         "--ignore-certificate-errors",
-         "--ignore-certificate-errors-spki-list",
-         "--disable-gpu",
-         "--disable-extensions",
-         "--disable-default-apps",
-         "--enable-features=NetworkService",
-         "--disable-setuid-sandbox", */
+        "--log-level=3", // fatal only
+        "--start-maximized",
+        "--no-default-browser-check",
+        "--disable-infobars",
+        "--disable-web-security",
+        "--disable-site-isolation-trials",
+        "--no-experiments",
+        "--ignore-gpu-blacklist",
+        "--ignore-certificate-errors",
+        "--ignore-certificate-errors-spki-list",
+        "--disable-gpu",
+        "--disable-extensions",
+        "--disable-default-apps",
+        "--enable-features=NetworkService",
+        "--disable-setuid-sandbox",
         "--no-sandbox",
       ],
     },
@@ -165,18 +166,18 @@ connectDB().then(async () => {
           }
           client.sendMessage(
             serialisedNumber,
-            `Hi ${subscriber.notifyName}, your subscription has expired. To renew reply with *Topup monthly (your ecocash number)* \n\n Eg *topup monthly 0771234567*`
+            `Hi ${subscriber.notifyName}, ` + messages.SUBSCRIPTION_EXPIRED
           );
         } else if (ttL < 2) {
           client.sendMessage(
             serialisedNumber,
-            `Hi ${subscriber.notifyName}\n Your subscribtion to AskMe expires within the next 24 hours, To renew reply with *Topup monthly (your ecocash number)* \n\n Eg *topup monthly 0771234567*`
+            `Hi ${subscriber.notifyName}` + messages.SUBSCRIPTION_EXPIRING_SOON
           );
         } else if (ttL % 7 == 0) {
           //
           client.sendMessage(
             serialisedNumber,
-            `Hey there, ${subscriber.notifyName}! Rise and shine to a world of knowledge with AskMe-AI. You've got ${ttL} days left on your standard subscription, giving you 25 chances to expand your mind through the power of AI education.Let's make every request count!`
+            `Hey there, ${subscriber.notifyName}!` + `Rise and shine to a world of knowledge with AskMe - AI.You've got ${ttL} days left on your standard subscription, giving you 25 chances to expand your mind through the power of AI education.Let's make every request count!`
           );
         }
       });
