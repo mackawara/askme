@@ -53,7 +53,9 @@ const clientOn = async (client, arg1, MessageMedia) => {
             .findOne({ serialisedNumber: chatID })
             .exec();
           if (isInTopupMode) {
+            console.log("is intopup mode")
             await topupHandler(client, msgBody, chatID)
+            // await redisClient.hSet()
             return
           }
 
@@ -220,7 +222,7 @@ const clientOn = async (client, arg1, MessageMedia) => {
           ) {
             await redisClient.hSet(`${chatID}topup`, "field", "ecocashNumber");
             await redisClient.expire(`${chatID}topup`, 300)
-            msg.reply(messages.ECOCASH_NUMBER)
+            await msg.reply(messages.ECOCASH_NUMBER)
             return
           }
 

@@ -21,10 +21,10 @@ const MESSAGE_TOO_LONG = "Your message is too long. Upgrade to subscription serv
 const NO_CONTEXT_TO_CONTINUE = "I can only continue based on previous 3 messages if they were made within the last 3 minutes";
 const FREE_QUOTA_EXCEDED = "You have exceed your free usage. Reply with the word \"Topup\" to subscribe. Subscription only costs RTGS500 for a 3 day subscription and RTGS6000 (Ecocash) for monthly subscription "
 const ECOCASH_NUMBER = "Please send us the ecocash number you would like to pay with";
-const INVALID_ECOCASH_NUMBER = "The number you entered is not a valid Econet number\nplease use format shown"
+const INVALID_ECOCASH_NUMBER = "The number you entered is not a valid Econet number\nplease use format shown:0771234567"
 const TOPUP_PRODUCT = "Which product do you want to topup\n1.monthly\n2.payu\nMonthly subscription costs RTGS$6000 and you get 25 messages per day, for 1 month\nPay as you use (payu) costs RTGS$500 and you get 55 messages that you can use over 3 days/72 hours "
 const REPLY_WITH_TOPUP = "You are currently using a free quota\nSend the word \"Topup\" to subscribe for more messages/requests"
-const INVALID_TOPUP_PRODUCT = `Your topup could not be captured because you did not specify which *product* between 1.payu 2.monthly`
+const INVALID_TOPUP_PRODUCT = `Please respond with any one of\n1.payu\n2.monthly\nEg just reply with the word payu`
 module.exports = {
     USE_THESE_KEY_WORDS, FREE_QUOTA_EXCEDED, TOPUP_WAS_NOT_PROCESSED, REPLY_WITH_TOPUP, INVALID_TOPUP_PRODUCT, INVALID_ECOCASH_NUMBER, TOPUP_PRODUCT, ECOCASH_NUMBER, TOO_MANY_REQUESTS_TRY_LATER, ONLY_AVAILABLE_FOR_SUBSCRIBED, ERROR_NO_QUOTED_MESSAGES_FOUND, BE_PATIENT_WHILE_SYSTEM_GENERATES_DOC, DO_NOT_SEND_THANK_YOU, WARNING_DO_NOT_SEND_ANY_MORE_MESSAGES, GENERATED_BY_ASKME_AI, WAIT_WHILE_MESSAGE_IS_BEING_PROCESSED, SAVE_NEW_USER, TOPUP_ERROR_MESSAGE, TOP_UP_MESSAGE: FREE_QUOTA_EXCEDED, UNABLE_TO_PROCESS_REQUEST, MESSAGE_FLAGGED, MESSAGE_TOO_LONG, SUBSCRIPTION_QUOTA_EXCEDED, NOT_ENOUGH_CALLS_TO_PROCESS_IMAGE, NO_CONTEXT_TO_CONTINUE, NO_MEDIA_REQUEST_SEND_TEXT, BLOCKED_MESSAGE
 }
