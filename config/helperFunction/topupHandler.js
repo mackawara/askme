@@ -33,11 +33,12 @@ const topupHandler = async (client, msgBody, chatID) => {
         const paymentResult = await processPaynowPayment(msgBody, topupNumber, chatID)
         if (paymentResult) {
             await autoProcessSub(chatID, client, msgBody)
-            redisClient.del(topupClient)
+            await redisClient.del(topupClient)
             return
         }
         else {
             client.sendMessage(chatID, messages.TOPUP_WAS_NOT_PROCESSED)
+            await redisClient.del(topupClient)
             return
         }
     }
