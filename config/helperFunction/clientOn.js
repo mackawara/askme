@@ -12,17 +12,15 @@ const generateImage = require("./generateImage");
 const saveReferal = require("./saveReferal");
 const redisClient = require("../redisConfig")
 const ignorePatterns =
-  /^(ok|oky|thank you|ok thank you|ouky|thanx|It's ok. Thank you so much|hey|hi ask me|noted|hello|good night|ok thank you|k|night|Youre welcome|welcome|hey|you welcome|Hie|hy|thanks?|k|[hi]+|\bhey\b)\W*$/gi;
+  /^(ok(ay)?|thank(s| you)?|ouky|thanx|it'?s? ok(ay)?\.? thank(s| you)? so much|hey|h(i|ey|ello)|good (night|evening|morning|day)|noted|welcome|(yo)?u'?re welcome|k(ay)?|night)\W*$/gi;
 //helper Functions
 const getSecsToMidNight = require("./getSecsToMidnight");
 const isSystemNotBusy = require("./isSystemNotBusy");
 const manualProcessSub = require("./manualProcessSub");
 const processFollower = require("./processFollower");
-const processPaynowPayment = require("../processPaynowPayment.js");
-const autoProcessSub = require("../autoProcessSub");
-const { constants } = require("buffer");
+const { client, MessageMedia } = require("../wwebJsConfig")
 const timeDelay = (ms) => new Promise((res) => setTimeout(res, ms));
-const clientOn = async (client, arg1, MessageMedia) => {
+const clientOn = async (arg1) => {
   const me = process.env.ME;
   const usersModel = require("../../models/individualUsers");
 
@@ -53,14 +51,13 @@ const clientOn = async (client, arg1, MessageMedia) => {
             .findOne({ serialisedNumber: chatID })
             .exec();
           if (isInTopupMode) {
-            console.log("is intopup mode")
             await topupHandler(msgBody, chatID)
             // await redisClient.hSet()
             return
           }
 
           //check the redis DB if there is an entry from the number
-          if (!(await exists)) {
+          if (!(exists)) {
             //check if user exists already in the database
             //means in each conversation there is only 1 DB check meaning subsequent calls are faster
             let serialisedNumber, notifyName, number;
@@ -371,7 +368,7 @@ const clientOn = async (client, arg1, MessageMedia) => {
           // check if blocked   const isBlocked = await redisClient.hGet(chatID, "isBlocked");
           //subtract 1 usage call
           await redisClient.HINCRBY(chatID, "calls", -1);
-          console.log("remaining calls=" + await redisClient.hGet(chatID, "calls"))
+          console.log("remaining calls for" + chatID + await redisClient.hGet(chatID, "calls"))
           if (isBlocked === "1") {
             if (calls < - 3) {
               client.sendMessage(chatID,
@@ -382,9 +379,14 @@ const clientOn = async (client, arg1, MessageMedia) => {
               return;
             }
             if (calls < - 6) {
-              client.sendMessage(chatID,
+              await client.sendMessage(chatID,
                 messages.BLOCKED_MESSAGE
               );
+              contact.block().then((result) => {
+                console.log(result)
+                client.sendMessage(admin, messages.USER_BANNED + ` ${chatID}`)
+              });
+
               redisClient.expire(chatID, 172800);
               user.warnings += 3;
               try {
@@ -407,8 +409,7 @@ const clientOn = async (client, arg1, MessageMedia) => {
               //set token limits based on subscription
               tokenLimit = 300;
             } else {
-              client.sendMessage(chatID,
-
+              client.sendMessage(chatID, messages.SUBSCRIPTION_QUOTA_EXCEDED
               );
               return;
             }

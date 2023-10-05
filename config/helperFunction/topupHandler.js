@@ -2,7 +2,7 @@ const processPaynowPayment = require("../processPaynowPayment")
 const redisClient = require("../redisConfig")
 const messages = require("../../constants/messages")
 const autoProcessSub = require("../autoProcessSub")
-const client = require("../wwebJsConfig")
+const { client } = require("../wwebJsConfig.js")
 const topupHandler = async (msgBody, chatID) => {
     const topupClient = `${chatID}topup`
     const topupField = await redisClient.hGet(topupClient, 'field')

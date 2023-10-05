@@ -35,10 +35,10 @@ const openAiCall = async (chatID, tokenLimit, prompt) => {
   const response = await openai.chat.completions.create({
     model: modelVersion,
     messages: messages,
-    /*  temperature: 0.5,
-     max_tokens: tokenLimit,
-     frequency_penalty: 1.5,
-     presence_penalty: 1.89, */
+    temperature: 0.5,
+    max_tokens: tokenLimit,
+    frequency_penalty: 1.5,
+    presence_penalty: 1.89,
   })
     .catch(err => {
       // console.log("Error recorded " + err.response.data.error.message);
@@ -48,7 +48,6 @@ const openAiCall = async (chatID, tokenLimit, prompt) => {
     });
   //check if there is any response
   if (response) {
-    console.log(response)
     if ("choices" in response) {
       messages = messages.filter(item => {
         return item !== system
