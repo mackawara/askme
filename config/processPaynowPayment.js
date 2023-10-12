@@ -7,7 +7,7 @@ const paynowProcess = async (product, payingNumber, chatID) => {
     const invoiceNumber = "AM" + (parseInt(existingPayments + 1));
     const productName = product.toLowerCase().trim();
     let paynow = new Paynow(process.env.PAYNOW_ID, process.env.PAYNOW_KEY);
-    let payment = paynow.createPayment(invoiceNumber, "mkawara98@gmail.com");
+    let payment = paynow.createPayment(invoiceNumber, process.env.AUTH_EMAIL);
     //set the product price depending
     const productPrice = productName == "payu" ? 500 : 6000;
     payment.add(product, productPrice);
@@ -19,13 +19,17 @@ const paynowProcess = async (product, payingNumber, chatID) => {
 
     let paymentComplete;
 
-    await timeDelay(60000)//wait for the client to process  
+    await timeDelay(30000)//wait for the client to process  
     if (response.success) {
+        console.log(response)
+        //means the user was successfully sent prompted
         let instructions = response.instructions;
         const pollUrl = await response.pollUrl;
-        //wait some 30 secs before polling    
+        //wait some 30 secs before polling   
+        await timeDelay(30000)
         const status = await paynow.pollTransaction(pollUrl).catch((err) => console.log(err))
-
+        console.log(status)
+        // check if it the poll result is paid
         if (status.status == "paid") {
             paymentComplete = true
             try {

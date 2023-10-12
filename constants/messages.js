@@ -1,5 +1,5 @@
-const SAVE_NEW_USER = "Save new user failed";
-const WELCOME_MESSAGE = " Thank you for using AskMe, the AI powered virtual study assistant.\n\n*Please Read* As a free user you are limited to 5 free request/message per month (1 per day).\n . *Simply* ask any question and wait for a response. If the response is incomplete you can just say \"continue\". \n *To subscribe send the word Topup*"
+const SAVE_NEW_USER_FAILED = "Save new user failed";
+const WELCOME_MESSAGE = "Thank you for using AskMe, the AI powered virtual study assistant.\n\n*Please Read* Kindly note that this is a paid service but a new user you get some free requests/messages to test the app.\n . *Simply* ask any question and wait for a response. If the response is incomplete you can just say \"continue\". \n *To subscribe send the word Topup*"
 const TOPUP_ERROR_MESSAGE = "To begin the topup process reply with \"topup\" ";
 const TOO_MANY_REQUESTS_TRY_LATER = `*Error*, you have made too many requests within a short space of time, Wait at least 1 minute!!`;
 const DO_NOT_SEND_THANK_YOU = "*System message*\n Thank you for using AskMe. Do not send greeting messages or messages such as thank you or you are welcome etc... They will use up your quota";
@@ -32,7 +32,7 @@ const SUBSCRIPTION_EXPIRING_SOON = `\nYour subscribtion to AskMe expires within 
 const ERROR_IMAGE_NOT_PROCESSED = `Error : there was an error processing your image please check if it has any harmful content or anything that maybe against our usage policies`;
 const USER_BANNED = `This user has been banned`
 module.exports = {
-    USE_THESE_KEY_WORDS, USER_BANNED, ERROR_IMAGE_NOT_PROCESSED, MESSAGE_NOT_FORMATTED_FOR_IMAGE_GENERATION, FREE_QUOTA_EXCEDED, PROMPTS_VIOLATES_POLICIES, SUBSCRIPTION_EXPIRING_SOON, SUBSCRIPTION_EXPIRED, TOPUP_WAS_NOT_PROCESSED, REPLY_WITH_TOPUP, INVALID_TOPUP_PRODUCT, INVALID_ECOCASH_NUMBER, TOPUP_PRODUCT, ECOCASH_NUMBER, TOO_MANY_REQUESTS_TRY_LATER, ONLY_AVAILABLE_FOR_SUBSCRIBED, ERROR_NO_QUOTED_MESSAGES_FOUND, BE_PATIENT_WHILE_SYSTEM_GENERATES_DOC, DO_NOT_SEND_THANK_YOU, WARNING_DO_NOT_SEND_ANY_MORE_MESSAGES, GENERATED_BY_ASKME_AI, WAIT_WHILE_MESSAGE_IS_BEING_PROCESSED, SAVE_NEW_USER, TOPUP_ERROR_MESSAGE, TOP_UP_MESSAGE: FREE_QUOTA_EXCEDED, UNABLE_TO_PROCESS_REQUEST, MESSAGE_FLAGGED, MESSAGE_TOO_LONG, SUBSCRIPTION_QUOTA_EXCEDED, NOT_ENOUGH_CALLS_TO_PROCESS_IMAGE, NO_CONTEXT_TO_CONTINUE, NO_MEDIA_REQUEST_SEND_TEXT, BLOCKED_MESSAGE
+    USE_THESE_KEY_WORDS, USER_BANNED, WELCOME_MESSAGE, ERROR_IMAGE_NOT_PROCESSED, MESSAGE_NOT_FORMATTED_FOR_IMAGE_GENERATION, FREE_QUOTA_EXCEDED, PROMPTS_VIOLATES_POLICIES, SUBSCRIPTION_EXPIRING_SOON, SUBSCRIPTION_EXPIRED, TOPUP_WAS_NOT_PROCESSED, REPLY_WITH_TOPUP, INVALID_TOPUP_PRODUCT, INVALID_ECOCASH_NUMBER, TOPUP_PRODUCT, ECOCASH_NUMBER, TOO_MANY_REQUESTS_TRY_LATER, ONLY_AVAILABLE_FOR_SUBSCRIBED, ERROR_NO_QUOTED_MESSAGES_FOUND, BE_PATIENT_WHILE_SYSTEM_GENERATES_DOC, DO_NOT_SEND_THANK_YOU, WARNING_DO_NOT_SEND_ANY_MORE_MESSAGES, GENERATED_BY_ASKME_AI, WAIT_WHILE_MESSAGE_IS_BEING_PROCESSED, SAVE_NEW_USER: SAVE_NEW_USER_FAILED, TOPUP_ERROR_MESSAGE, TOP_UP_MESSAGE: FREE_QUOTA_EXCEDED, UNABLE_TO_PROCESS_REQUEST, MESSAGE_FLAGGED, MESSAGE_TOO_LONG, SUBSCRIPTION_QUOTA_EXCEDED, NOT_ENOUGH_CALLS_TO_PROCESS_IMAGE, NO_CONTEXT_TO_CONTINUE, NO_MEDIA_REQUEST_SEND_TEXT, BLOCKED_MESSAGE
 }
 
 
