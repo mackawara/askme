@@ -24,10 +24,20 @@ const topupHandler = async (msgBody, chatID) => {
         if (!isValidproduct.test(msgBody)) {
             client.sendMessage(chatID, messages.INVALID_TOPUP_PRODUCT)
             return
+    
         }
-        await redisClient.hSet(topupClient, "product", msgBody)
+        if (msgBody=="2"){
+            await redisClient.hSet(topupClient, "product", "payu")  
+        }
+        else if( msgBody=="1"){
+            await redisClient.hSet(topupClient,"product", "monthly")
+        }
+        else{
+            await redisClient.hSet(topupClient,"product", msgBody)
+        }
+     const selectedTopup=   await redisClient.hGet(topupClient, "product")
 
-        await client.sendMessage(chatID, `You are subscribing for ${msgBody} subscription. To complete the payment you will be asked to confirm payment by entering your PIN`);
+        await client.sendMessage(chatID, `You are subscribing for ${selectedTopup} subscription. Please wait for an Ecocash online payment pop up on your home screen. \nDo not send any more messages until you receive confirmation`);
         const paymentResult = await processPaynowPayment(msgBody, topupNumber, chatID)
         if (paymentResult) {
             await autoProcessSub(chatID, client, msgBody)

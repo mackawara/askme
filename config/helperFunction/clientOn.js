@@ -67,6 +67,10 @@ const clientOn = async (arg1) => {
             // if contact is not already saved save to DB
             if (!user) {
               //check if the user is in the referals
+              client.sendMessage(
+                serialisedNumber,
+                `Hi ${notifyName} ` + messages.WELCOME_MESSAGE
+              )
               const referal = await ReferalsModel.findOne({
                 targetSerialisedNumber: chatID,
               }).exec();
@@ -109,10 +113,7 @@ const clientOn = async (arg1) => {
               try {
                 await newContact.save();
                 client.sendMessage(me, "New user added  " + chatID);
-                client.sendMessage(
-                  serialisedNumber,
-                  `Hi ${notifyName}` + messages.WELCOME_MESSAGE
-                );
+                ;
               } catch (err) {
                 client.sendMessage(me, "Save new user failed");
                 console.log(err.errors);
@@ -218,7 +219,7 @@ const clientOn = async (arg1) => {
             topupRegex.test(msgBody)
           ) {
             await redisClient.hSet(`${chatID}topup`, "field", "ecocashNumber");
-            await redisClient.expire(`${chatID}topup`, 300)
+            await redisClient.expire(`${chatID}topup`, 180)
             await msg.reply(messages.ECOCASH_NUMBER)
             return
           }
