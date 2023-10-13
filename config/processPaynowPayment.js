@@ -1,5 +1,10 @@
 const { Paynow } = require("paynow");
 const PaynowPayments = require("../models/paynowPayments");
+const autoProcessSub=require("./autoProcessSub")
+const messages=require("../constants/messages")
+const { client}=require("./wwebJsConfig")
+const redisClient=require("./redisConfig")
+require("dotenv").config();
 const timeDelay = (ms) => new Promise((res) => setTimeout(res, ms));
 
 const paynowProcess = async (product, payingNumber, chatID) => {
@@ -22,17 +27,19 @@ const paynowProcess = async (product, payingNumber, chatID) => {
     await timeDelay(30000)//wait for the client to process  
     if (response.success) {
         console.log(response)
-        //means the user was successfully sent prompted
+        //means the user was successfully prompted
         let instructions = response.instructions;
         const pollUrl = await response.pollUrl;
         //wait some 30 secs before polling   
         await timeDelay(30000)
+        // check if it the poll result is paid
         const status = await paynow.pollTransaction(pollUrl).catch((err) => console.log(err))
         console.log(status)
-        // check if it the poll result is paid
         if (status.status == "paid") {
             paymentComplete = true
             try {
+                await autoProcessSub(chatID, client, msgBody)
+                await redisClient.del(`${chatID}topup`) // delete the topup client
                 const newPayment = new PaynowPayments({
                     date: new Date().toISOString().slice(0, 10),
                     userNumber: chatID,
@@ -45,12 +52,14 @@ const paynowProcess = async (product, payingNumber, chatID) => {
                 newPayment.save();
             } catch (error) {
                 console.log(error);
-
             }
             paymentComplete = true;
             console.log("Payment status " + status.success);
         }
         else {
+           await  client.sendMessage(chatID, messages.TOPUP_WAS_NOT_PROCESSED)
+            await client.sendMessage(process.env.ME,"Failed topup alert: From " + chatID)
+            await redisClient.del(`${chatID}topup`)
             try {
                 const newPayment = new PaynowPayments({
                     date: new Date().toISOString().slice(0, 10),

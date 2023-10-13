@@ -18,8 +18,8 @@ const openAiCall = async (chatID, tokenLimit, prompt) => {
     });
     //
     if(CONTINUE.test(prompt)){
-     return "Please note that messages are only kept in the system for only 5 minutes after which you cant continue from previous conversations "
-      return
+     return "Please note that messages are only kept in the system for only 5 minutes after which you cant continue from previous conversations ";
+
     }
     // await redisClient.expire(`${chatID}messages`,300)
   }
@@ -62,7 +62,7 @@ const openAiCall = async (chatID, tokenLimit, prompt) => {
       }); //remove the system message
       messages.push(response.choices[0]["message"]); //add system response to messages
 
-      messages.splice(0, messages.length - 4); //trim messages and remain wit newest 6 only
+      messages.splice(0, messages.length - 4); //trim messages and remain wit newest 4 only
       // at this point you have system user system user
       try {
         redisClient.hSet(
@@ -103,7 +103,7 @@ const openAiCall = async (chatID, tokenLimit, prompt) => {
        return (response.choices[0]["finish_reason"]=="length")?
        `${response.choices[0]["message"]["content"]}\n *send "continue" to see the rest of the text*`: 
         response.choices[0]["message"]["content"];
-      }
+      
 
     } else {
       return `Error , request could not be processed, please try again later`;
