@@ -3,6 +3,8 @@ const indvUsers = require("../../models/individualUsers.js");
 const totalUsageModel = require("../../models/totalUsage");
 const redisClient = require("../redisConfig.js")
 const openai = require("../openAIconfig.js")
+const {client}= require("../wwebJsConfig.js")
+const {CONTINUE}= require("../../constants/regexPatterns.js")
 
 const openAiCall = async (chatID, tokenLimit, prompt) => {
   let user = await indvUsers.findOne({ serialisedNumber: chatID }).exec();
@@ -14,6 +16,11 @@ const openAiCall = async (chatID, tokenLimit, prompt) => {
     await redisClient.hSet(`${chatID}messages`, {
       messages: JSON.stringify([]),
     });
+    //
+    if(CONTINUE.test(prompt)){
+     return "Please note that messages are only kept in the system for only 5 minutes after which you cant continue from previous conversations "
+      return
+    }
     // await redisClient.expire(`${chatID}messages`,300)
   }
   //convert messages back to an array
@@ -28,6 +35,7 @@ const openAiCall = async (chatID, tokenLimit, prompt) => {
   };
   // add sytem message just before sending the message array
   messages.push(system);
+  
   // add user prompt to messages
   messages.push({ role: "user", content: prompt });
   const modelVersion = "gpt-3.5-turbo-0613"
@@ -92,8 +100,11 @@ const openAiCall = async (chatID, tokenLimit, prompt) => {
       } catch (err) {
         console.log(err);
       }
+       return (response.choices[0]["finish_reason"]=="length")?
+       `${response.choices[0]["message"]["content"]}\n *send "continue" to see the rest of the text*`: 
+        response.choices[0]["message"]["content"];
+      }
 
-      return response.choices[0]["message"]["content"];
     } else {
       return `Error , request could not be processed, please try again later`;
     }
