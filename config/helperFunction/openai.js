@@ -4,7 +4,7 @@ const totalUsageModel = require("../../models/totalUsage");
 const redisClient = require("../redisConfig.js")
 const openai = require("../openAIconfig.js")
 const {client}= require("../wwebJsConfig.js")
-const {CONTINUE}= require("../../constants/regexPatterns.js")
+const {continuePattern}= require("../../constants/regexPatterns.js")
 
 const openAiCall = async (chatID, tokenLimit, prompt) => {
   let user = await indvUsers.findOne({ serialisedNumber: chatID }).exec();
@@ -17,7 +17,7 @@ const openAiCall = async (chatID, tokenLimit, prompt) => {
       messages: JSON.stringify([]),
     });
     //
-    if(CONTINUE.test(prompt)){
+    if(continuePattern.test(prompt)){
      return "Please note that messages are only kept in the system for only 5 minutes after which you cant continue from previous conversations ";
 
     }
