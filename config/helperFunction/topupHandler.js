@@ -8,7 +8,7 @@ const topupHandler = async (msgBody, chatID) => {
     const topupField = await redisClient.hGet(topupClient, 'field')
     const topupNumber = await redisClient.hGet(topupClient, "ecocashNumber")
     const isValidEconetNumber = /^(07[7-8])(\d{7})$/;
-    const isValidproduct = /(payu|month|monthly)/gi
+    const isValidproduct = /(payu|month|monthly|1|2)/gi
     if (topupField == "ecocashNumber") {
         if (!isValidEconetNumber.test(msgBody)) {
             client.sendMessage(chatID, messages.INVALID_ECOCASH_NUMBER);
