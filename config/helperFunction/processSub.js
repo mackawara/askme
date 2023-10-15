@@ -1,5 +1,6 @@
 const indvUsers = require("../../models/individualUsers");
 const processSub = async (msg, client, redisClient) => {
+ 
   const msgBody = await msg.body;
   let number = msgBody.replace("processSub:", "").replace(/\s/g, "").trim();
   number += "@c.us";
@@ -15,7 +16,7 @@ const processSub = async (msg, client, redisClient) => {
       .then((result) => {
         console.log(result);
         redisClient.hSet(number, {
-          calls: 0,
+          calls: 26,
           isBlocked: "0",
           isSubscribed: "1",
         });
@@ -23,7 +24,7 @@ const processSub = async (msg, client, redisClient) => {
         msg.reply(`${number}, is now subscribed`);
         client.sendMessage(
           number,
-          `*Thank you for subscribing to AskMe_AI* \nYou now have increased quota of 25 requests per day,We are building an exciting new feature for you AI image generation in which you can tell AI to create an image based on your decsription \n`
+          `*Thank you for subscribing to AskMe_AI* \nYou now have increased quota of 25 requests per day,To find out which features are now available to you type reply with features" \n`
         );
       });
   }

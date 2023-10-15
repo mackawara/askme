@@ -15,7 +15,7 @@ const processFollower = async (msg, client, redisClient) => {
       .then((result) => {
         console.log(result);
         redisClient.hSet(number, {
-          calls: 0,
+          calls: 3,
           isBlocked: "0",
           isSubscribed: "1",
           isFollower: "1",

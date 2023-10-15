@@ -17,6 +17,7 @@ const usersSchema = new mongoose.Schema({
     default: false,
   },
   calls: { type: Number, required: true },
+  callsThisMonth: { type: Number, required: true, default: 0 },
   number: {
     type: String,
     required: true,

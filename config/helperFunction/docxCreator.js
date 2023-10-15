@@ -5,7 +5,7 @@ const fs = require("fs");
 const path = require("path");
 
 const createDoc = async (contentBody, chatID, timestamp) => {
-  const name = contentBody.slice(26, 51);
+  const name = `Generated_by_askme${chatID}${timestamp}`;
   // Load the docx file as binary content
   const content = fs.readFileSync(
     path.resolve(__dirname, "input.docx"),

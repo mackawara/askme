@@ -1,26 +1,18 @@
-const { Configuration, OpenAIApi } = require("openai");
-
-const configuration = new Configuration({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+const openai = require("../openAIconfig.js")
+const messages = require("../../constants/messages.js")
 const createImage = async (msgBody, chatID, redisClient) => {
-  //test if formatted well
   if (/create Image|createImage/gi.test(msgBody.slice(0, 7))) {
-    return "Error Your message is not formatted correctly for createImageeration\n Use the example below\ncreateImage a white cloud covering a mountain ";
+    return messages.MESSAGE_NOT_FORMATTED_FOR_IMAGE_GENERATION
   }
   //remove keyword
   const prompt = await msgBody.replace(/createImage|createImage/gi, "").trim();
   //test prompt for flagged
   if (/naked|sex|porn/gi.test(prompt)) {
-    return "Error:Your prompt has been rejected beacuse it violates usage policies";
+    return messages.PROMPTS_VIOLATES_POLICIES
   }
-  const openai = new OpenAIApi(configuration);
-
-  const fileName = prompt.slice(0, 8).replace(/\s/gi, "");
-  const outputPath = `../../assets/${fileName}${chatID}.jpg`;
 
   try {
-    const response = await openai.createImage({
+    const response = await openai.images.generate({
       prompt: prompt,
       n: 1,
       size: "256x256",
@@ -29,15 +21,14 @@ const createImage = async (msgBody, chatID, redisClient) => {
     });
 
     if (response) {
-
-      const url = response.data.data[0].url;
-      await redisClient.HINCRBY(chatID, "calls", 15);
+      const url = response.data[0].url;
+      await redisClient.HINCRBY(chatID, "calls", -15);
       return url
     }
     //console.log(image);
   } catch (err) {
     console.log(err)
-    return `Error : there was an error processing your image please check if it has any harmful content or anything that maybe against our usage policies`;
+    return messages.ERROR_IMAGE_NOT_PROCESSED
   }
 };
 module.exports = createImage;

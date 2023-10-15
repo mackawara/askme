@@ -4,55 +4,44 @@ const createDoc = require("./config/helperFunction/docxCreator");
 const indvUsers = require("./models/individualUsers");
 const ReferalsModel = require("./models/referals");
 const totalUsage = require("./models/totalUsage");
-
+//const setStatus = require("./config/helperFunction/setStatus")
+const { client, MessageMedia } = require("./config/wwebJsConfig")
 const qrcode = require("qrcode-terminal");
-const {
-  AggregateSteps,
-  AggregateGroupByReducers,
-  createClient,
-  SchemaFieldTypes,
-  redis,
-} = require("redis");
+
 
 //initialise redis
-const redisClient = createClient();
+const redisClient = require("./config/redisConfig");
+const messages = require("./constants/messages");
 
 // connect to mongodb before running anything on the app
 connectDB().then(async () => {
-  const { Client, LocalAuth, MessageMedia } = require("whatsapp-web.js");
+
   let callsPErday = 0;
+
+  const deleteDuplicates = async () => {
+    const duplicates = await indvUsers.aggregate([{
+      $group: {
+        _id: "$number",
+        uniqueIds: { $addToSet: "$_id" },
+        count: { $sum: 1 }
+      }
+    }, {
+      $match: {
+        count: { '$gt': 1 }
+      }
+    }
+    ])
+    duplicates.forEach((doc) => {
+      doc.uniqueIds.shift()
+      // delete the remaining using ther IDs
+      try { indvUsers.deleteMany({ _id: { $in: doc.uniqueIds } }).then((result) => { console.log(result) }) } catch (err) { console.log(err) }
+    })
+
+  }
   // redis clent connections
-  redisClient.on("error", (err) => console.log("Redis Client Error", err));
+
   await redisClient.connect();
   // redisClient.flushDb().then(() => console.log("redis DB flushed"));
-
-  const client = new Client({
-    authStrategy: new LocalAuth(),
-    puppeteer: {
-      executablePath: process.env.EXECPATH,
-      handleSIGINT: true,
-      headless: true,
-      args: [
-        "--log-level=3", // fatal only
-        "--start-maximized",
-        "--no-default-browser-check",
-        "--disable-infobars",
-        "--disable-web-security",
-        "--disable-site-isolation-trials",
-        "--no-experiments",
-        "--ignore-gpu-blacklist",
-        "--ignore-certificate-errors",
-        "--ignore-certificate-errors-spki-list",
-        "--disable-gpu",
-        "--disable-extensions",
-        "--disable-default-apps",
-        "--enable-features=NetworkService",
-        "--disable-setuid-sandbox",
-        "--no-sandbox",
-      ],
-    },
-  });
-
   //client2.initialize();
   client.initialize();
 
@@ -76,10 +65,12 @@ connectDB().then(async () => {
     console.log("Client is ready!");
     //functions abd resources
     //Helper Functions
-    client.on("call", async (call) => {
+
+
+    /* client.on("call", async (call) => {
       call.reject()
       client.sendMessage(call.from, "*System message*:\n This number does not take calls, Please refrain from calling.*Each attempt at calling counts as 2 requests*")
-    })
+    }) */
     const cron = require("node-cron");
     /*  cron.schedule(`9 1 * * *`, async () => {
       //redeem uasyncsers
@@ -127,6 +118,8 @@ connectDB().then(async () => {
       console.log
     }) */
     cron.schedule(` 5 2 * * * `, async () => {
+      deleteDuplicates()
+
       // expireSubs after 1 mmonth
       const subscribed = await indvUsers.find({ isSubscribed: true });
       (await subscribed).forEach(async (subscriber) => {
@@ -144,27 +137,36 @@ connectDB().then(async () => {
           }
           client.sendMessage(
             serialisedNumber,
-            `Hi ${subscriber.notifyName}, your subscription has expired. Please renew here bit.ly/Askme_ai to continue using AskMe_AI`
+            `Hi ${subscriber.notifyName}, ` + messages.SUBSCRIPTION_EXPIRED
           );
         } else if (ttL < 2) {
           client.sendMessage(
             serialisedNumber,
-            `Hi ${subscriber.notifyName}\n Your subscribtion to AskMe expires within the next 24 hours, \nPlease renew here bit.ly/Askme_ai to continue using AskMe`
+            `Hi ${subscriber.notifyName}` + messages.SUBSCRIPTION_EXPIRING_SOON
           );
         } else if (ttL % 7 == 0) {
           //
           client.sendMessage(
             serialisedNumber,
-            `Hey there, ${subscriber.notifyName}! Rise and shine to a world of knowledge with AskMe-AI. You've got ${ttL} days left on your standard subscription, giving you 25 chances to expand your mind through the power of AI education.Let's make every request count!`
+            `Hey there, ${subscriber.notifyName}!` + `Rise and shine to a world of knowledge with AskMe - AI.You've got ${ttL} days left on your standard subscription, giving you 25 chances to expand your mind through the power of AI education.Let's make every request count!`
           );
         }
       });
       //set Status
       const randomStatus = require("./assets/statuses");
-      client.setStatus(
-        `Support AskMe by following us on social media channels \nFacebook https://www.facebook.com/askmeAI,\n Tiktok https://www.tiktok.com/@askme_ai .Send whatsapp number to our inbox and we will grant you extra quota`
-      );
+
     });
+
+    //creset calls this month every start of the month
+    cron.schedule("0 0 1 * *", () => {
+      totalUsage.updateOne({}, { $set: { callsThisMonth: 0 } })
+      indvUsers.updateMany(
+        {},
+        { $set: { callsThisMonth: 0 } }
+      )
+      tot
+    });
+
     cron.schedule(`42 17 * * 7`, async () => {
       const allChats = await client.getChats();
       allChats.forEach((chat) => chat.clearMessages());
@@ -173,7 +175,7 @@ connectDB().then(async () => {
 
     //client events and functions
     //decalre variables that work with client here
-    clientOn(client, "message", redisClient, MessageMedia);
+    clientOn("message");
     //client
 
     //Db models
