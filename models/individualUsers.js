@@ -21,6 +21,7 @@ const usersSchema = new mongoose.Schema({
   number: {
     type: String,
     required: true,
+    ///unique:true
   },
   warnings: {
     type: Number,
@@ -33,6 +34,7 @@ const usersSchema = new mongoose.Schema({
   serialisedNumber: {
     type: String,
     required: true,
+    unique:true
   },
   isSubscribed: {
     type: Boolean,

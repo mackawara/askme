@@ -4,7 +4,9 @@ const usageTip = [
 "If you want to practise for exams.Askme can help you create exam level questions. All you have to do is send a message such as *\"Can you create 10 practise questions for Zimsec O level Geography: Example questions :\n 1.Explain the formation of inselbergs (6 marks)\n2. Describe 3 characteristics of deserts (3)\"*",
 "Writing assingments has never been easier.You can send a prompt such as\n *\"Assignment:Discuss the popular teaching philosophies, Length 2000 words, use scholars and havard referencing to support the points.\"*\n\n If you are not happy with the output assignement you can ask to refine it e.g \"can you remove the secind paragraph\" ",
 "Askme_AI has creative writing abilities, all you have to do to generate a comprehension story (or composition) is to give the topic and story outline. You can also define a writing style\n Example : Write a story about an incident at school that left everyone shell shocked. Lenght of the story should be 600 words. Write in a sarcastic tone that uses overly exaggerated overtones",
-"Automated Grading Systems: AskME_AI can mark or grade your written work. For example if you have an assignment question and a sample answer you can get ask AskMe_AI to grade your answers and provide guidance"
+"Automated Grading Systems: AskME_AI can mark or grade your written work. For example if you have an assignment question and a sample answer you can get ask AskMe_AI to grade your answers and provide guidance",
+"Choose suitable prompts/messages - Choosing useful sentences or phrases will help get a good response from AI model",
+"To get the best results use good information/questions  as input - The better the starting point, the better results you'll get. Give examples of what you want, writing style ,education level etc"
 
   //`https://bit.ly/Askme-Payu *Pay as You Use:*,buy *55 message requests* for only $500 ecocash here`,
   /*  "Follow AskMe on tiktok to find cool ways of using AI to enhance you study.You have no excuse for failing https://www.tiktok.com/@askme_ai",

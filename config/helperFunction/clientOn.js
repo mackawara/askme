@@ -6,7 +6,7 @@ const isFlagged = require("./isFlagged");
 const docxCreator = require("./docxCreator");
 const messages = require('../../constants/messages')
 const topupHandler = require("./topupHandler")
-const greetByTime=require("../../Utils/index")
+const {greetByTime}=require("../../Utils/index")
 const randomUsageTip = require("./randomUsageTip");
 const generateImage = require("./generateImage");
 const saveReferal = require("./saveReferal");
@@ -33,7 +33,8 @@ const clientOn = async (arg1) => {
         const msgBody = msg.body;
         const chatID = msg.from;
         const expiryTime = getSecsToMidNight();
-
+        const user = await usersModel
+        .findOne({ serialisedNumber: chatID })
         let tokenLimit = 120;
         let maxCalls = 1
         let isSubscribed, isFollower
@@ -47,12 +48,10 @@ const clientOn = async (arg1) => {
           // if user is not already in Redis
           const exists = await redisClient.exists(chatID);
           const isInTopupMode = await redisClient.exists(`${chatID}topup`)
-          const user = await usersModel
-            .findOne({ serialisedNumber: chatID })
-            .exec();
+          
+            
           if (isInTopupMode) {
             await topupHandler(msgBody, chatID)
-            // await redisClient.hSet()
             return
           }
 
@@ -61,30 +60,12 @@ const clientOn = async (arg1) => {
             //check if user exists already in the database
             //means in each conversation there is only 1 DB check meaning subsequent calls are faster
             let serialisedNumber, notifyName, number;
-            serialisedNumber = await contact.id._serialized;
-            notifyName = await contact.pushname;
+            serialisedNumber = contact.id._serialized;
+            notifyName = contact.pushname;
             number = chatID.slice(0, 12);
             // if contact is not already saved save to DB
             if (!user) {
               //check if the user is in the referals
-              client.sendMessage(
-                serialisedNumber,
-                `Hi ${notifyName} ` + messages.WELCOME_MESSAGE
-              )
-              const referal = await ReferalsModel.findOne({
-                targetSerialisedNumber: chatID,
-              }).exec();
-
-              //if it has been previously referred update to now User
-              if (referal) {
-
-                try {
-                  await referal.set({ isNowUser: true });
-                  await referal.save();
-                } catch (err) {
-                  console.log(err);
-                }
-              }
 
               //save them to DB
               const newContact = new usersModel({
@@ -111,8 +92,12 @@ const clientOn = async (arg1) => {
                 timestamp: Date.now(),
               });
               try {
-                await newContact.save();
-                client.sendMessage(me, "New user added  " + chatID);
+                await newContact.save().then(result=>{
+                  console.log(result)
+                  msg.reply(`Hi ${notifyName} \n` + messages.WELCOME_MESSAGE
+                  )
+                  client.sendMessage(me, "New user added  " + chatID);
+                });
                 ;
               } catch (err) {
                 client.sendMessage(me, "Save new user failed");
@@ -214,13 +199,13 @@ const clientOn = async (arg1) => {
 
           const shortTTL = await redisClient.get(`${chatID}shortTTL`);
           // process retopup
-          const topupRegex = /b"?top\s?up"?b/gi;
+          const topupRegex = /\"?top\s?up"?\s?(payu|monthly)?/gi
 
           if (msgBody.toLowerCase().startsWith("topup") ||
             msgBody.toLowerCase().startsWith("*topup") ||
             msgBody.toLowerCase().includes("topup payu") ||
             msgBody.toLowerCase().includes("top-up payu") ||
-            topupRegex.test(msgBody)
+            topupRegex.test(msgBody.replace(" ",""))
           ) {
             await redisClient.hSet(`${chatID}topup`, "field", "ecocashNumber");
             await redisClient.expire(`${chatID}topup`, 180)

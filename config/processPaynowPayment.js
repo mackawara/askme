@@ -38,7 +38,7 @@ const paynowProcess = async (product, payingNumber, chatID) => {
         if (status.status == "paid") {
             paymentComplete = true
             try {
-                await autoProcessSub(chatID, client, msgBody)
+                await autoProcessSub(chatID, client, product)
                 await redisClient.del(`${chatID}topup`) // delete the topup client
                 const newPayment = new PaynowPayments({
                     date: new Date().toISOString().slice(0, 10),
