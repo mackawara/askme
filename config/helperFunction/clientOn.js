@@ -73,10 +73,10 @@ const clientOn = async arg1 => {
               const saved = await saveNewUser(chatID, notifyName, number);
               console.log(saved);
               if (saved) {
-                await client.sendMessage(chatID, messages.WELCOME_MESSAGE);
+                await client.sendMessage(chatID,`Hi ${notifyName} \n\n`+ messages.WELCOME_MESSAGE);
                 client.sendMessage(
                   chatID,
-                  '*Kindly note that our database is down and the systme will treat everyone as a new user*. If you have an active subscription that has not yet expired please get in touch with our admin on this number (+26371496546) and share the message you recevied when you subscribed and date'
+                  '*Kindly note that our database has been compromised, the system will treat everyone as a new user*.\n\n If you have an active subscription that has not yet expired please get in touch with our admin on this number (+26371496546) and share the message you recevied when you subscribed and date'
                 );
               } else if (!saved) {
                 client.sendMessage(me, 'Save new user failed');
@@ -387,7 +387,7 @@ const clientOn = async arg1 => {
           else if (isSubscribed == '1') {
             if (calls > minAvailableCallsAllowed) {
               //set token limits based on subscription
-              tokenLimit = 300;
+              tokenLimit = 400;
             } else {
               client.sendMessage(chatID, messages.SUBSCRIPTION_QUOTA_EXCEDED);
               return;
