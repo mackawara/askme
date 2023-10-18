@@ -94,8 +94,9 @@ const clientOn = async (arg1) => {
               try {
                 await newContact.save().then(result=>{
                   console.log(result)
-                  msg.reply(`Hi ${notifyName} \n` + messages.WELCOME_MESSAGE
+                  msg.reply(`Hi ${notifyName} \n` + messages.WELCOME_MESSAGE 
                   )
+                  client.sendMessage(chatID,"Kindly note that our database is down and the systme will treat everyone as a new user. If you have an active subscription that has not yet expired please get in touch with our admin on this number (+26371496546) and share the message you recevied when you subscribed and date")
                   client.sendMessage(me, "New user added  " + chatID);
                 });
                 ;
@@ -117,7 +118,7 @@ const clientOn = async (arg1) => {
               //send at least 1 usage tip
               const greeting=greetByTime()
               
-              client.sendMessage(chatID,`${greeting} ${notifyName}\nWhile you wait for your first response today here is a tip on how you can get the best out of AskMe_AI\n ${randomUsageTip()}`)
+              client.sendMessage(chatID,`${greeting} ${notifyName}\n Kindly note that our database is down and the systme will treat everyone as a new user. If you have an active subscription that has not yet expired please get in touch with our admin on this number (+26371496546) and share the message you recevied when you subscribed and date`)
               if (chatID === !me) {
                 await redisClient
                   .set(`${chatID}shortTTL`, 1)
