@@ -71,10 +71,7 @@ const openAiCall = async (chatID, tokenLimit, prompt) => {
           JSON.stringify(messages)
         )
         redisClient.expire(`${chatID}messages`, 300);
-      }
-      catch (err) {
-        console.log(err)
-      }
+      
       //Update the DBgit chec
       user.calls++;
       user.callsThisMonth++
@@ -100,6 +97,10 @@ const openAiCall = async (chatID, tokenLimit, prompt) => {
       } catch (err) {
         console.log(err);
       }
+    }
+    catch (err) {
+      console.log(err)
+    }
        return (response.choices[0]["finish_reason"]=="length")?
        `${response.choices[0]["message"]["content"]}\n *send "continue" to see the rest of the text*`: 
         response.choices[0]["message"]["content"];
@@ -108,16 +109,18 @@ const openAiCall = async (chatID, tokenLimit, prompt) => {
     } else {
       return `Error , request could not be processed, please try again later`;
     }
-  } else {
+  } else { 
+    try{
     totalUsage.errors++;
     totalUsage.calls++;
     //if contact exceeds 10 warnings block them
     if (user.warnings > 10) {
       user.isBlocked = true;
-      try {
+      
         user.save();
         totalUsage.save();
-      } catch (error) {
+      } }
+      catch (error) {
         console.log(error);
       }
     }
