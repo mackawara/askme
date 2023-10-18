@@ -80,7 +80,7 @@ try {
       }); //remove the system message
       messages.push(response.choices[0]["message"]); //add system response to messages
 
-      messages.splice(0, messages.length - 4); //trim messages and remain wit newest 4 only
+      messages.splice(0, messages.length - 6); //trim messages and remain wit newest 4 only
       // at this point you have system user system user
 
       redisClient.hSet(
@@ -112,7 +112,7 @@ try {
       user.save();
       totalUsage.save();
       return (response.choices[0]["finish_reason"] == "length") ?
-        `${response.choices[0]["message"]["content"]}\n *send "continue" to see the rest of the text*` :
+        `${response.choices[0]["message"]["content"]}\n *send "continue" for more text*` :
         response.choices[0]["message"]["content"];
     } else {
 

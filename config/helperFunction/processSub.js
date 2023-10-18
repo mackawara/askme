@@ -3,8 +3,7 @@ const { client } = require('../wwebJsConfig');
 const redisClient = require('../redisConfig');
 const processSub = async msg => {
   const processSubField = await redisClient.hGet('admin', 'subField');
-  const number = await redisClient.hGet('admin', 'number');
-  const days = await redisClient.hGet('admin', 'days');
+  let number = await redisClient.hGet('admin', 'number');
   const msgBody = await msg.body;
 
   if (processSubField == 'number') {
@@ -29,14 +28,17 @@ const processSub = async msg => {
   }
 
   try {
+    const days = await parseInt(await redisClient.hGet('admin', 'days'));
+    number=number+`@c.us`
     await indvUsers
       .updateOne(
-        { number: number },
+        { serialisedNumber: number },
         { $set: { isSubscribed: true, isBlocked: false, subTTL: days } }
       )
       .then(async(result) => {
+  await redisClient.del(number)
         console.log(result);
-        redisClient.hSet(number, {
+       await redisClient.hSet(number, {
           calls: 26,
           isBlocked: '0',
           isSubscribed: '1',
@@ -44,7 +46,7 @@ const processSub = async msg => {
         await redisClient.expire(number, 86400);
         await msg.reply(`${number}, is now subscribed`);
         await client.sendMessage(
-          number+"@c.us",
+          number,
           `*Thank you for subscribing to AskMe_AI* \nYou now have increased quota of 25 requests per day,To find out which features are now available to you type reply with features" \n`
         );
       });
