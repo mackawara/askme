@@ -1,32 +1,56 @@
-const indvUsers = require("../../models/individualUsers");
-const processSub = async (msg, client, redisClient) => {
- 
+const indvUsers = require('../../models/individualUsers');
+const { client } = require('../wwebJsConfig');
+const redisClient = require('../redisConfig');
+const processSub = async msg => {
+  const processSubField = await redisClient.hGet('admin', 'subField');
+  const number = await redisClient.hGet('admin', 'number');
+  const days = await redisClient.hGet('admin', 'days');
   const msgBody = await msg.body;
-  let number = msgBody.replace("processSub:", "").replace(/\s/g, "").trim();
-  number += "@c.us";
-  console.log(number);
-  if (!/^2637\d{8}@c\.us$/.test(number)) {
-    msg.reply("The number is inaccurately formmatted");
-  } else {
+
+  if (processSubField == 'number') {
+    if (!/^2637\d{8}$/.test(msgBody.replace(/\s/gi,""))) {
+      msg.reply('The number is inaccurately formmatted');
+      return;
+    } else {
+      await redisClient.hSet('admin', "number", msgBody.replace(/\s/gi,""));
+      await redisClient.hSet('admin', 'subField', 'days');
+      msg.reply('Please enter the number of subscription days');
+      return;
+    }
+  } else if (processSubField == 'days') {
+    const submittedDays=parseInt(msgBody.replace(/\s/g,""))
+    if (submittedDays>31 ||submittedDays<1) {
+      msg.reply('Please enter a number between 1-31');
+      return;
+    } else {
+      const daysSubmited = parseInt(msgBody.replace(/\s/gi, ''));
+      await redisClient.hSet('admin', 'days', daysSubmited);
+    }
+  }
+
+  try {
     await indvUsers
       .updateOne(
-        { serialisedNumber: number },
-        { $set: { isSubscribed: true, isBlocked: false, subTTL: 31 } }
+        { number: number },
+        { $set: { isSubscribed: true, isBlocked: false, subTTL: days } }
       )
-      .then((result) => {
+      .then(async(result) => {
         console.log(result);
         redisClient.hSet(number, {
           calls: 26,
-          isBlocked: "0",
-          isSubscribed: "1",
+          isBlocked: '0',
+          isSubscribed: '1',
         });
-        redisClient.expire(number, 86400);
-        msg.reply(`${number}, is now subscribed`);
-        client.sendMessage(
-          number,
+        await redisClient.expire(number, 86400);
+        await msg.reply(`${number}, is now subscribed`);
+        await client.sendMessage(
+          number+"@c.us",
           `*Thank you for subscribing to AskMe_AI* \nYou now have increased quota of 25 requests per day,To find out which features are now available to you type reply with features" \n`
         );
       });
+  } catch (err) {
+    console.log(err);
+    msg.reply('not subbed successfully');
   }
 };
 
