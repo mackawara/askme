@@ -9,7 +9,7 @@ const topupHandler = async (msgBody, chatID) => {
     try {
         const topupClient = `${chatID}topup`
         const topupField = await redisClient.hGet(topupClient, 'field')
-        const topupNumber = await redisClient.hGet(topupClient, "ecocashNumber")
+
         const isValidEconetNumber = /^(07[7-8])(\d{7})$/;
         const isValidproduct = /(payu|month|monthly|1|2)/gi
         if (topupField == "processing") {
@@ -43,8 +43,10 @@ const topupHandler = async (msgBody, chatID) => {
             await redisClient.hSet(topupClient, "ecocashNumber", msgBody)
         }
         const selectedTopup = await redisClient.hGet(topupClient, "product")
+        const topupNumber = await redisClient.hGet(topupClient, "ecocashNumber")
         await client.sendMessage(chatID, `You are subscribing for ${selectedTopup} subscription. Please wait for an Ecocash online payment pop up on your home screen. \nDo not send any more messages until you receive confirmation`);
         await redisClient.hSet(topupClient, "field", "processing")
+        console.log(topupNumber, selectedTopup)
         await processPaynowPayment(selectedTopup, topupNumber, chatID)
     }
     catch (err) {
