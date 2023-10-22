@@ -23,7 +23,7 @@ const paynowProcess = async (product, payingNumber, chatID) => {
         });
     let paymentComplete;
 
-    await timeDelay(30000)//wait for the client to process  
+    await timeDelay(2000)//wait for the client to process  
     if (response.success) {
         console.log(response)
         //means the user was successfully prompted
@@ -33,7 +33,7 @@ const paynowProcess = async (product, payingNumber, chatID) => {
         // check if it the poll result is paid
         let polls = 0
         const status = await paynow.pollTransaction(pollUrl).catch((err) => console.log(err))
-        while (polls < 10) {
+        while (polls < 15) {
             console.log(status.status)
             if (status.status == "paid" || status.status == "cancelled") {
                 break
@@ -56,6 +56,8 @@ const paynowProcess = async (product, payingNumber, chatID) => {
                         timestamp: new Date(),
                         pollUrl: pollUrl,
                         invoiceNumber: invoiceNumber,
+                        status: status.status,
+                        success: status.success
                     });
 
                     newPayment.save();
@@ -83,7 +85,8 @@ const paynowProcess = async (product, payingNumber, chatID) => {
                 timestamp: new Date(),
                 pollUrl: pollUrl,
                 invoiceNumber: invoiceNumber,
-                status: status.status
+                status: status.status,
+                success: status.success
             });
             newPayment.save();
         } catch (error) {
