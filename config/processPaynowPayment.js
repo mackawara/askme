@@ -23,7 +23,7 @@ const paynowProcess = async (product, payingNumber, chatID) => {
         });
     let paymentComplete;
 
-    await timeDelay(2000)//wait for the client to process  
+    await timeDelay(30000)//wait for the client to process  
     if (response.success) {
         console.log(response)
         //means the user was successfully prompted
