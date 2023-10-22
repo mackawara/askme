@@ -1,9 +1,9 @@
 const { Paynow } = require("paynow");
 const PaynowPayments = require("../models/paynowPayments");
-const autoProcessSub=require("./autoProcessSub")
-const messages=require("../constants/messages")
-const { client}=require("./wwebJsConfig")
-const redisClient=require("./redisConfig")
+const autoProcessSub = require("./autoProcessSub")
+const messages = require("../constants/messages")
+const { client } = require("./wwebJsConfig")
+const redisClient = require("./redisConfig")
 require("dotenv").config();
 const timeDelay = (ms) => new Promise((res) => setTimeout(res, ms));
 
@@ -21,7 +21,6 @@ const paynowProcess = async (product, payingNumber, chatID) => {
         .catch(err => {
             console.log(err);
         });
-
     let paymentComplete;
 
     await timeDelay(30000)//wait for the client to process  
@@ -31,55 +30,65 @@ const paynowProcess = async (product, payingNumber, chatID) => {
         let instructions = response.instructions;
         const pollUrl = await response.pollUrl;
         //wait some 30 secs before polling   
-        await timeDelay(30000)
         // check if it the poll result is paid
+        let polls = 0
         const status = await paynow.pollTransaction(pollUrl).catch((err) => console.log(err))
+        while (polls < 10) {
+            console.log(status.status)
+            if (status.status == "paid" || status.status == "cancelled") {
+                break
+            }
+            polls++
+            console.log(polls)
+            await timeDelay(3000)
+        }
         console.log(status)
-        if (status.status == "paid") {
-            paymentComplete = true
-            try {
-                await autoProcessSub(chatID, client, product)
-                await redisClient.del(`${chatID}topup`) // delete the topup client
-                const newPayment = new PaynowPayments({
-                    date: new Date().toISOString().slice(0, 10),
-                    userNumber: chatID,
-                    product: productName,
-                    timestamp: new Date(),
-                    pollUrl: pollUrl,
-                    invoiceNumber: invoiceNumber,
-                });
+        switch (status.status) {
+            case "paid":
+                paymentComplete = true
+                try {
+                    await autoProcessSub(chatID, client, product)
+                    await redisClient.del(`${chatID}topup`) // delete the topup client
+                    const newPayment = new PaynowPayments({
+                        date: new Date().toISOString().slice(0, 10),
+                        userNumber: chatID,
+                        product: productName,
+                        timestamp: new Date(),
+                        pollUrl: pollUrl,
+                        invoiceNumber: invoiceNumber,
+                    });
 
-                newPayment.save();
-            } catch (error) {
-                console.log(error);
-            }
-            paymentComplete = true;
-            console.log("Payment status " + status.success);
-        }
-        else {
-           await  client.sendMessage(chatID, messages.TOPUP_WAS_NOT_PROCESSED)
-            await client.sendMessage(process.env.ME,"Failed topup alert: From " + chatID)
-            await redisClient.del(`${chatID}topup`)
-            try {
-                const newPayment = new PaynowPayments({
-                    date: new Date().toISOString().slice(0, 10),
-                    userNumber: chatID,
-                    product: productName,
-                    timestamp: new Date(),
-                    pollUrl: pollUrl,
-                    invoiceNumber: invoiceNumber,
-                });
+                    newPayment.save();
+                } catch (error) {
+                    console.log(error);
+                }
+                paymentComplete = true;
+                console.log("Payment status " + status.success);
+                break
+            case "cancelled":
+            default:
+                await client.sendMessage(chatID, messages.TOPUP_WAS_NOT_PROCESSED)
+                await client.sendMessage(process.env.ME, "Failed topup alert: From " + chatID)
+                await redisClient.del(`${chatID}topup`)
 
-                newPayment.save();
-            } catch (error) {
-                console.log(error);
-            }
-            paymentComplete = false;
+                paymentComplete = false;
+                break;
 
         }
-
-
-
+        try {
+            const newPayment = new PaynowPayments({
+                date: new Date().toISOString().slice(0, 10),
+                userNumber: chatID,
+                product: productName,
+                timestamp: new Date(),
+                pollUrl: pollUrl,
+                invoiceNumber: invoiceNumber,
+                status: status.status
+            });
+            newPayment.save();
+        } catch (error) {
+            console.log(error);
+        }
     } else {
         paymentComplete = false;
         console.log("In resnonse no success payment complete =" + paymentComplete);
