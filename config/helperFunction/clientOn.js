@@ -48,13 +48,13 @@ const clientOn = async arg1 => {
           // if user is not already in Redis
           const exists = await redisClient.exists(chatID);
           const isInTopupMode = await redisClient.exists(`${chatID}topup`);
-          const isInAdminMode=await redisClient.exists('admin')
+          const isInAdminMode = await redisClient.exists('admin')
 
           if (isInTopupMode) {
             await topupHandler(msgBody, chatID);
             return;
           }
-          if (isInAdminMode){
+          if (isInAdminMode) {
             await processSub(msg)
             return
           }
@@ -73,7 +73,7 @@ const clientOn = async arg1 => {
               const saved = await saveNewUser(chatID, notifyName, number);
               console.log(saved);
               if (saved) {
-                await client.sendMessage(chatID,`Hi ${notifyName} \n\n`+ messages.WELCOME_MESSAGE);
+                await client.sendMessage(chatID, `Hi ${notifyName} \n\n` + messages.WELCOME_MESSAGE);
                 client.sendMessage(
                   chatID,
                   '*Kindly note that our database has been compromised, the system will treat everyone as a new user*.\n\n If you have an active subscription that has not yet expired please get in touch with our admin on this number (+26371496546) and share the message you recevied when you subscribed and date'
@@ -87,6 +87,7 @@ const clientOn = async arg1 => {
               if (!user) {
                 await saveNewUser(chatID, notifyName, number);
               }
+              const topupRegex = /\"?top\s?up"?\s?(payu|monthly)?/gi;
               if (
                 msgBody.toLowerCase().startsWith('topup') ||
                 msgBody.toLowerCase().startsWith('*topup') ||
@@ -172,14 +173,14 @@ const clientOn = async arg1 => {
           const isBlocked = await redisClient.hGet(chatID, 'isBlocked');
           await redisClient
             .incrBy(`${chatID}shortTTL`, 1)
-            .then(async result => {});
+            .then(async result => { });
           await redisClient.expire(`${chatID}shortTTL`, 30);
 
           const shortTTL = await redisClient.get(`${chatID}shortTTL`);
           // process retopup
-          const topupRegex = /\"?top\s?up"?\s?(payu|monthly)?/gi;
 
-         
+
+
 
           if (
             /referal|referral/.test(msgBody.slice(0, 8).toLowerCase().trim())
@@ -236,12 +237,12 @@ const clientOn = async arg1 => {
 
               return;
             } else if (msgBody.startsWith('processSub:')) {
-              await redisClient.hSet("admin",'subField',"number")
-              await redisClient.expire("admin","60")
+              await redisClient.hSet("admin", 'subField', "number")
+              await redisClient.expire("admin", "60")
               msg.reply("What is the number you want to process");
               return;
             } else if (msgBody.startsWith('processPayu:')) {
-              manualProcessSub(msg,'payu');
+              manualProcessSub(msg, 'payu');
               return;
             } else if (msgBody.startsWith('processFollower:')) {
               processFollower(msg, client, redisClient);
@@ -346,8 +347,8 @@ const clientOn = async arg1 => {
           await redisClient.HINCRBY(chatID, 'calls', -1);
           console.log(
             'remaining calls for' +
-              chatID +
-              (await redisClient.hGet(chatID, 'calls'))
+            chatID +
+            (await redisClient.hGet(chatID, 'calls'))
           );
           if (isBlocked === '1') {
             if (calls < -3) {
