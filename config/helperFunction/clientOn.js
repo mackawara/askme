@@ -88,18 +88,7 @@ const clientOn = async arg1 => {
                 await saveNewUser(chatID, notifyName, number);
               }
               const topupRegex = /\"?top\s?up"?\s?(payu|monthly)?/gi;
-              if (
-                msgBody.toLowerCase().startsWith('topup') ||
-                msgBody.toLowerCase().startsWith('*topup') ||
-                msgBody.toLowerCase().includes('topup payu') ||
-                msgBody.toLowerCase().includes('top-up payu') ||
-                topupRegex.test(msgBody.replace(' ', ''))
-              ) {
-                await redisClient.hSet(`${chatID}topup`, 'field', 'product');
-                await redisClient.expire(`${chatID}topup`, 180);
-                await msg.reply(messages.TOPUP_PRODUCT);
-                return;
-              }
+              
               if (chatID === !me) {
                 await redisClient.set(`${chatID}shortTTL`, 1);
                 await redisClient.expire(`${chatID}shortTTL`, 30);
@@ -176,6 +165,19 @@ const clientOn = async arg1 => {
             .then(async result => { });
           await redisClient.expire(`${chatID}shortTTL`, 30);
 
+
+          if (
+            msgBody.toLowerCase().startsWith('topup') ||
+            msgBody.toLowerCase().startsWith('*topup') ||
+            msgBody.toLowerCase().includes('topup payu') ||
+            msgBody.toLowerCase().includes('top-up payu') ||
+            topupRegex.test(msgBody.replace(' ', ''))
+          ) {
+            await redisClient.hSet(`${chatID}topup`, 'field', 'product');
+            await redisClient.expire(`${chatID}topup`, 180);
+            await msg.reply(messages.TOPUP_PRODUCT);
+            return;
+          }
           const shortTTL = await redisClient.get(`${chatID}shortTTL`);
           // process retopup
 
