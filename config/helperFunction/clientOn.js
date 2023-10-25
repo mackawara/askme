@@ -18,6 +18,7 @@ const getSecsToMidNight = require('./getSecsToMidnight');
 const isSystemNotBusy = require('./isSystemNotBusy');
 const manualProcessSub = require('./manualProcessSub');
 const processFollower = require('./processFollower');
+const topupRegex = /\"?top\s?up"?\s?(payu|monthly)?/gi;
 const { client, MessageMedia } = require('../wwebJsConfig');
 const processSub = require('./processSub');
 const timeDelay = ms => new Promise(res => setTimeout(res, ms));
@@ -87,7 +88,7 @@ const clientOn = async arg1 => {
               if (!user) {
                 await saveNewUser(chatID, notifyName, number);
               }
-              const topupRegex = /\"?top\s?up"?\s?(payu|monthly)?/gi;
+             
               
               if (chatID === !me) {
                 await redisClient.set(`${chatID}shortTTL`, 1);
@@ -173,6 +174,7 @@ const clientOn = async arg1 => {
             msgBody.toLowerCase().includes('top-up payu') ||
             topupRegex.test(msgBody.replace(' ', ''))
           ) {
+            console.log("topup")
             await redisClient.hSet(`${chatID}topup`, 'field', 'product');
             await redisClient.expire(`${chatID}topup`, 180);
             await msg.reply(messages.TOPUP_PRODUCT);
