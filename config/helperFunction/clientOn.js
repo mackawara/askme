@@ -75,20 +75,17 @@ const clientOn = async arg1 => {
               console.log(saved);
               if (saved) {
                 await client.sendMessage(chatID, `Hi ${notifyName} \n\n` + messages.WELCOME_MESSAGE);
-                client.sendMessage(
-                  chatID,
-                  '*Kindly note that our database has been compromised, the system will treat everyone as a new user*.\n\n If you have an active subscription that has not yet expired please get in touch with our admin on this number (+26371496546) and share the message you recevied when you subscribed and date'
-                );
+              
               } else if (!saved) {
                 client.sendMessage(me, 'Save new user failed');
                 return;
               } //save them to DB
             } else {
-              const greeting = greetByTime();
+              const greeting = greetByTime(notifyName);
               if (!user) {
                 await saveNewUser(chatID, notifyName, number);
               }
-             
+             msg.reply(`${greeting}\n\n ${randomUsageTip()}`)
               
               if (chatID === !me) {
                 await redisClient.set(`${chatID}shortTTL`, 1);
@@ -182,10 +179,6 @@ const clientOn = async arg1 => {
           }
           const shortTTL = await redisClient.get(`${chatID}shortTTL`);
           // process retopup
-
-
-
-
           if (
             /referal|referral/.test(msgBody.slice(0, 8).toLowerCase().trim())
           ) {
@@ -213,7 +206,7 @@ const clientOn = async arg1 => {
             client.sendMessage(chatID, messages.DO_NOT_SEND_THANK_YOU);
             return;
           }
-          if (/\bfeatures\b/.test(msgBody)) {
+          if (/\bfeatures\b/gi.test(msgBody.slice(0,6))) {
             client.sendMessage(chatID, messages.USE_THESE_KEY_WORDS);
             return;
           }
@@ -392,7 +385,7 @@ const clientOn = async arg1 => {
           else if (isSubscribed == '1') {
             if (calls > minAvailableCallsAllowed) {
               //set token limits based on subscription
-              tokenLimit = 400;
+              tokenLimit = 500;
             } else {
               client.sendMessage(chatID, messages.SUBSCRIPTION_QUOTA_EXCEDED);
               return;
@@ -433,10 +426,9 @@ const clientOn = async arg1 => {
             return;
           } else {
             if (chatID == '263775231426@c.us' || isSubscribed == '1') {
-              client.sendMessage(chatID, response);
+              msg.reply(response);
             } else {
-              client.sendMessage(
-                chatID,
+              msg.reply(
                 `${messages.REPLY_WITH_TOPUP}\n\n${response}`
               );
             }

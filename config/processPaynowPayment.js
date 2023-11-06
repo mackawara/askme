@@ -42,14 +42,13 @@ const paynowProcess = async (product, payingNumber, chatID) => {
 
         while (polls < 15) {
             status = await paynow.pollTransaction(pollUrl).catch((err) => console.log(err))
-            console.log(status)
-            console.log(status.status)
-            if (status.status == "paid" || status.status == "cancelled") {
+            // use swtch case here
+            if (status.status == "paid" || status.status == "awaiting delivery"|| status.status == "cancelled") {
                 console.log(status.status)
                 break
             }
             polls++
-            console.log(polls)
+
             await timeDelay(5000)
         }
         try {
@@ -70,10 +69,11 @@ const paynowProcess = async (product, payingNumber, chatID) => {
             console.log(error);
         }
 
+        console.log("Payment status " + status.status);
         switch (status.status) {
             case "paid":
+            case "awaiting delivery":    
                 await autoProcessSub(chatID, client, product)
-                console.log("Payment status " + status.success);
                 break
             case "cancelled":
             default:

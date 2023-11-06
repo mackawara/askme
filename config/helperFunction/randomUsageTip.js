@@ -20,6 +20,6 @@ const usageTip = [
 const randomUsageTips = () => {
   console.log("random usage tip called")
   const randomIndex = Math.floor(Math.random() * usageTip.length);
-  return "*Usage tip* \n"+ usageTip[randomIndex];
+  return "*Daily usage tip to help you get the most out of this app* \n"+ usageTip[randomIndex];
 };
 module.exports = randomUsageTips;
