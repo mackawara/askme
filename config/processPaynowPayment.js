@@ -42,7 +42,7 @@ const paynowProcess = async (product, payingNumber, chatID) => {
 
         while (polls < 15) {
             status = await paynow.pollTransaction(pollUrl).catch((err) => console.log(err))
-            // use swtch case here
+            // use swtch case herenpm start
             if (status.status == "paid" || status.status == "awaiting delivery"|| status.status == "cancelled") {
                 console.log(status.status)
                 break
@@ -77,7 +77,7 @@ const paynowProcess = async (product, payingNumber, chatID) => {
                 break
             case "cancelled":
             default:
-                await client.sendMessage(chatID, messages.TOPUP_WAS_NOT_PROCESSED)
+                await client.sendMessage(chatID, messages.TOPUP_WAS_NOT_PROCESSED+ `\nYour payment status is *${status.status}*`)
                 await client.sendMessage(process.env.ME, "Failed topup alert: From " + chatID)
                 await redisClient.del(`${chatID}topup`)
                 paymentComplete = false;

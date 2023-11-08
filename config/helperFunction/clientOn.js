@@ -420,7 +420,7 @@ const clientOn = async arg1 => {
             response == messages.UNABLE_TO_PROCESS_REQUEST ||
             response == messages.NO_CONTEXT_TO_CONTINUE
           ) {
-            redisClient.HINCRBY(chatID, 'calls', +1);
+            redisClient.HINCRBY(chatID, 'calls', +1); 
             //client.sendMessage(chatID,response);
             client.sendMessage(chatID, response);
             return;
