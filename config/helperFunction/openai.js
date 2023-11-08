@@ -39,7 +39,7 @@ messages.push(system);
 
 // add user prompt to messages
 messages.push({ role: "user", content: prompt });
-const modelVersion = "gpt-3.5-turbo-0613"
+const modelVersion = chatID===process.env.ME?"gpt-4-1106-preview":"gpt-3.5-turbo-1106"
 try {
   const response = await openai.chat.completions.create({
     model: modelVersion,

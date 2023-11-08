@@ -16,7 +16,8 @@ const createImage = async (msgBody, chatID, redisClient) => {
       prompt: prompt,
       model: "dall-e-3",
       n: 1,
-      size: "256x256",
+      size: "1024x1024",
+      style:"natural",
       response_format: "url",
       user: chatID,
     });
