@@ -1,5 +1,6 @@
 require("dotenv").config();
 const connectDB = require("./config/database");
+
 const createDoc = require("./config/helperFunction/docxCreator");
 const indvUsers = require("./models/individualUsers");
 const ReferalsModel = require("./models/referals");
@@ -7,6 +8,10 @@ const totalUsage = require("./models/totalUsage");
 //const setStatus = require("./config/helperFunction/setStatus")
 const { client, MessageMedia } = require("./config/wwebJsConfig")
 const qrcode = require("qrcode-terminal");
+const express= require("express")
+const cors = require('cors');
+const app=express();
+
 
 
 //initialise redis
@@ -15,7 +20,19 @@ const messages = require("./constants/messages");
 
 // connect to mongodb before running anything on the app
 connectDB().then(async () => {
-
+  app.use(express.urlencoded({ extended: true }));
+  app.use(express.json({ limit: '10mb' }));
+  app.use(cors());
+  
+app.post("/query",(req,res)=>{
+  console.log("query hit")
+  res.send({message:req.body})
+})
+app.post("/",(req,res)=>{
+  
+  return res.status(200).send({message:"hi"})
+})
+app.listen(4001, console.log(" server listening on port" + 4001));
   let callsPErday = 0;
 
   const deleteDuplicates = async () => {
@@ -56,6 +73,7 @@ connectDB().then(async () => {
   });
 
   client.on("qr", (qr) => {
+    
     qrcode.generate(qr, { small: true });
     console.log(qr);
   });
@@ -63,6 +81,10 @@ connectDB().then(async () => {
   client.on("ready", async () => {
     const timeDelay = (ms) => new Promise((res) => setTimeout(res, ms));
     console.log("Client is ready!");
+    client.on("disconnected", (reason) => {
+      console.log("Client was logged out", reason);
+      process.re
+    });
     //functions abd resources
     //Helper Functions
 
@@ -180,7 +202,7 @@ connectDB().then(async () => {
 
     //Db models
     //decalre variables that work with client here
-    client.setDisplayName("AskMe, the all knowing assistant");
+  //  client.setDisplayName("AskMe, the all knowing assistant");
 
     //mass messages
     /*  cron.schedule(`10 12 * * Fri`, async () => {
@@ -228,8 +250,6 @@ connectDB().then(async () => {
     //collect media adverts and send
     //const mediaModel = require("./models/media");
 
-    client.on("disconnected", (reason) => {
-      console.log("Client was logged out", reason);
-    });
+   
   });
 });
