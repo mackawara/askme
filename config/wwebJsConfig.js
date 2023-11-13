@@ -5,7 +5,7 @@ const client = new Client({
         // executablePath: process.env.EXECPATH,
         handleSIGINT: true,
         ignoreDefaultArgs: ['--enable-automation'],
-        headless: false,
+        headless: true,
         args: [
             "--log-level=3", // fatal only
             "--start-maximized",

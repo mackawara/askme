@@ -1,14 +1,12 @@
 require("dotenv").config();
 const connectDB = require("./config/database");
-
-const createDoc = require("./config/helperFunction/docxCreator");
 const indvUsers = require("./models/individualUsers");
-const ReferalsModel = require("./models/referals");
+
 const totalUsage = require("./models/totalUsage");
-//const setStatus = require("./config/helperFunction/setStatus")
 const { client, MessageMedia } = require("./config/wwebJsConfig")
 const qrcode = require("qrcode-terminal");
 const express= require("express")
+const webOpenaiCalls=require("./web/openaiHandler")
 const cors = require('cors');
 const app=express();
 
@@ -24,11 +22,14 @@ connectDB().then(async () => {
   app.use(express.json({ limit: '10mb' }));
   app.use(cors());
   
-app.post("/query",(req,res)=>{
+app.post("/query",async(req,res)=>{
   console.log("query hit")
-  res.send({message:req.body})
+  const aimessage=await webOpenaiCalls("web",req.body.message)
+  //console.log(aimessage)
+  return res.status(200).send({message:aimessage})
+
 })
-app.post("/",(req,res)=>{
+app.get("/",(req,res)=>{
   
   return res.status(200).send({message:"hi"})
 })
