@@ -3,7 +3,7 @@ const client = new Client({
     authStrategy: new LocalAuth(),
     puppeteer: {
          executablePath: process.env.NODE_ENV=="local"?null:process.env.EXECPATH,
-        handleSIGINT: true,
+        handleSIGINT: process.env.NODE_ENV=="local"?true:false,
         ignoreDefaultArgs: ['--enable-automation'],
         headless: false,
         args: [
