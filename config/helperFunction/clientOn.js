@@ -385,7 +385,7 @@ const clientOn = async arg1 => {
           else if (isSubscribed == '1') {
             if (calls > minAvailableCallsAllowed) {
               //set token limits based on subscription
-              tokenLimit = 500;
+              tokenLimit = 800;
             } else {
               client.sendMessage(chatID, messages.SUBSCRIPTION_QUOTA_EXCEDED);
               return;
