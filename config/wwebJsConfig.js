@@ -3,9 +3,9 @@ const client = new Client({
     authStrategy: new LocalAuth(),
     puppeteer: {
          executablePath: process.env.NODE_ENV=="local"?null:process.env.EXECPATH,
-        handleSIGINT: process.env.NODE_ENV=="local"?true:false,
+        handleSIGINT: true,
         ignoreDefaultArgs: ['--enable-automation'],
-        headless: false,
+        headless: process.env.NODE_ENV=="local"?true:false,
         args: [
             "--log-level=3", // fatal only
             "--start-maximized",
