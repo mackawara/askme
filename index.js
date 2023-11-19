@@ -1,12 +1,11 @@
 require("dotenv").config();
 const connectDB = require("./config/database");
-const createDoc = require("./config/helperFunction/docxCreator");
 const indvUsers = require("./models/individualUsers");
-const ReferalsModel = require("./models/referals");
 const totalUsage = require("./models/totalUsage");
 //const setStatus = require("./config/helperFunction/setStatus")
 const { client, MessageMedia } = require("./config/wwebJsConfig")
 const qrcode = require("qrcode-terminal");
+const tokenUsers = require("./models/tokenUsers")
 
 
 //initialise redis
@@ -15,7 +14,24 @@ const messages = require("./constants/messages");
 
 // connect to mongodb before running anything on the app
 connectDB().then(async () => {
+  const createdAt = Date.now();
+  const expireAt = new Date(createdAt);
 
+  expireAt.setDate(expireAt.getDate() + 5);
+  const newTokenUser = new tokenUsers({
+    availableTokens: 2000,
+    outputTokens: 0,
+    createdAt: createdAt,
+    expireAt: expireAt,
+    inputTokens: 0,
+    userId: "263775231426@c.us",
+  })
+  try {
+
+    await newTokenUser.save()
+  } catch (error) {
+    console.log(error)
+  }
   let callsPErday = 0;
 
   const deleteDuplicates = async () => {

@@ -1,5 +1,3 @@
-const totalUsageModel = require('../../models/totalUsage');
-const ReferalsModel = require('../../models/referals');
 const saveNewUser = require('./saveNewUser');
 //const totalUsage = await totalUsageModel.findOne({}).exec();
 const isFlagged = require('./isFlagged');
@@ -21,10 +19,12 @@ const processFollower = require('./processFollower');
 const topupRegex = /\"?top\s?up"?\s?(payu|monthly)?/gi;
 const { client, MessageMedia } = require('../wwebJsConfig');
 const processSub = require('./processSub');
+const tokenUsersModel = require('../../models/tokenUsers');
 const timeDelay = ms => new Promise(res => setTimeout(res, ms));
 const clientOn = async arg1 => {
   const me = process.env.ME;
   const usersModel = require('../../models/individualUsers');
+  const tokenUser = require("../../models/tokenUsers")
 
   if (arg1 == 'message') {
     try {
@@ -45,8 +45,9 @@ const clientOn = async arg1 => {
         let prompt = await msgBody.replace(/openAi:|createDoc/gi, '');
         //only use on direct messages
 
-        if (!chat.isGroup && !msg.isStatus) {
+        if (!chat.isGroup && !msg.isStatus && msg.type == 'chat') {
           // if user is not already in Redis
+          console.log(msg.type)
           const exists = await redisClient.exists(chatID);
           const isInTopupMode = await redisClient.exists(`${chatID}topup`);
           const isInAdminMode = await redisClient.exists('admin')
@@ -75,7 +76,7 @@ const clientOn = async arg1 => {
               console.log(saved);
               if (saved) {
                 await client.sendMessage(chatID, `Hi ${notifyName} \n\n` + messages.WELCOME_MESSAGE);
-              
+
               } else if (!saved) {
                 client.sendMessage(me, 'Save new user failed');
                 return;
@@ -85,24 +86,39 @@ const clientOn = async arg1 => {
               if (!user) {
                 await saveNewUser(chatID, notifyName, number);
               }
-             msg.reply(`${greeting}\n\n ${randomUsageTip()}`)
-              
+              msg.reply(`${greeting}\n\n ${randomUsageTip()}`)
+
               if (chatID === !me) {
                 await redisClient.set(`${chatID}shortTTL`, 1);
                 await redisClient.expire(`${chatID}shortTTL`, 30);
               }
+              const tokenUser = await tokenUsersModel.findOne({ userId: chatID })
+              if (tokenUser) {
+                console.log('token user found')
+                await redisClient.hSet(chatID, {
+                  isBlocked: '0',
+                  isSubscribed: '1',
+                  isTokenUser: '1',
+                  calls: 0,
+                  availableTokens: tokenUser.availableTokens
+                });
 
+
+              }
+              else {
+                console.log('token user not found found')
+              }
               if (user.isBlocked) {
                 await redisClient.hSet(chatID, {
                   isBlocked: '1',
                 });
-                await redisClient.expire(chatID, expiryTime);
+
               } else {
                 await redisClient.hSet(chatID, {
                   isBlocked: '0',
                 });
-                await redisClient.expire(chatID, expiryTime);
               }
+
               //check in mongoDb if is Subscibed
               if (!user.isSubscribed && user.callsThisMonth > 5) {
                 client.sendMessage(chatID, messages.TOP_UP_MESSAGE);
@@ -110,6 +126,7 @@ const clientOn = async arg1 => {
                   isBlocked: '1',
                   isSubscribed: '0',
                   calls: 0,
+
                 });
                 return;
               }
@@ -117,27 +134,29 @@ const clientOn = async arg1 => {
                 await redisClient.hSet(chatID, {
                   isBlocked: '0',
                   isSubscribed: '1',
+                  isTokenUser: '0'
+
                 });
-                await redisClient.expire(chatID, expiryTime);
+
               } else {
                 await redisClient.hSet(chatID, {
                   isBlocked: '0',
                   isSubscribed: '0',
                 });
-                await redisClient.expire(chatID, expiryTime);
+
               }
               //check if is a follower
               if (user.isFollower) {
                 await redisClient.hSet(chatID, {
                   isFollower: '1',
                 });
-                await redisClient.expire(chatID, expiryTime);
+
               } else {
                 await redisClient.hSet(chatID, {
                   isFollower: '0',
                 });
-                await redisClient.expire(chatID, expiryTime);
               }
+              await redisClient.expire(chatID, expiryTime);
             }
             // user is already in redis cache
             isSubscribed = await redisClient.hGet(chatID, 'isSubscribed');
@@ -153,6 +172,7 @@ const clientOn = async arg1 => {
             };
             const maxCallsAllowed = maxCalls();
             await redisClient.hSet(chatID, 'calls', maxCallsAllowed);
+            // await redisClient.hSet(chatID, 'availableTokens', maxCallsAllowed * tokenLimit)
           }
           const minAvailableCallsAllowed = 0;
           isSubscribed = await redisClient.hGet(chatID, 'isSubscribed');
@@ -206,7 +226,7 @@ const clientOn = async arg1 => {
             client.sendMessage(chatID, messages.DO_NOT_SEND_THANK_YOU);
             return;
           }
-          if (/\bfeatures\b/gi.test(msgBody.slice(0,6))) {
+          if (/\bfeatures\b/gi.test(msgBody.slice(0, 6))) {
             client.sendMessage(chatID, messages.USE_THESE_KEY_WORDS);
             return;
           }
@@ -235,7 +255,7 @@ const clientOn = async arg1 => {
               return;
             } else if (msgBody.startsWith('processSub:')) {
               await redisClient.hSet("admin", 'subField', "number")
-              await redisClient.expire("admin", "60")
+              await redisClient.expire("admin", 60)
               msg.reply("What is the number you want to process");
               return;
             } else if (msgBody.startsWith('processPayu:')) {
@@ -262,7 +282,7 @@ const clientOn = async arg1 => {
               const message = await msg.getQuotedMessage();
               targetMessage = message.body;
             } else if (messagesExists) {
-              console.log('found messages');
+
               const messages = await JSON.parse(
                 await redisClient.hGet(`${chatID}messages`, 'messages')
               );
@@ -300,7 +320,8 @@ const clientOn = async arg1 => {
             return;
           }
           const calls = await redisClient.hGet(chatID, 'calls');
-
+          const availableTokens = await redisClient.hGet(chatID, 'availableTokens')
+          console.log("available tokens = " + availableTokens)
           if (msgBody.startsWith('createImage')) {
             if (isSubscribed === '0') {
               client.sendMessage(
@@ -342,11 +363,7 @@ const clientOn = async arg1 => {
           // check if blocked   const isBlocked = await redisClient.hGet(chatID, "isBlocked");
           //subtract 1 usage call
           await redisClient.HINCRBY(chatID, 'calls', -1);
-          console.log(
-            'remaining calls for' +
-            chatID +
-            (await redisClient.hGet(chatID, 'calls'))
-          );
+
           if (isBlocked === '1') {
             if (calls < -3) {
               client.sendMessage(
@@ -377,18 +394,29 @@ const clientOn = async arg1 => {
             return;
           }
 
-          if (chatID === '263775231426@c.us') {
+          /* if (chatID === '263775231426@c.us') {
             //check if admin and set admin level limits
             tokenLimit = 2048;
-          }
+          } */
           // Subscribed users
-          else if (isSubscribed == '1') {
+          if (isSubscribed == '1') {
             if (calls > minAvailableCallsAllowed) {
               //set token limits based on subscription
-              tokenLimit = 800;
-            } else {
+              tokenLimit = 600;
+            }
+            else {
               client.sendMessage(chatID, messages.SUBSCRIPTION_QUOTA_EXCEDED);
               return;
+            }
+            console.log(tokenUser)
+            if (tokenUser && parseInt(availableTokens) < 0) {
+              console.log("less than 0")
+              redisClient.hSet(chatID, 'isSubscribed', '0')
+              msg.reply('Sorry you have run out of tokens please top up to continue. Send the word "topup" to start the process')
+              return
+            }
+            if (parseInt(availableTokens) < 1000) {
+              tokenLimit == 400
             }
           }
           //free users
@@ -420,7 +448,7 @@ const clientOn = async arg1 => {
             response == messages.UNABLE_TO_PROCESS_REQUEST ||
             response == messages.NO_CONTEXT_TO_CONTINUE
           ) {
-            redisClient.HINCRBY(chatID, 'calls', +1); 
+            redisClient.HINCRBY(chatID, 'calls', +1);
             //client.sendMessage(chatID,response);
             client.sendMessage(chatID, response);
             return;

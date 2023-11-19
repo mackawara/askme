@@ -74,6 +74,7 @@ const paynowProcess = async (product, payingNumber, chatID) => {
             case "paid":
             case "awaiting delivery":    
                 await autoProcessSub(chatID, client, product)
+                await redisClient.del(`${chatID}topup`)
                 break
             case "cancelled":
             default:

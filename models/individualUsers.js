@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const { arrayBuffer } = require("node:stream/consumers");
+
 
 const usersSchema = new mongoose.Schema({
   date: {
@@ -30,11 +30,12 @@ const usersSchema = new mongoose.Schema({
   notifyName: {
     type: String,
     required: false,
+    default: "AskMe user"
   },
   serialisedNumber: {
     type: String,
     required: true,
-    unique:true
+    unique: true
   },
   isSubscribed: {
     type: Boolean,
@@ -73,6 +74,11 @@ const usersSchema = new mongoose.Schema({
   referalList: {
     type: Array,
     required: false,
+  },
+  availableTokens: {
+    type: Number,
+    required: true,
+    default: 0,
   },
 
   costPerCall: { type: Number, required: false },
