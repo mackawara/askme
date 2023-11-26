@@ -14,10 +14,17 @@ const paynowProcess = async (product, payingNumber, chatID) => {
     let paynow = new Paynow(process.env.PAYNOW_ID, process.env.PAYNOW_KEY);
     let payment = paynow.createPayment(invoiceNumber, process.env.AUTH_EMAIL);
     //set the product price depending
+    
+
     const prices = {
         payu: 500,
         monthly: 6000,
+        token:0
     }
+    if (product='token'){
+        prices.token= await redisClient.hGet(chatID, 'tokenAmount')
+    }
+    console.log('price for token topu =='+ prices.token)
     const productPrice = prices[product];
     console.log(productPrice)
     payment.add(product, productPrice);
@@ -72,9 +79,12 @@ const paynowProcess = async (product, payingNumber, chatID) => {
         console.log("Payment status " + status.status);
         switch (status.status) {
             case "paid":
-            case "awaiting delivery":    
-                await autoProcessSub(chatID, client, product)
-                await redisClient.del(`${chatID}topup`)
+            case "awaiting delivery":   
+                if (product==token){
+                    await autoProcessSub(chatID, product, prices.token)
+                    break  
+                } 
+                await autoProcessSub(chatID, product)
                 break
             case "cancelled":
             default:

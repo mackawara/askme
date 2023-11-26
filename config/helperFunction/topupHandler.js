@@ -11,9 +11,9 @@ const topupHandler = async (msgBody, chatID) => {
         const topupField = await redisClient.hGet(topupClient, 'field')
 
         const isValidEconetNumber = /^(07[7-8])(\d{7})$/;
-        const isValidproduct = /(payu|month|monthly|1|2)/gi
+        const isValidproduct = /(payu|month|monthly|token|1|2|3)/gi
         if (topupField == "processing") {
-            client.sendMessage(chatID, "Please wait for Ecocash prompt on your home screen and enter your PIN")
+            client.sendMessage(chatID, "Please wait for Ecocash prompt on your home screen and enter your PIN.\nIf you have already enterd your PIN please wait just a minute and continue with your research")
             return
         }
         else if (topupField == "product") {
@@ -27,7 +27,12 @@ const topupHandler = async (msgBody, chatID) => {
             else if (msgBody.includes("1")) {
                 await redisClient.hSet(topupClient, "product", "monthly")
             }
-            else {
+            else if(msgBody.includes("3") ||/token|3/gi.test(msgBody)) {
+                await redisClient.hSet(topupClient, "product", "token")
+                await redisClient.hSet(topupClient, "field", "tokenAmount")
+                await client.sendMessage(chatID, `You have opted to buy usage tokens.  Tokens expire after 48 hours or after tokens are used up. 1000 tokens cost RTGS 50 (ecocash). On average 1000 tokens is equivalent to 500 words. Please enter any amount above 50RTGS`)
+            }
+            else{
                 await redisClient.hSet(topupClient, "product", "payu")
             }
             await redisClient.hSet(topupClient, "field", "ecocashNumber")
@@ -42,11 +47,18 @@ const topupHandler = async (msgBody, chatID) => {
             }
             await redisClient.hSet(topupClient, "ecocashNumber", msgBody)
         }
+        else if (topupField== 'tokenAmount'){
+            if (!parseInt(msgBody)>49){
+                client.sendMessage(chatID, 'Please enter a minimum token amount of 50')
+                return
+            }
+            await redisClient.hSet(topupClient, 'tokenAmount', parseInt(msgBody))
+        }
         const selectedTopup = await redisClient.hGet(topupClient, "product")
         const topupNumber = await redisClient.hGet(topupClient, "ecocashNumber")
         await client.sendMessage(chatID, `You are subscribing for ${selectedTopup} subscription. Please wait for an Ecocash online payment pop up on your home screen. \nDo not send any more messages until you receive confirmation`);
         await redisClient.hSet(topupClient, "field", "processing")
-        console.log(topupNumber, selectedTopup)
+      
         await processPaynowPayment(selectedTopup, topupNumber, chatID)
     }
     catch (err) {
