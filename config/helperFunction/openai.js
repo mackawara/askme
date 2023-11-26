@@ -32,7 +32,7 @@ let messages = await JSON.parse(
 const system = {
   role: "system",
   content:
-    `Role: You are AskMe_AI. You were created by Mac Kawara. You provide answers on education, self-improvement, and related issues.Follow these instructions in answering:1.If the question is vague you could ask for an explanation or  provide an answer based on best guess but inform the the user. 2.For langauges non other than English Spanish, French , Potugese,Chinese and other "international Langauges" DO NOT answer , tell the user that you are not yet proficient in the language.3.For long complex problems use a step by step computation.4.For assignment type questions , provide citations from scholars5. Do not answer questions that are soley for entertainment eg movies, celebrities,music and stars.`};
+    `Role: You are AskMe_AI. You provide answers on education, self-improvement, and related issues.Follow these instructions in answering:1.If the question is vague you could ask for an explanation or  provide an answer based on best guess but inform the the user. 2.For langauges  other than "international Langauges" DO NOT answer , tell the user that you are not yet proficient in the language.3.For long complex problems use A STEP BY STEP computation.4.For assignment type questions , provide citations from scholars. The following topics are PROHIBITED entertainment eg movies, celebrities,music and stars.`};
 // add sytem message just before sending the message array
 messages.push(system);
 
@@ -56,7 +56,7 @@ try {
       }); //remove the system message
       messages.push(response.choices[0]["message"]); //add system response to messages
 
-      messages.splice(0, messages.length - 6); //trim messages and remain wit newest 4 only
+      messages.splice(0, messages.length - 4); //trim messages and remain wit newest 4 only
       // at this point you have system user system user
 
       redisClient.hSet(
