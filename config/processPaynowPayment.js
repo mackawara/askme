@@ -5,7 +5,7 @@ const messages = require('../constants/messages');
 const { client } = require('./wwebJsConfig');
 const redisClient = require('./redisConfig');
 require('dotenv').config();
-const timeDelay = ms => new Promise(res => setTimeout(res, ms));
+const { timeDelay } = require('../Utils/index');
 
 const paynowProcess = async (product, payingNumber, chatID) => {
   const existingPayments = parseInt(await PaynowPayments.count().exec());
@@ -31,7 +31,7 @@ const paynowProcess = async (product, payingNumber, chatID) => {
 
   await timeDelay(3000); //wait for the client to process
 
-  if (response.success) {
+  if (response && response.success) {
     const pollUrl = await response.pollUrl;
     //wait some 30 secs before polling
     // check if it the poll result is paid
@@ -71,8 +71,6 @@ const paynowProcess = async (product, payingNumber, chatID) => {
     } catch (error) {
       console.log(error);
     }
-
-    console.log('Payment status ' + status.status);
     switch (status.status) {
       case 'paid':
       case 'awaiting delivery':

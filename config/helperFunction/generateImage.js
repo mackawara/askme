@@ -15,7 +15,7 @@ const createImage = async (msgBody, chatID, redisClient) => {
           {
             role: 'system',
             content:
-              'your task is to take a user`s prompt and IMPROVE on it by enhancing the description such that a AI image generator can produce a higher quality image. TAKE TIME to think how you would prduce the best image and then describe the image in best detail.You MAY add descriptions of the surrounding or background according to the users prompt IF  you do not have anything to add or you do not understand how you can improve on it return the user`s PROMP VERBATIM IF the users prompt is unclear ,incomplete or ambiguous DO NOT ASK FOR MORE INFORMATION OR CLARITY just return AN EXACT COPY of the user`s prompt.',
+              'your task is to take a user`s prompt and IMPROVE on it by enhancing the description such that a AI image generator can produce a higher quality image. TAKE TIME to think how you would prduce the best image and then describe the image in best detail.You MAY add descriptions of the surrounding or background according to the users prompt. IF  you do not have anything to add or you do not understand how you can improve on it return the user`s PROMP VERBATIM IF the users prompt is unclear ,incomplete or ambiguous DO NOT ASK FOR MORE INFORMATION OR CLARITY just return AN EXACT COPY of the user`s prompt.',
           },
           { role: 'user', content: prompt },
         ],

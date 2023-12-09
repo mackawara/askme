@@ -5,7 +5,7 @@ const connectDB = async () => {
     const connectionString =
       process.env.NODE_ENV == 'local'
         ? process.env.LOCAL_DB_STRING
-        : STAGING_DB_STRING;
+        : process.env.STAGING_DB_STRING;
     const conn = await mongoose.connect(connectionString, {
       useNewUrlParser: true,
       useUnifiedTopology: true,

@@ -48,10 +48,10 @@ const isInteger = str => {
 const updateDbMetrics = async (chatID, usage) => {
   console.log(usage);
   try {
-    const user = await indvUsers.find({ serialisedNumber: chatID });
+    const user = await indvUsers.findOne({ serialisedNumber: chatID });
     const totalUsage = await totalUsageModel.findOne({});
     const tokenUser = await tokenUsersModel.findOne({ userId: chatID });
-    console.log(user);
+
     user.calls++;
     user.callsThisMonth++;
     if (tokenUser) {
@@ -72,12 +72,34 @@ const updateDbMetrics = async (chatID, usage) => {
     totalUsage.completionTokens = +usage.completion_tokens;
     totalUsage.totalTokens = +usage.total_tokens;
     // save the updated metrics
-    console.log(user);
+
     user.save();
     totalUsage.save();
   } catch (err) {
     console.log(err);
   }
 };
+const getSecsToMidnight = () => {
+  const now = new Date(); // Get current date and time
+  const tomorrow = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate() + 1
+  ); // Set tomorrow's date
 
-module.exports = { greetByTime, deleteDuplicates, isInteger, updateDbMetrics };
+  const millisecondsUntilMidnight = tomorrow - now; // Calculate milliseconds between now and midnight
+  const secondsUntilMidnight = Math.floor(millisecondsUntilMidnight / 1000); // Convert to seconds
+
+  return secondsUntilMidnight;
+};
+
+const timeDelay = ms => new Promise(res => setTimeout(res, ms));
+
+module.exports = {
+  greetByTime,
+  getSecsToMidnight,
+  deleteDuplicates,
+  isInteger,
+  timeDelay,
+  updateDbMetrics,
+};

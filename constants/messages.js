@@ -12,7 +12,7 @@ const DO_NOT_SEND_THANK_YOU =
 const ENTER_TOKEN_AMOUNT =
   'Please enter the total amount (in RTGS$) you would like to pay for tokens.\n\n1000 tokens cost RTGS 54 (ecocash). On average 1000 tokens is equivalent to 500-700 words or about 2-3 questions.';
 const USE_THESE_KEY_WORDS =
-  'Use these keywords to access features avaiable to subscribed users\n*createDoc* to create and download word documents from Askme_Ai , Once AskMe_AI generates an answer you can create a word document by replying with the word createDoc. For it to work you \n*createImage* to create an image provide a description of what you would want,\n*topup:* to subscribe or topup';
+  'Send any of these keywords to access features avaiable to users\n\n*createDoc* to create and download word documents from Askme_Ai , Once AskMe_AI generates an answer you can create a word document by replying with the word createDoc. For it to work you \n\n*createImage* to create an image provide a description of what you would want,\n\n*topup:* to subscribe or topup\n\nbalance: for token users to view token balances';
 const BE_PATIENT_WHILE_SYSTEM_GENERATES_DOC =
   'Please be patient while system generates your docx file';
 const ERROR_NO_QUOTED_MESSAGES_FOUND =
@@ -66,8 +66,11 @@ const ERROR_IMAGE_NOT_PROCESSED = `Error : there was an error processing your im
 const USER_BANNED = `This user has been banned`;
 const ENTER_MINIMUM_OF_FIFTY = 'Please enter a minimum token amount of 50';
 const ENTER_VALID_AMOUNT = 'Please enter a valid number (above 50)';
+const ERROR_REQUEST_COULD_NOT_BE_PROCESSED =
+  '*Error!* your request could not be processed , please try again later';
 module.exports = {
   USE_THESE_KEY_WORDS,
+  ERROR_REQUEST_COULD_NOT_BE_PROCESSED,
   USER_BANNED,
   CANNOT_CONTINUE_AFTER_FIVE_MINS,
   WELCOME_MESSAGE,

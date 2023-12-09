@@ -1,7 +1,7 @@
 const indvUsers = require('../models/individualUsers');
 const redisClient = require('./redisConfig');
 const { client } = require('../config/wwebJsConfig');
-const getSecsToMidNight = require('../config/helperFunction/getSecsToMidnight');
+const Utils = require('../Utils/index');
 const system = require('../constants/system');
 const tokenUsers = require('../models/tokenUsers');
 const addSecs = require('date-fns/addSeconds');
@@ -51,7 +51,7 @@ const autoProcessSub = async (chatID, product, amount) => {
         purchasedTokens = (amount / system.tokenFactor) * 1000;
         const twoDaysInMS = 172800;
         const fiveDaysInMS = 432000;
-        const redisExpiryTime = getSecsToMidNight();
+        const redisExpiryTime = Utils.getSecsToMidNight();
         const duration = purchasedTokens < 10000 ? twoDaysInMS : fiveDaysInMS;
         newExp = addSecs(Date.now(), duration);
 
@@ -83,6 +83,17 @@ const autoProcessSub = async (chatID, product, amount) => {
 
           await newTokenUser.save();
         }
+        client.sendMessage(
+          chatID,
+          `*Thank you for using AskMe_AI* \nYou now have ${
+            tokenUser?.availableTokens
+              ? tokenUser.availableTokens
+              : purchasedTokens
+          } tokens expiring on ${format(
+            newExp,
+            'PPpp'
+          )},\n\nYou can check your token balance at any time by sending the word *balance* \n`
+        );
       } catch (err) {
         console.log(err);
         client.sendMessage(process.env.ME, `Token user not saved in DB`);
@@ -90,15 +101,6 @@ const autoProcessSub = async (chatID, product, amount) => {
       client.sendMessage(
         process.env.ME,
         `Automatic subscribtion alert ${chatID}, is now subscribed for ${product}`
-      );
-      client.sendMessage(
-        chatID,
-        `*Thank you for using AskMe_AI* \nYou now have ${
-          tokenUser.availableTokens
-        } tokens expiring on ${format(
-          newExp,
-          'PPpp'
-        )},\n\nYou can check your token balance at any time by sending the word *balance* \n`
       );
     }
   } catch (err) {

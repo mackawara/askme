@@ -1,10 +1,12 @@
-//openai
 const indvUsers = require('../../models/individualUsers.js');
 const totalUsageModel = require('../../models/totalUsage');
 const tokenUsersModel = require('../../models/tokenUsers.js');
 const redisClient = require('../redisConfig.js');
 const openai = require('../openAIconfig.js');
 const { updateDbMetrics } = require('../../Utils/index.js');
+const {
+  ERROR_REQUEST_COULD_NOT_BE_PROCESSED,
+} = require('../../constants/messages.js');
 const openAiCall = async (chatID, tokenLimit, prompt) => {
   let user = await indvUsers.findOne({ serialisedNumber: chatID }).exec();
   const isTokenUser =
@@ -13,7 +15,6 @@ const openAiCall = async (chatID, tokenLimit, prompt) => {
 
   let totalUsage = await totalUsageModel.findOne({});
 
-  totalUsage = await totalUsageModel.findOne({});
   const messagesExists = await redisClient.exists(`${chatID}messages`);
   //if there are no current messages
   if (!messagesExists) {
@@ -66,14 +67,14 @@ const openAiCall = async (chatID, tokenLimit, prompt) => {
           'messages',
           JSON.stringify(messages)
         );
-        redisClient.expire(`${chatID}messages`, 180);
-        redisClient.hIncrBy(
+        await redisClient.expire(`${chatID}messages`, 180);
+        await redisClient.hIncrBy(
           chatID,
           'availableTokens',
           -response.usage.total_tokens
         );
         //Update the DBgit chec
-        updateDbMetrics(chatID, response.usage);
+        await updateDbMetrics(chatID, response.usage);
         return response.choices[0]['finish_reason'] == 'length'
           ? `${response.choices[0]['message']['content']}\n *send "continue" for more text*`
           : response.choices[0]['message']['content'];
@@ -83,18 +84,17 @@ const openAiCall = async (chatID, tokenLimit, prompt) => {
         //if contact exceeds 10 warnings block them
         if (user.warnings > 10) {
           user.isBlocked = true;
-
           user.save();
           totalUsage.save();
         }
       }
-      return '*Error!* your request could not be processed , please try again later';
+      return ERROR_REQUEST_COULD_NOT_BE_PROCESSED;
     } else {
-      return '*Error!* your request could not be processed , please try again later';
+      return ERROR_REQUEST_COULD_NOT_BE_PROCESSED;
     }
   } catch (err) {
     console.log(err);
-    return '*Error!* your request could not be processed , please try again later';
+    return ERROR_REQUEST_COULD_NOT_BE_PROCESSED;
   }
 };
 module.exports = openAiCall;
