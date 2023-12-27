@@ -11,4 +11,4 @@ const googleAi = async prompt => {
   return;
 };
 
-run();
+module.exports = googleAi;

@@ -1,14 +1,18 @@
 const SAVE_NEW_USER_FAILED = 'Save new user failed';
 const CANNOT_CONTINUE_AFTER_FIVE_MINS =
   'Please note that messageHistory is only kept in the system for only 3 minutes after which you cant continue from previous conversations ';
+const TOPUP_PROCESSING_WAIT =
+  'Please wait for Ecocash prompt on your home screen and enter your PIN.\nIf you have already enterd your PIN please wait just a minute and continue with your research';
 const WELCOME_MESSAGE =
   'Thank you for using AskMe, the AI powered virtual study assistant.\n\n*Please Read* \n\nWith AskMe_AI you are able to create notes, revision questions, write essays, write assignements and even create songs, poems ,jokes etc.\n*How to use the app* \nSimply ask any question and wait for a response.\n\nKindly note that this is a paid service but as a new user you get some free requests/messages to test the app. If you find it useful please subscribe.\n\n To subscribe you can reply with the word "Topup".';
 const TOPUP_ERROR_MESSAGE = 'To begin the topup process reply with "topup" ';
 const TOO_MANY_REQUESTS_TRY_LATER = `*Error*, you have made too many requests within a short space of time, Wait at least 1 minute!!`;
 const DO_NOT_SEND_THANK_YOU =
   '*System message*\n Thank you for using AskMe. Do not send greeting messages or messages such as thank you or you are welcome etc... They will use up your quota';
+const ENTER_TOKEN_AMOUNT =
+  'Please enter the total amount (in RTGS$) you would like to pay for tokens.\n\n1000 tokens cost RTGS 54 (ecocash). On average 1000 tokens is equivalent to 500-700 words or about 2-3 questions.';
 const USE_THESE_KEY_WORDS =
-  'Use these keywords to access features avaiable to subscribed users\n*createDoc* to create and download word documents from Askme_Ai , Once AskMe_AI generates an answer you can create a word document by replying with the word createDoc. For it to work you \n*createImage* to create an image provide a description of what you would want,\n*topup:* to subscribe or topup';
+  'Send any of these keywords to access features avaiable to users\n\n*createDoc* to create and download word documents from Askme_Ai , Once AskMe_AI generates an answer you can create a word document by replying with the word createDoc. For it to work you \n\n*createImage* to create an image provide a description of what you would want,\n\n*topup:* to subscribe or topup\n\nbalance: for token users to view token balances';
 const BE_PATIENT_WHILE_SYSTEM_GENERATES_DOC =
   'Please be patient while system generates your docx file';
 const ERROR_NO_QUOTED_MESSAGES_FOUND =
@@ -41,24 +45,32 @@ const MESSAGE_TOO_LONG =
 const NO_CONTEXT_TO_CONTINUE =
   'I can only continue based on previous 3 messages if they were made within the last 3 minutes';
 const FREE_QUOTA_EXCEDED =
-  'You have exceed your free usage. Reply with the word "Topup" to subscribe. Subscription only costs RTGS500 for a 3 day subscription and RTGS6000 (Ecocash) for monthly subscription';
+  'You have exceed your free usage .\n\nGood news is you can buy tokens for as little as RTGS50 to continue using this service. \n\n *Reply with the word topup to buy tokens*';
+const TOKENS_USED_UP =
+  'You have used up your tokens .\n\nGood news is you can buy tokens for as little as RTGS50 to continue using this service. \n\n Reply with the word *topup* to buy tokens';
+
 const ECOCASH_NUMBER =
-  'Our payments are handled through a secure payment system through Ecocash.\n\nPlease submit the Ecocash number that you would you like to pay with';
+  'Please submit the Ecocash number that you would you like to pay with\n\nKindly note that our payments are handled through a secure payment system through Ecocash.';
 const INVALID_ECOCASH_NUMBER =
   'The number you entered is not a valid Ecocash number\nplease use format shown:0771234567. *This is an example number dont send any money to it*';
 const TOPUP_PRODUCT =
-  'Which product do you want to subscribe for\n\n1.Monthly= RTGS$6000 ecocash (*25 messages per day*)\n2.Payu =RTGS$500 55 messages (*Expires in 72 hours*)\n\nReply with *1* or *2*';
+  'Select from the products below\n\n*1* .Monthly= *RTGS$6000* ecocash (*25 messages per day*)\n\n*2* .Payu =RTGS$500 55 messages (*Expires in 72 hours*)\n\n*3* .Token : any amount above RTGS$50 (*tokens expire after 2 days*)'; //\n\n Premium: RTGS$36000: unlimited messages , access to image Generation features \n\nReply with *1* or *2* or *3* or *4*';
 const REPLY_WITH_TOPUP =
-  'You are currently using a limited (free) version \nTo get full access subscribe by sending the word "*Topup*" \nSubscriptions start from only RTGS500';
-const INVALID_TOPUP_PRODUCT = `Please respond with any one of\n1.payu\n2.monthly\nEg just reply with the word monthly`;
+  'You are currently using a limited (free) version \nTo get full access subscribe by sending the word "*Topup*" \n\n*You can subscribe of as little as RTGS50 Ecocash*';
+const INVALID_TOPUP_PRODUCT = `Please respond with any one of\n1.payu\n2.monthly\n 3.Tokens\n\nEg just reply with *1* for monthly subscribtion`;
 const SUBSCRIPTION_EXPIRED = `Your subscription has expired. To renew reply with the word Topup`;
 const PROMPTS_VIOLATES_POLICIES =
   'Error:Your prompt has been rejected beacuse it violates usage policies';
 const SUBSCRIPTION_EXPIRING_SOON = `\nYour subscribtion to AskMe expires within the next 24 hours, To renew reply with the word Topup.`;
 const ERROR_IMAGE_NOT_PROCESSED = `Error : there was an error processing your image please check if it has any harmful content or anything that maybe against our usage policies`;
 const USER_BANNED = `This user has been banned`;
+const ENTER_MINIMUM_OF_FIFTY = 'Please enter a minimum token amount of 50';
+const ENTER_VALID_AMOUNT = 'Please enter a valid number (above 50)';
+const ERROR_REQUEST_COULD_NOT_BE_PROCESSED =
+  '*Error!* your request could not be processed , please try again later';
 module.exports = {
   USE_THESE_KEY_WORDS,
+  ERROR_REQUEST_COULD_NOT_BE_PROCESSED,
   USER_BANNED,
   CANNOT_CONTINUE_AFTER_FIVE_MINS,
   WELCOME_MESSAGE,
@@ -88,6 +100,11 @@ module.exports = {
   UNABLE_TO_PROCESS_REQUEST,
   MESSAGE_FLAGGED,
   MESSAGE_TOO_LONG,
+  ENTER_VALID_AMOUNT,
+  TOKENS_USED_UP,
+  ENTER_TOKEN_AMOUNT,
+  ENTER_MINIMUM_OF_FIFTY,
+  TOPUP_PROCESSING_WAIT,
   SUBSCRIPTION_QUOTA_EXCEDED,
   NOT_ENOUGH_CALLS_TO_PROCESS_IMAGE,
   NO_CONTEXT_TO_CONTINUE,
