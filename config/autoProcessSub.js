@@ -55,14 +55,6 @@ const autoProcessSub = async (chatID, product, amount) => {
         const duration = purchasedTokens < 10000 ? twoDaysInMS : fiveDaysInMS;
         newExp = addSecs(Date.now(), duration);
 
-        await redisClient.hSet(chatID, {
-          availableTokens: purchasedTokens,
-          isBlocked: '0',
-          isSubscribed: '1',
-          calls: 1,
-          isTokenUser: '1',
-        });
-        await redisClient.expire(chatID, redisExpiryTime);
         tokenUser = await tokenUsers.findOne({ userId: chatID });
 
         if (tokenUser) {
@@ -83,6 +75,15 @@ const autoProcessSub = async (chatID, product, amount) => {
 
           await newTokenUser.save();
         }
+        await redisClient.hSet(chatID, {
+          availableTokens: tokenUser.availableTokens,
+          isBlocked: '0',
+          isSubscribed: '1',
+          calls: 1,
+          isTokenUser: '1',
+        });
+        await redisClient.expire(chatID, redisExpiryTime);
+
         client.sendMessage(
           chatID,
           `*Thank you for using AskMe_AI* \nYou now have ${

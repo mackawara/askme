@@ -5,6 +5,7 @@ const docxCreator = require('./docxCreator');
 const messages = require('../../constants/messages');
 const topupHandler = require('./topupHandler');
 const Utils = require('../../Utils/index');
+const googleAi = require('./googleAi');
 const randomUsageTip = require('./randomUsageTip');
 const generateImage = require('./generateImage');
 const redisClient = require('../redisConfig');
@@ -26,21 +27,33 @@ const clientOn = async arg1 => {
   if (arg1 == 'message') {
     try {
       client.on(`message`, async msg => {
-        const elevate = require('./elevate');
         const chat = await msg.getChat();
         const contact = await msg.getContact();
         const msgBody = msg.body;
         const chatID = msg.from;
-        const expiryTime = Utils.getSecsToMidnight();
-        const user = await usersModel.findOne({ serialisedNumber: chatID });
-        let tokenLimit = 120;
-        let maxCalls = 1;
-        let isSubscribed, isFollower;
 
-        let prompt = await msgBody.replace(/openAi:|createDoc/gi, '');
         //only use on direct messages
 
-        if (!chat.isGroup && !msg.isStatus && msg.type == 'chat') {
+        if (!msg.isStatus && msg.type == 'chat') {
+          console.log(chatID);
+          if (chat.isGroup && chatID == '263772855269-1445013360@g.us') {
+            console.log('message found');
+            if (msgBody.startsWith('askme:')) {
+              console.log('is group');
+              let prompt = await msgBody.replace(/askme:/gi, '');
+              console.log(msg.getInfo());
+              const googleResponse = await googleAi(prompt);
+              msg.reply(googleResponse);
+              return;
+            }
+          }
+          const elevate = require('./elevate');
+          const expiryTime = Utils.getSecsToMidnight();
+          const user = await usersModel.findOne({ serialisedNumber: chatID });
+          let tokenLimit = 120;
+          let maxCalls = 1;
+          let isSubscribed, isFollower;
+          let prompt = await msgBody.replace(/openAi:|createDoc/gi, '');
           const maxDelayTimeInSecs = 9;
           const minDelayTimeInSecs = 3;
           const delayTime =
