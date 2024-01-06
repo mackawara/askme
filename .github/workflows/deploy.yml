@@ -26,7 +26,7 @@ jobs:
           chmod 600 mackawaraaws.pem
       - name: SSH into EC2 VM and reset local repo to align to origin
         run: |
-          ssh -o StrictHostKeyChecking=no -i  mackawaraaws.pem $EC2_USERNAME@$EC2_URL 'cd repos/askme && git checkout main  && git fetch --all && git reset --hard origin/main'
+          ssh -o StrictHostKeyChecking=no -i  mackawaraaws.pem $EC2_USERNAME@$EC2_URL 'cd repos/askme && git checkout staging  && git fetch --all && git reset --hard origin/staging'
       - name: Restart app using pm2
         run: |
           ssh -o StrictHostKeyChecking=no -i  mackawaraaws.pem $EC2_USERNAME@$EC2_URL 'pm2 restart askme'
