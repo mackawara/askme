@@ -22,6 +22,7 @@ const topupRegex = /\"?top\s?up"?\s?(payu|monthly)?/gi;
 const { client, MessageMedia } = require('../wwebJsConfig');
 const processSub = require('./processSub');
 const timeDelay = ms => new Promise(res => setTimeout(res, ms));
+require('dotenv').config();
 const clientOn = async arg1 => {
   const me = process.env.ME;
   const usersModel = require('../../models/individualUsers');
@@ -49,15 +50,15 @@ const clientOn = async arg1 => {
           // if user is not already in Redis
           const exists = await redisClient.exists(chatID);
           const isInTopupMode = await redisClient.exists(`${chatID}topup`);
-          const isInAdminMode = await redisClient.exists('admin')
+          const isInAdminMode = await redisClient.exists('admin');
 
           if (isInTopupMode) {
             await topupHandler(msgBody, chatID);
             return;
           }
           if (isInAdminMode) {
-            await processSub(msg)
-            return
+            await processSub(msg);
+            return;
           }
 
           //check the redis DB if there is an entry from the number
@@ -74,8 +75,10 @@ const clientOn = async arg1 => {
               const saved = await saveNewUser(chatID, notifyName, number);
               console.log(saved);
               if (saved) {
-                await client.sendMessage(chatID, `Hi ${notifyName} \n\n` + messages.WELCOME_MESSAGE);
-              
+                await client.sendMessage(
+                  chatID,
+                  `Hi ${notifyName} \n\n` + messages.WELCOME_MESSAGE
+                );
               } else if (!saved) {
                 client.sendMessage(me, 'Save new user failed');
                 return;
@@ -85,8 +88,8 @@ const clientOn = async arg1 => {
               if (!user) {
                 await saveNewUser(chatID, notifyName, number);
               }
-             msg.reply(`${greeting}\n\n ${randomUsageTip()}`)
-              
+              msg.reply(`${greeting}\n\n ${randomUsageTip()}`);
+
               if (chatID === !me) {
                 await redisClient.set(`${chatID}shortTTL`, 1);
                 await redisClient.expire(`${chatID}shortTTL`, 30);
@@ -160,9 +163,8 @@ const clientOn = async arg1 => {
           const isBlocked = await redisClient.hGet(chatID, 'isBlocked');
           await redisClient
             .incrBy(`${chatID}shortTTL`, 1)
-            .then(async result => { });
+            .then(async result => {});
           await redisClient.expire(`${chatID}shortTTL`, 30);
-
 
           if (
             msgBody.toLowerCase().startsWith('topup') ||
@@ -171,7 +173,7 @@ const clientOn = async arg1 => {
             msgBody.toLowerCase().includes('top-up payu') ||
             topupRegex.test(msgBody.replace(' ', ''))
           ) {
-            console.log("topup")
+            console.log('topup');
             await redisClient.hSet(`${chatID}topup`, 'field', 'product');
             await redisClient.expire(`${chatID}topup`, 180);
             await msg.reply(messages.TOPUP_PRODUCT);
@@ -206,7 +208,7 @@ const clientOn = async arg1 => {
             client.sendMessage(chatID, messages.DO_NOT_SEND_THANK_YOU);
             return;
           }
-          if (/\bfeatures\b/gi.test(msgBody.slice(0,6))) {
+          if (/\bfeatures\b/gi.test(msgBody.slice(0, 6))) {
             client.sendMessage(chatID, messages.USE_THESE_KEY_WORDS);
             return;
           }
@@ -234,9 +236,9 @@ const clientOn = async arg1 => {
 
               return;
             } else if (msgBody.startsWith('processSub:')) {
-              await redisClient.hSet("admin", 'subField', "number")
-              await redisClient.expire("admin", "60")
-              msg.reply("What is the number you want to process");
+              await redisClient.hSet('admin', 'subField', 'number');
+              await redisClient.expire('admin', '60');
+              msg.reply('What is the number you want to process');
               return;
             } else if (msgBody.startsWith('processPayu:')) {
               manualProcessSub(msg, 'payu');
@@ -344,8 +346,8 @@ const clientOn = async arg1 => {
           await redisClient.HINCRBY(chatID, 'calls', -1);
           console.log(
             'remaining calls for' +
-            chatID +
-            (await redisClient.hGet(chatID, 'calls'))
+              chatID +
+              (await redisClient.hGet(chatID, 'calls'))
           );
           if (isBlocked === '1') {
             if (calls < -3) {
@@ -420,7 +422,7 @@ const clientOn = async arg1 => {
             response == messages.UNABLE_TO_PROCESS_REQUEST ||
             response == messages.NO_CONTEXT_TO_CONTINUE
           ) {
-            redisClient.HINCRBY(chatID, 'calls', +1); 
+            redisClient.HINCRBY(chatID, 'calls', +1);
             //client.sendMessage(chatID,response);
             client.sendMessage(chatID, response);
             return;
@@ -428,9 +430,7 @@ const clientOn = async arg1 => {
             if (chatID == '263775231426@c.us' || isSubscribed == '1') {
               msg.reply(response);
             } else {
-              msg.reply(
-                `${messages.REPLY_WITH_TOPUP}\n\n${response}`
-              );
+              msg.reply(`${messages.REPLY_WITH_TOPUP}\n\n${response}`);
             }
           }
         }
