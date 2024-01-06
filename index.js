@@ -30,7 +30,7 @@ connectDB().then(async () => {
 
   client.on('ready', async () => {
     console.log('Client is ready!');
-
+    client.sendMessage(process.env.ME, 'Deployed successfully Askme');
     clientOn('message');
     //functions abd resources
     //Helper Functions

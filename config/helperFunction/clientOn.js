@@ -19,7 +19,7 @@ const processFollower = require('./processFollower');
 const { client, MessageMedia } = require('../wwebJsConfig');
 const processSub = require('./processSub');
 const tokenUsersModel = require('../../models/tokenUsers');
-
+require('dotenv').config();
 const clientOn = async arg1 => {
   const me = process.env.ME;
   const usersModel = require('../../models/individualUsers');
