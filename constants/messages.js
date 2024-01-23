@@ -1,3 +1,4 @@
+const system = require('../constants/system');
 const SAVE_NEW_USER_FAILED = 'Save new user failed';
 const CANNOT_CONTINUE_AFTER_FIVE_MINS =
   'Please note that messageHistory is only kept in the system for only 3 minutes after which you cant continue from previous conversations ';
@@ -54,7 +55,11 @@ const ECOCASH_NUMBER =
 const INVALID_ECOCASH_NUMBER =
   'The number you entered is not a valid Ecocash number\nplease use format shown:0771234567. *This is an example number dont send any money to it*';
 const TOPUP_PRODUCT =
-  'Select from the products below\n\n*1* .Monthly= *RTGS$6000* ecocash (*25 messages per day*)\n\n*2* .Payu =RTGS$500 55 messages (*Expires in 72 hours*)\n\n*3* .Token : any amount above RTGS$50 (*tokens expire after 2 days*)'; //\n\n Premium: RTGS$36000: unlimited messages , access to image Generation features \n\nReply with *1* or *2* or *3* or *4*';
+  'Select from the products below\n\n*1* .Monthly= RTGS' +
+  system.monthly +
+  ' ecocash (*25 messages per day*)\n\n*2* .Payu =RTGS$' +
+  system.payu +
+  ' 55 messages (*Expires in 72 hours*)'; //*3* .Token : any amount above RTGS$50 (*tokens expire after 2 days*)'; //\n\n Premium: RTGS$36000: unlimited messages , access to image Generation features \n\nReply with *1* or *2* or *3* or *4*';
 const REPLY_WITH_TOPUP =
   'You are currently using a limited (free) version \nTo get full access subscribe by sending the word "*Topup*" \n\n*You can subscribe of as little as RTGS50 Ecocash*';
 const INVALID_TOPUP_PRODUCT = `Please respond with any one of\n1.payu\n2.monthly\n 3.Tokens\n\nEg just reply with *1* for monthly subscribtion`;

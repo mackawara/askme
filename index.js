@@ -102,7 +102,7 @@ connectDB().then(async () => {
       //client events and functions
       //decalre variables that work with client here
 
-      client.setDisplayName('AskMe, the all knowing assistant');
+      client.setDisplayName('Soccer Bot');
       client.on('disconnected', reason => {
         console.log('Client was logged out', reason);
       });

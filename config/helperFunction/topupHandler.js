@@ -12,7 +12,7 @@ const topupHandler = async (msgBody, chatID) => {
     const topupStage = await redisClient.hGet(topupClient, 'field');
 
     const isValidEconetNumber = /^(07[7-8])(\d{7})$/;
-    const isValidproduct = /(payu|month|monthly|token|premium|1|2|3|4)/gi;
+    const isValidproduct = /(payu|month|monthly|1|2)/gi; //remove token
 
     switch (topupStage) {
       case 'processing':

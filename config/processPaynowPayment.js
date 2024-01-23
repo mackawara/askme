@@ -6,6 +6,7 @@ const { client } = require('./wwebJsConfig');
 const redisClient = require('./redisConfig');
 require('dotenv').config();
 const { timeDelay } = require('../Utils/index');
+const system = require('../constants/system');
 
 const paynowProcess = async (product, payingNumber, chatID) => {
   const existingPayments = parseInt(await PaynowPayments.count().exec());
@@ -15,8 +16,8 @@ const paynowProcess = async (product, payingNumber, chatID) => {
   let payment = paynow.createPayment(invoiceNumber, process.env.AUTH_EMAIL);
   //set the product price depending
   const prices = {
-    payu: 500,
-    monthly: 6000,
+    payu: system.payu,
+    monthly: system.monthly,
   };
 
   const tokenAmount = await redisClient.hGet(`${chatID}topup`, 'tokenAmount');
