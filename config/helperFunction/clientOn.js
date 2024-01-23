@@ -18,8 +18,7 @@ const manualProcessSub = require('./manualProcessSub');
 const processFollower = require('./processFollower');
 const { client, MessageMedia } = require('../wwebJsConfig');
 const processSub = require('./processSub');
-const tokenUsersModel = require('../../models/tokenUsers');
-require('dotenv').config();
+const timeDelay = ms => new Promise(res => setTimeout(res, ms));
 const clientOn = async arg1 => {
   const me = process.env.ME;
   const usersModel = require('../../models/individualUsers');
@@ -36,14 +35,19 @@ const clientOn = async arg1 => {
 
         if (!msg.isStatus && msg.type == 'chat') {
           console.log(chatID);
-          if (chat.isGroup && chatID == '263772855269-1445013360@g.us') {
-            console.log('message found');
-            if (msgBody.startsWith('askme:')) {
-              console.log('is group');
-              let prompt = await msgBody.replace(/askme:/gi, '');
-              console.log(msg.getInfo());
-              const googleResponse = await googleAi(prompt);
-              msg.reply(googleResponse);
+          if (chat.isGroup) {
+            if (chatID == '263772855269-1445013360@g.us') {
+              console.log('message found');
+              if (msgBody.startsWith('askme:')) {
+                console.log('is group');
+                let prompt = await msgBody.replace(/askme:/gi, '');
+                console.log(msg.getInfo());
+                const googleResponse = await googleAi(prompt);
+                msg.reply(googleResponse);
+                return;
+              }
+            } else {
+              console.log('group message');
               return;
             }
           }
@@ -103,7 +107,7 @@ const clientOn = async arg1 => {
               if (!user) {
                 await saveNewUser(chatID, notifyName, number);
               }
-              // msg.reply(`${greeting}\n\n ${randomUsageTip()}`);
+              msg.reply(`${greeting}\n\n ${randomUsageTip()}`);
 
               if (chatID === !me) {
                 await redisClient.set(`${chatID}shortTTL`, 1);
@@ -197,13 +201,15 @@ const clientOn = async arg1 => {
             .incrBy(`${chatID}shortTTL`, 1)
             .then(async result => {});
           await redisClient.expire(`${chatID}shortTTL`, 30);
-          if (/menu$/i.test(msgBody)) {
-            msg.reply('menu');
-            redisClient.hSet(chatID, 'inMenu-mode', '1');
-            return;
-          }
-          const topupRegex = /\"?top\s?up"?\s?(payu|monthly)?/gi;
-          if (topupRegex.test(msgBody.replace(' ', ''))) {
+
+          if (
+            msgBody.toLowerCase().startsWith('topup') ||
+            msgBody.toLowerCase().startsWith('*topup') ||
+            msgBody.toLowerCase().includes('topup payu') ||
+            msgBody.toLowerCase().includes('top-up payu') ||
+            topupRegex.test(msgBody.replace(' ', ''))
+          ) {
+            console.log('topup');
             await redisClient.hSet(`${chatID}topup`, 'field', 'product');
             await redisClient.expire(`${chatID}topup`, 180);
             await msg.reply(messages.TOPUP_PRODUCT);
@@ -246,7 +252,7 @@ const clientOn = async arg1 => {
             client.sendMessage(chatID, messages.DO_NOT_SEND_THANK_YOU);
             return;
           }
-          if (/^features$/gi.test(msgBody)) {
+          if (/\bfeatures\b/gi.test(msgBody.slice(0, 6))) {
             client.sendMessage(chatID, messages.USE_THESE_KEY_WORDS);
             return;
           }
@@ -275,7 +281,7 @@ const clientOn = async arg1 => {
               return;
             } else if (msgBody.startsWith('processSub:')) {
               await redisClient.hSet('admin', 'subField', 'number');
-              await redisClient.expire('admin', 60);
+              await redisClient.expire('admin', '60');
               msg.reply('What is the number you want to process');
               return;
             } else if (msgBody.startsWith('processPayu:')) {
@@ -375,27 +381,12 @@ const clientOn = async arg1 => {
 
           // check if blocked   const isBlocked = await redisClient.hGet(chatID, "isBlocked");
           //subtract 1 usage call
-
-          if (!isTokenUser == '1') {
-            await redisClient.HINCRBY(chatID, 'calls', -1);
-          }
-
-          if (isTokenUser == '1') {
-            tokenLimit = 600;
-            if (availableTokens < 100) {
-              await redisClient.hSet(chatID, {
-                calls: '0',
-                isTokenUser: '0',
-                isSubscribed: '0',
-              });
-              await tokenUsersModel.findOneAndDelete({ userId: chatID });
-              msg.reply(messages.TOKENS_USED_UP);
-              return;
-            } else if (parseInt(availableTokens) < 1000) {
-              tokenLimit = 200;
-            }
-          }
-
+          await redisClient.HINCRBY(chatID, 'calls', -1);
+          console.log(
+            'remaining calls for' +
+              chatID +
+              (await redisClient.hGet(chatID, 'calls'))
+          );
           if (isBlocked === '1') {
             if (calls < -3) {
               client.sendMessage(
@@ -469,6 +460,7 @@ const clientOn = async arg1 => {
             response == messages.NO_CONTEXT_TO_CONTINUE
           ) {
             redisClient.HINCRBY(chatID, 'calls', +1);
+            //client.sendMessage(chatID,response);
             client.sendMessage(chatID, response);
             return;
           } else {
