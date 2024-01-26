@@ -1,12 +1,11 @@
-const usersModel=require("../../models/individualUsers")
-const redisClient=require("../redisConfig")
-const {client}=require("../wwebJsConfig")
-const getSecsToMidNight=require("./getSecsToMidnight")
-const messages=require("../../constants/messages")
-const expiryTime=getSecsToMidNight()
-require("dotenv").config();
-const saveNewUser=async(chatID,notifyName,number)=>{
-const newContact = new usersModel({
+const usersModel = require('../../models/individualUsers');
+const redisClient = require('../redisConfig');
+const { client } = require('../wwebJsConfig');
+const Utils = require('../../Utils/index');
+const expiryTime = Utils.getSecsToMidnight();
+require('dotenv').config();
+const saveNewUser = async (chatID, notifyName, number) => {
+  const newContact = new usersModel({
     date: new Date().toISOString().slice(0, 10),
     isBlocked: false,
     notifyName: notifyName,
@@ -29,22 +28,22 @@ const newContact = new usersModel({
     callsThisMonth: 0,
     timestamp: Date.now(),
   });
-    try {
-      await newContact.save();
-      await redisClient.hSet(chatID, {
-        isBlocked: "0",
-        isSubscribed: "0",
-        isFollower: "1",
-        calls: 3
-      });
-      await redisClient.expire(chatID, expiryTime);
-      await client.sendMessage("263775231426@c.us", "new user saved " + chatID);
-      return true;
-    } catch (err) {
-      client.sendMessage(process.env.ME, "Save new user failed");
-      console.log(err.errors);
-      return false;
-    }
-  };
+  try {
+    await newContact.save();
+    await redisClient.hSet(chatID, {
+      isBlocked: '0',
+      isSubscribed: '0',
+      isFollower: '1',
+      calls: 3,
+    });
+    await redisClient.expire(chatID, expiryTime);
+    await client.sendMessage('263775231426@c.us', 'new user saved ' + chatID);
+    return true;
+  } catch (err) {
+    client.sendMessage(process.env.ME, 'Save new user failed');
+    console.log(err.errors);
+    return false;
+  }
+};
 
-module.exports=saveNewUser
+module.exports = saveNewUser;

@@ -1,0 +1,15 @@
+version: '3'
+services:
+redis:
+  image: redis:latest
+  ports: "6379"
+  mem_limit: 300m # Set a memory limit for the Redis container
+askme:
+  image: askme-npm-docker
+  container_name: 'askme'
+  restart: 'always'
+  depends_on:
+    - redis
+  environment: 
+  - ME=${ME}
+   EXECPATH=${EXECPATH} DB_STRING=${DB_STRING}  LOCAL_DB_STRING:={LOCAL_DB_STRING} NODE_ENV=${NODE_ENV} OPENAI_API_KEY=${OPENAI_API_KEY} OPENAI_ORGANISATION_KEY=${OPENAI_ORGANISATION_KEY} PAYNOW_KEY=${PAYNOW_KEY} PAYNOW_ID=${} AUTH_EMAIL=${} PRECISE=${} TADIEWASHE=${} PORT=${}

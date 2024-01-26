@@ -1,5 +1,5 @@
-const mongoose = require("mongoose");
-const { arrayBuffer } = require("node:stream/consumers");
+const mongoose = require('mongoose');
+const { differenceInCalendarDays, parseISO } = require('date-fns');
 
 const usersSchema = new mongoose.Schema({
   date: {
@@ -30,11 +30,12 @@ const usersSchema = new mongoose.Schema({
   notifyName: {
     type: String,
     required: false,
+    default: 'AskMe user',
   },
   serialisedNumber: {
     type: String,
     required: true,
-    unique:true
+    unique: true,
   },
   isSubscribed: {
     type: Boolean,
@@ -74,6 +75,11 @@ const usersSchema = new mongoose.Schema({
     type: Array,
     required: false,
   },
+  availableTokens: {
+    type: Number,
+    required: true,
+    default: 0,
+  },
 
   costPerCall: { type: Number, required: false },
   costPerDay: { type: Number, required: false },
@@ -85,16 +91,14 @@ usersSchema.methods.calculateTokensPerCallAndSave = function () {
 };
 usersSchema.methods.calculateCallsPerDay = function () {
   const dateToday = Date.now();
+  const daysElapsed = differenceInCalendarDays(dateToday, parseISO(this.date));
+  console.log(daysElapsed);
 
-  const dayElapsed = (dateToday - this.timestamp) / 1000 / 86400;
-
-  this.callsPerDay = this.calls / dayElapsed;
-  console.log(dayElapsed);
+  this.callsPerDay = this.calls / daysElapsed;
   return this.save();
 };
 usersSchema.methods.calculateCostPerCall = function () {
   this.costPerCall = (this.tokensPerCall / 1000) * 0.003;
-
   return this.save();
 };
 usersSchema.methods.calculateCostPerDay = function () {
@@ -104,10 +108,9 @@ usersSchema.methods.calculateCostPerDay = function () {
 };
 usersSchema.methods.calculateSubTTL = function () {
   this.subTTL = this.subTTL - 1;
-
   return this.save();
 };
 
-const contactsModel = mongoose.model("users", usersSchema);
+const contactsModel = mongoose.model('users', usersSchema);
 
 module.exports = contactsModel;
