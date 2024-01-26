@@ -33,10 +33,10 @@ const clientOn = async arg1 => {
 
         //only use on direct messages
 
-        if (!msg.isStatus && msg.type == 'chat') {
+        if (!msg.isStatus && msg.type == 'chat' && !chat.isGroup) {
           console.log(chatID);
-          if (chat.isGroup) {
-            if (chatID == '263772855269-1445013360@g.us') {
+          /* if (chat.isGroup) {
+             if (chatID == '263772855269-1445013360@g.us') {
               console.log('message found');
               if (msgBody.startsWith('askme:')) {
                 console.log('is group');
@@ -49,8 +49,8 @@ const clientOn = async arg1 => {
             } else {
               console.log('group message');
               return;
-            }
-          }
+            } 
+          } */
           const elevate = require('./elevate');
           const expiryTime = Utils.getSecsToMidnight();
           const user = await usersModel.findOne({ serialisedNumber: chatID });
