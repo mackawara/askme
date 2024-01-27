@@ -3,8 +3,8 @@ console.log(process.env.NODE_ENV);
 const client = new Client({
   authStrategy: new LocalAuth(),
   puppeteer: {
-    executablePath: process.env.EXECPATH,
-    //  process.env.NODE_ENV == 'local' ? null : process.env.EXECPATH,
+    executablePath:
+      process.env.NODE_ENV == 'local' ? null : process.env.EXECPATH,
     handleSIGINT: true,
     ignoreDefaultArgs: ['--enable-automation'],
     headless: true, //process.env.NODE_ENV == 'local' ? false : true,

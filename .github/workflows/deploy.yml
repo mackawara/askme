@@ -12,7 +12,7 @@ on:
       - .github/**
       - './**'
       - '.**'
-      - /**
+      - '/**'
 
 env:
   AWS_EC2_PRIVATE_KEY: ${{secrets.AWS_EC2_PRIVATE_KEY}}

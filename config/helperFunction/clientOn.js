@@ -64,7 +64,7 @@ const clientOn = async arg1 => {
             (Math.random() * (maxDelayTimeInSecs - minDelayTimeInSecs) +
               minDelayTimeInSecs) *
             1000;
-          const tokenUser = await tokenUsersModel.findOne({ userId: chatID });
+
           console.log(delayTime);
           // if user is not already in Redis
           const exists = await redisClient.exists(chatID);
@@ -107,29 +107,12 @@ const clientOn = async arg1 => {
               if (!user) {
                 await saveNewUser(chatID, notifyName, number);
               }
-              msg.reply(`${greeting}\n\n ${randomUsageTip()}`);
 
               if (chatID === !me) {
                 await redisClient.set(`${chatID}shortTTL`, 1);
                 await redisClient.expire(`${chatID}shortTTL`, 30);
               }
-              if (tokenUser) {
-                const tokensAvailableToUser = await tokenUser.availableTokens;
-                console.log('is token user');
-                await redisClient.hSet(chatID, {
-                  isBlocked: '0',
-                  isSubscribed: '0',
-                  isTokenUser: '1',
-                  calls: 1,
-                  availableTokens: tokensAvailableToUser,
-                });
-                client.sendMessage(
-                  chatID,
-                  `You have ${tokensAvailableToUser} tokens remaining. To check remaining tokens simply send the word *balance*`
-                );
-              } else {
-                console.log('token user not found found');
-              }
+
               if (user.isBlocked) {
                 await redisClient.hSet(chatID, {
                   isBlocked: '1',
@@ -141,7 +124,7 @@ const clientOn = async arg1 => {
               }
 
               //check in mongoDb if is Subscibed
-              if (!user.isSubscribed && user.callsThisMonth > 3 && !tokenUser) {
+              if (!user.isSubscribed && user.callsThisMonth > 3) {
                 client.sendMessage(chatID, messages.TOP_UP_MESSAGE);
                 await redisClient.hSet(chatID, {
                   isBlocked: '1',
@@ -154,7 +137,7 @@ const clientOn = async arg1 => {
                 await redisClient.hSet(chatID, {
                   isBlocked: '0',
                   isSubscribed: '1',
-                  isTokenUser: '0',
+                  //  isTokenUser: '0',
                 });
               } else {
                 await redisClient.hSet(chatID, {
@@ -183,7 +166,7 @@ const clientOn = async arg1 => {
               const subscriber = isSubscribed === '1' ? 25 : 0;
               const follower = isFollower === '1' ? 1 : 0;
               totalCalls = base + subscriber + follower;
-              return tokenUser ? 1 : totalCalls;
+              return totalCalls;
             };
             const maxCallsAllowed = maxCalls();
             await redisClient.hSet(chatID, 'calls', maxCallsAllowed);
@@ -196,7 +179,7 @@ const clientOn = async arg1 => {
             await redisClient.hGet(chatID, 'availableTokens')
           );
           const isBlocked = await redisClient.hGet(chatID, 'isBlocked');
-          const isTokenUser = await redisClient.hGet(chatID, 'isTokenUser');
+
           await redisClient
             .incrBy(`${chatID}shortTTL`, 1)
             .then(async result => {});
@@ -206,8 +189,8 @@ const clientOn = async arg1 => {
             msgBody.toLowerCase().startsWith('topup') ||
             msgBody.toLowerCase().startsWith('*topup') ||
             msgBody.toLowerCase().includes('topup payu') ||
-            msgBody.toLowerCase().includes('top-up payu') ||
-            topupRegex.test(msgBody.replace(' ', ''))
+            msgBody.toLowerCase().includes('top-up payu')
+            // topupRegex.test(msgBody.replace(' ', ''))
           ) {
             console.log('topup');
             await redisClient.hSet(`${chatID}topup`, 'field', 'product');
@@ -219,7 +202,7 @@ const clientOn = async arg1 => {
           if (!isSystemNotBusy(msg)) {
             return;
           }
-          if (/^balance$/i.test(msgBody)) {
+          /*  if (/^balance$/i.test(msgBody)) {
             if (isTokenUser == '1') {
               msg.reply(
                 `You have ${availableTokens} tokens remaining.\n\nTo add more tokens please send the word *topup*`
@@ -231,7 +214,7 @@ const clientOn = async arg1 => {
               );
               return;
             }
-          }
+          } */
           const shortTTL = await redisClient.get(`${chatID}shortTTL`);
           // process retopup
 
@@ -342,7 +325,7 @@ const clientOn = async arg1 => {
           const calls = await redisClient.hGet(chatID, 'calls');
 
           if (msgBody.startsWith('createImage')) {
-            if (isSubscribed === '0' || isTokenUser == '0') {
+            if (isSubscribed === '0') {
               client.sendMessage(
                 chatID,
                 messages.ONLY_AVAILABLE_FOR_SUBSCRIBED
