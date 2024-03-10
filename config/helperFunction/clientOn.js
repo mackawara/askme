@@ -202,19 +202,7 @@ const clientOn = async arg1 => {
           if (!isSystemNotBusy(msg)) {
             return;
           }
-          /*  if (/^balance$/i.test(msgBody)) {
-            if (isTokenUser == '1') {
-              msg.reply(
-                `You have ${availableTokens} tokens remaining.\n\nTo add more tokens please send the word *topup*`
-              );
-              return;
-            } else {
-              msg.reply(
-                `This feature is only available for users with a token subscription`
-              );
-              return;
-            }
-          } */
+          
           const shortTTL = await redisClient.get(`${chatID}shortTTL`);
           // process retopup
 
