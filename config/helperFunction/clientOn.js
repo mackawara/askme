@@ -96,7 +96,7 @@ const clientOn = async arg1 => {
               if (saved) {
                 await client.sendMessage(
                   chatID,
-                  `Hi ${notifyName} \n\n` + messages.WELCOME_MESSAGE
+                  `Hi ${notifyName || ''} \n\n` + messages.WELCOME_MESSAGE
                 );
               } else if (!saved) {
                 client.sendMessage(me, 'Save new user failed');

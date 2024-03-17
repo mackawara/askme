@@ -34,7 +34,7 @@ jobs:
           ssh -o StrictHostKeyChecking=no -i  mackawaraaws.pem $EC2_USERNAME@$EC2_URL 'cd repos/askme && git checkout staging  && git fetch --all && git reset --hard origin/staging'
       - name: Restart app using pm2
         run: |
-          ssh -o StrictHostKeyChecking=no -i  mackawaraaws.pem $EC2_USERNAME@$EC2_URL 'cd repos/askme && pm2 start index.js --name askme'
+          ssh -o StrictHostKeyChecking=no -i  mackawaraaws.pem $EC2_USERNAME@$EC2_URL 'cd repos/askme && pm2 restart askme'
 
 #setup-ssh:
 #runs-on: ubuntu-latest
