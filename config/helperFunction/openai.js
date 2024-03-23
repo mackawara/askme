@@ -41,8 +41,9 @@ const openAiCall = async (chatID, tokenLimit, prompt) => {
 
   // add user prompt to messages
   messages.push({ role: 'user', content: prompt });
-  const modelVersion = 'gpt-3.5-turbo-1106'; // chatID === process.env.ME ? "gpt-4-1106-preview" : "gpt-3.5-turbo-1106"
-  try {
+  const inhouse=[process.env.ME,process.env.VENTA]
+  const modelVersion = inhouse.includes(chatID)? "gpt-4-0125-preview" : "gpt-3.5-turbo-0125"
+  try {console.log(modelVersion)
     const response = await openai.chat.completions.create({
       model: modelVersion,
       messages: messages,
@@ -77,7 +78,7 @@ const openAiCall = async (chatID, tokenLimit, prompt) => {
         await updateDbMetrics(chatID, response.usage);
         return response.choices[0]['finish_reason'] == 'length'
           ? `${response.choices[0]['message']['content']}\n *send "continue" for more text*`
-          : response.choices[0]['message']['content'];
+          : response.choices[0]['message']['content']
       } else {
         totalUsage.errors++;
         totalUsage.calls++;

@@ -199,6 +199,9 @@ const clientOn = async arg1 => {
             return;
           }
           //Check if system is not going over API limits
+          if(isBlocked==1){
+            return
+          }
           if (!isSystemNotBusy(msg)) {
             return;
           }

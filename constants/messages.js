@@ -46,9 +46,9 @@ const MESSAGE_TOO_LONG =
 const NO_CONTEXT_TO_CONTINUE =
   'I can only continue based on previous 3 messages if they were made within the last 3 minutes';
 const FREE_QUOTA_EXCEDED =
-  'You have exceed your free usage .\n\nGood news is you can buy tokens for as little as RTGS50 to continue using this service. \n\n *Reply with the word topup to buy tokens*';
+  'You have exceed your free usage . \n\n *Reply with the word topup to buy tokens*\nUntil then you will not receive messages from this service except for topup';
 const TOKENS_USED_UP =
-  'You have used up your tokens .\n\nGood news is you can buy tokens for as little as RTGS50 to continue using this service. \n\n Reply with the word *topup* to buy tokens';
+  'You have used up your tokens  \n\n Reply with the word *topup* to buy tokens';
 
 const ECOCASH_NUMBER =
   'Please submit the Ecocash number that you would you like to pay with\n\nKindly note that our payments are handled through a secure payment system through Ecocash.';
