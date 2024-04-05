@@ -57,6 +57,8 @@ const clientOn = async arg1 => {
           let tokenLimit = 120;
           let maxCalls = 1;
           let isSubscribed, isFollower;
+          let isAdmin;
+        
           let prompt = await msgBody.replace(/openAi:|createDoc/gi, '');
           const maxDelayTimeInSecs = 9;
           const minDelayTimeInSecs = 3;
@@ -124,7 +126,7 @@ const clientOn = async arg1 => {
               }
 
               //check in mongoDb if is Subscibed
-              if (!user.isSubscribed && user.callsThisMonth > 3) {
+              if (!user.isSubscribed && user.callsThisMonth > 3 && !isAdmin) {
                 client.sendMessage(chatID, messages.TOP_UP_MESSAGE);
                 await redisClient.hSet(chatID, {
                   isBlocked: '1',
@@ -133,7 +135,7 @@ const clientOn = async arg1 => {
                 });
                 return;
               }
-              if (user.isSubscribed) {
+              if (user.isSubscribed|| chatID==me) {
                 await redisClient.hSet(chatID, {
                   isBlocked: '0',
                   isSubscribed: '1',
