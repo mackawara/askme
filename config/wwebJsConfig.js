@@ -1,5 +1,6 @@
 const { Client, LocalAuth, MessageMedia } = require('whatsapp-web.js');
 console.log(process.env.NODE_ENV);
+const wwebVersion='2.2402.2-beta'
 const client = new Client({
   authStrategy: new LocalAuth(),
   puppeteer: {
@@ -27,6 +28,10 @@ const client = new Client({
       '--no-sandbox',
     ],
   },
+  webVersionCache: {
+    type: 'remote',
+    remotePath: `https://raw.githubusercontent.com/wppconnect-team/wa-version/main/html/${wwebVersion}.html`,
+},
 });
 
 module.exports = { client, MessageMedia };

@@ -1,4 +1,4 @@
-name: Update app on VM and restart using updated code
+name: Update app on VM and restart using new code
 
 on:
   push:
