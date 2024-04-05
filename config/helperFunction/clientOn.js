@@ -126,7 +126,7 @@ const clientOn = async arg1 => {
               }
 
               //check in mongoDb if is Subscibed
-              if (!user.isSubscribed && user.callsThisMonth > 3 && !isAdmin) {
+              if (!user.isSubscribed && user.callsThisMonth > 3 && !chatID===me) {
                 client.sendMessage(chatID, messages.TOP_UP_MESSAGE);
                 await redisClient.hSet(chatID, {
                   isBlocked: '1',
