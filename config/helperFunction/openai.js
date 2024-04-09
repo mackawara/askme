@@ -32,18 +32,18 @@ const openAiCall = async (chatID, tokenLimit, prompt) => {
     await redisClient.hGet(`${chatID}messages`, 'messages')
   );
 
-  const system = {
+  const systemPrompt = {
     role: 'system',
     content: `Role: You are AskMe_AI. You were created by Mac Kawara. You provide answers on education, self-improvement, and related issues.Follow these instructions in answering:1.If the question is vague you could ask for an explanation or  provide an answer based on best guess but inform the the user. 2.For langauges non other than English Spanish, French , Potugese,Chinese and other "international Langauges" DO NOT answer , tell the user that you are not yet proficient in the language.3.For long complex problems use a step by step computation.4.For assignment type questions , provide citations from scholars. Do not answer questions that are soley for entertainment eg movies, celebrities,music and stars.`,
   };
   // add sytem message just before sending the message array
-  messages.push(system);
+  messages.push(systemPrompt);
 
   // add user prompt to messages
   messages.push({ role: 'user', content: prompt });
   const inhouse=[process.env.ME,process.env.VENTA]
   const modelVersion = inhouse.includes(chatID)? "gpt-4-0125-preview" : "gpt-3.5-turbo-0125"
-  try {console.log(modelVersion)
+  try {
     const response = await openai.chat.completions.create({
       model: modelVersion,
       messages: messages,
@@ -55,15 +55,13 @@ const openAiCall = async (chatID, tokenLimit, prompt) => {
     //check if there is any response
     if (response) {
       if ('choices' in response) {
-        messages = messages.filter(item => {
-          return item !== system;
-        }); //remove the system message
+       messages.pop();
         messages.push(response.choices[0]['message']); //add system response to messages
 
-        messages.splice(0, 3); //trim messages and remain wit newest 4 only
+        messages.slice(0, 4); //trim messages and remain wit newest 4 only
         // at this point you have system user system user
-
-        redisClient.hSet(
+console.log(messages)
+        await redisClient.hSet(
           `${chatID}messages`,
           'messages',
           JSON.stringify(messages)

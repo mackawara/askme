@@ -46,7 +46,7 @@ const isInteger = str => {
   return !isNaN(num) && String(num) === str.trim();
 };
 const updateDbMetrics = async (chatID, usage) => {
-  console.log(usage);
+  
   try {
     const user = await indvUsers.findOne({ serialisedNumber: chatID });
     const totalUsage = await totalUsageModel.findOne({});
@@ -54,23 +54,23 @@ const updateDbMetrics = async (chatID, usage) => {
 
     user.calls++;
     user.callsThisMonth++;
-    if (tokenUser) {
+    /* if (tokenUser) {
       tokenUser.availableTokens = -usage.total_tokens;
       tokenUser.inputTokens = +usage.prompt_tokens;
       tokenUser.inputTokens = +usage.completion_tokens;
       tokenUser.totalTokens = +usage.total_tokens;
       tokenUser.save();
-    }
+    } */
 
-    user.inputTokens = parseInt(user.inputTokens) + usage.prompt_tokens;
-    user.completionTokens = +usage.completion_tokens;
-    user.totalTokens = +usage.total_tokens;
+    user.inputTokens  += usage.prompt_tokens;
+    user.completionTokens += usage.completion_tokens;
+    user.totalTokens +=usage.total_tokens;
     //Add to cumulatitive totals
     totalUsage.calls++;
     totalUsage.callsThisMonth++;
-    totalUsage.inputTokens = +usage.prompt_tokens;
-    totalUsage.completionTokens = +usage.completion_tokens;
-    totalUsage.totalTokens = +usage.total_tokens;
+    totalUsage.inputTokens += usage.prompt_tokens;
+    totalUsage.completionTokens +=usage.completion_tokens;
+    totalUsage.totalTokens +=usage.total_tokens;
     // save the updated metrics
 
     user.save();
