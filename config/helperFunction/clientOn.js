@@ -193,6 +193,7 @@ const clientOn = async arg1 => {
             // topupRegex.test(msgBody.replace(' ', ''))
           ) {
             console.log('topup');
+            msg.reply("We are currently transitioning  Zig currency and topup services are not available")
             await redisClient.hSet(`${chatID}topup`, 'field', 'product');
             await redisClient.expire(`${chatID}topup`, 180);
             await msg.reply(messages.TOPUP_PRODUCT);

@@ -28,6 +28,7 @@ const client = new Client({
       '--no-sandbox',
     ],
   },
+  webVersion: '2.2346.52',
   webVersionCache: {
     type: 'remote',
     remotePath: `https://raw.githubusercontent.com/wppconnect-team/wa-version/main/html/${wwebVersion}.html`,
