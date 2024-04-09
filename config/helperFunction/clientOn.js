@@ -165,7 +165,7 @@ const clientOn = async arg1 => {
             maxCalls = () => {
               let totalCalls;
               const base = 1;
-              const subscriber = isSubscribed === '1' ? 25 : 0;
+              const subscriber = isSubscribed === '1'||chatID==me ? 25 : 0;
               const follower = isFollower === '1' ? 1 : 0;
               totalCalls = base + subscriber + follower;
               return totalCalls;
@@ -177,9 +177,7 @@ const clientOn = async arg1 => {
           //admin now sorted
           const minAvailableCallsAllowed = 0;
           isSubscribed = await redisClient.hGet(chatID, 'isSubscribed');
-          const availableTokens = parseInt(
-            await redisClient.hGet(chatID, 'availableTokens')
-          );
+          
           const isBlocked = await redisClient.hGet(chatID, 'isBlocked');
 
           await redisClient
