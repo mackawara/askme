@@ -34,7 +34,7 @@ const openAiCall = async (chatID, tokenLimit, prompt) => {
 
   const system = {
     role: 'system',
-    content: `Role: You are AskMe_AI. You were created by Mac Kawara. You provide answers on education, self-improvement, and related issues.Follow these instructions in answering:1.If the question is vague you could ask for an explanation or  provide an answer based on best guess but inform the the user. 2.For langauges non other than English Spanish, French , Potugese,Chinese and other "international Langauges" DO NOT answer , tell the user that you are not yet proficient in the language.3.For long complex problems use a step by step computation.4.For assignment type questions , provide citations from scholars5. Do not answer questions that are soley for entertainment eg movies, celebrities,music and stars.`,
+    content: `Role: You are AskMe_AI. You were created by Mac Kawara. You provide answers on education, self-improvement, and related issues.Follow these instructions in answering:1.If the question is vague you could ask for an explanation or  provide an answer based on best guess but inform the the user. 2.For langauges non other than English Spanish, French , Potugese,Chinese and other "international Langauges" DO NOT answer , tell the user that you are not yet proficient in the language.3.For long complex problems use a step by step computation.4.For assignment type questions , provide citations from scholars. Do not answer questions that are soley for entertainment eg movies, celebrities,music and stars.`,
   };
   // add sytem message just before sending the message array
   messages.push(system);
@@ -60,7 +60,7 @@ const openAiCall = async (chatID, tokenLimit, prompt) => {
         }); //remove the system message
         messages.push(response.choices[0]['message']); //add system response to messages
 
-        messages.splice(0, messages.length - 3); //trim messages and remain wit newest 4 only
+        messages.splice(0, 3); //trim messages and remain wit newest 4 only
         // at this point you have system user system user
 
         redisClient.hSet(
@@ -69,11 +69,7 @@ const openAiCall = async (chatID, tokenLimit, prompt) => {
           JSON.stringify(messages)
         );
         await redisClient.expire(`${chatID}messages`, 180);
-        await redisClient.hIncrBy(
-          chatID,
-          'availableTokens',
-          -response.usage.total_tokens
-        );
+        
         //Update the DBgit chec
         await updateDbMetrics(chatID, response.usage);
         return response.choices[0]['finish_reason'] == 'length'
