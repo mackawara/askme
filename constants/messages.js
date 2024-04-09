@@ -11,7 +11,7 @@ const TOO_MANY_REQUESTS_TRY_LATER = `*Error*, you have made too many requests wi
 const DO_NOT_SEND_THANK_YOU =
   '*System message*\n Thank you for using AskMe. Do not send greeting messages or messages such as thank you or you are welcome etc... They will use up your quota';
 const ENTER_TOKEN_AMOUNT =
-  'Please enter the total amount (in RTGS$) you would like to pay for tokens.\n\n1000 tokens cost RTGS 54 (ecocash). On average 1000 tokens is equivalent to 500-700 words or about 2-3 questions.';
+  'Please enter the total amount (in ZiG) you would like to pay for tokens.\n\n1000 tokens cost ZiG 54 (ecocash). On average 1000 tokens is equivalent to 500-700 words or about 2-3 questions.';
 const USE_THESE_KEY_WORDS =
   'Send any of these keywords to access features avaiable to users\n\n*createDoc* to create and download word documents from Askme_Ai , Once AskMe_AI generates an answer you can create a word document by replying with the word createDoc. For it to work you \n\n*createImage* to create an image provide a description of what you would want,\n\n*topup:* to subscribe or topup\n\nbalance: for token users to view token balances';
 const BE_PATIENT_WHILE_SYSTEM_GENERATES_DOC =
@@ -55,13 +55,13 @@ const ECOCASH_NUMBER =
 const INVALID_ECOCASH_NUMBER =
   'The number you entered is not a valid Ecocash number\nplease use format shown:0771234567. *This is an example number dont send any money to it*';
 const TOPUP_PRODUCT =
-  'Select from the products below\n\n*1* .Monthly= RTGS' +
+  'Select from the products below\n\n*1* .Monthly= ZiG' +
   system.monthly +
-  ' ecocash (*25 messages per day*)\n\n*2* .Payu =RTGS$' +
+  ' ecocash (*25 messages per day*)\n\n*2* .Payu =ZiG' +
   system.payu +
-  ' 55 messages (*Expires in 72 hours*)'; //*3* .Token : any amount above RTGS$50 (*tokens expire after 2 days*)'; //\n\n Premium: RTGS$36000: unlimited messages , access to image Generation features \n\nReply with *1* or *2* or *3* or *4*';
+  ' 55 messages (*Expires in 72 hours*)'; //*3* .Token : any amount above ZiG (*tokens expire after 2 days*)'; //\n\n Premium: ZiG$36000: unlimited messages , access to image Generation features \n\nReply with *1* or *2* or *3* or *4*';
 const REPLY_WITH_TOPUP =
-  'You are currently using a limited (free) version \nTo get full access subscribe by sending the word "*Topup*" \n\n*You can subscribe of as little as RTGS50 Ecocash*';
+  `You are currently using a limited (free) version \nTo get full access subscribe by sending the word "*Topup*" \n\n*You can subscribe of as little as ZiG${system.payu} via Ecocash*`;
 const INVALID_TOPUP_PRODUCT = `Please respond with any one of\n1.payu\n2.monthly\n 3.Tokens\n\nEg just reply with *1* for monthly subscribtion`;
 const SUBSCRIPTION_EXPIRED = `Your subscription has expired. To renew reply with the word Topup`;
 const PROMPTS_VIOLATES_POLICIES =
