@@ -17,7 +17,7 @@ const openAiCall = async (chatID, tokenLimit, prompt) => {
 
   const messagesExists = await redisClient.exists(`${chatID}messages`);
   //if there are no current messages
-  if (!messagesExists) {
+  if (messagesExists==0) {
     await redisClient.hSet(`${chatID}messages`, {
       messages: JSON.stringify([]),
     });
@@ -42,7 +42,7 @@ const openAiCall = async (chatID, tokenLimit, prompt) => {
   // add user prompt to messages
   messages.push({ role: 'user', content: prompt });
   const inhouse=[process.env.ME,process.env.VENTA]
-  const modelVersion = inhouse.includes(chatID)? "gpt-4-0125-preview" : "gpt-3.5-turbo-0125"
+  const modelVersion = inhouse.includes(chatID)? "gpt-4-turbo-2024-04-09" : "gpt-3.5-turbo-0125"
   try {
     const response = await openai.chat.completions.create({
       model: modelVersion,
