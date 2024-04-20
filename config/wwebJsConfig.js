@@ -5,7 +5,7 @@ const client = new Client({
   authStrategy: new LocalAuth(),
   puppeteer: {
     executablePath:
-      process.env.NODE_ENV == 'staging' ? null : process.env.EXECPATH,
+      process.env.NODE_ENV == 'local' ? null : process.env.EXECPATH,
     handleSIGINT: true,
     ignoreDefaultArgs: ['--enable-automation'],
     headless: true, //process.env.NODE_ENV == 'local' ? false : true,
@@ -31,7 +31,7 @@ const client = new Client({
   webVersionCache: {
     type: 'remote',
     remotePath: `https://raw.githubusercontent.com/wppconnect-team/wa-version/main/html/${wwebVersion}.html`,//https://raw.githubusercontent.com/wppconnect-team/wa-version/main/html/2.2412.54.htm
-},
+}, 
 });
 
 module.exports = { client, MessageMedia };
