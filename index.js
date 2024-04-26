@@ -35,6 +35,7 @@ connectDB().then(async () => {
     //functions abd resources
     //Helper Functions
 
+
     client.on('call', async call => {
       call.reject();
       client.sendMessage(
@@ -108,4 +109,8 @@ connectDB().then(async () => {
       });
     });
   });
+  client.on("disconnected",()=>{
+    console.log("client has been disconnected")
+    process.exit();
+  })
 });

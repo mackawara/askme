@@ -7,8 +7,9 @@ const client = new Client({
     executablePath:
       process.env.NODE_ENV == 'local' ? null : process.env.EXECPATH,
     handleSIGINT: true,
-    ignoreDefaultArgs: ['--enable-automation'],
-    headless: true, //process.env.NODE_ENV == 'local' ? false : true,
+    //ignoreDefaultArgs: ['--enable-automation'],
+    ignoreDefaultArgs: ['--disable-dev-shm-usage'], ignoreHTTPSErrors: true ,
+    headless: process.env.NODE_ENV == 'local' ? false : true,
     args: [
       '--log-level=3', // fatal only
       '--start-maximized',
