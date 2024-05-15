@@ -192,13 +192,10 @@ const clientOn = async arg1 => {
             msgBody.toLowerCase().includes('top-up payu')
             // topupRegex.test(msgBody.replace(' ', ''))
           ) {
-            console.log('topup');
-            msg.reply("We are currently transitioning from RTGS to Zig currency and our topup services are currently not available")
-            return;
-           /*  await redisClient.hSet(`${chatID}topup`, 'field', 'product');
+            await redisClient.hSet(`${chatID}topup`, 'field', 'product');
             await redisClient.expire(`${chatID}topup`, 180);
             await msg.reply(messages.TOPUP_PRODUCT);
-            return; */
+            return; 
           }
           //Check if system is not going over API limits
           if(isBlocked==1){

@@ -83,7 +83,7 @@ const autoProcessSub = async (chatID, product, amount) => {
           isTokenUser: '1',
         });
         await redisClient.expire(chatID, redisExpiryTime);
-
+console.log()
         client.sendMessage(
           chatID,
           `*Thank you for using AskMe_AI* \nYou now have ${

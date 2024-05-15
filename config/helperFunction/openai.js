@@ -42,7 +42,7 @@ const openAiCall = async (chatID, tokenLimit, prompt) => {
   // add user prompt to messages
   messages.push({ role: 'user', content: prompt });
   const inhouse=[process.env.ME,process.env.VENTA]
-  const modelVersion = inhouse.includes(chatID)? "gpt-4-turbo-2024-04-09" : "gpt-3.5-turbo-0125"
+  const modelVersion = inhouse.includes(chatID)? "gpt-4o" : "gpt-3.5-turbo-0125"
   try {
     const response = await openai.chat.completions.create({
       model: modelVersion,
@@ -58,7 +58,7 @@ const openAiCall = async (chatID, tokenLimit, prompt) => {
        messages.pop();
         messages.push(response.choices[0]['message']); //add system response to messages
 
-        messages.slice(0, 4); //trim messages and remain wit newest 4 only
+        messages.slice(0, 3); //trim messages and remain wit newest 4 only
         // at this point you have system user system user
 console.log(messages)
         await redisClient.hSet(
