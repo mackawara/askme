@@ -10,6 +10,7 @@ const autoProcessSub = async (chatID, product, amount) => {
   let purchasedTokens, newExp, tokenUser;
   try {
     if (product == 'monthly') {
+      
       await indvUsers
         .updateOne(
           { serialisedNumber: chatID },
