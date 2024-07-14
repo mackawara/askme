@@ -9,6 +9,9 @@ const googleAi = require('./googleAi');
 const randomUsageTip = require('./randomUsageTip');
 const generateImage = require('./generateImage');
 const redisClient = require('../redisConfig');
+const textToSpeech=require('./textToAudio')
+
+
 const ignorePatterns =
   /^(ok(ay)?|thank(s| you)?|ouky|thanx|it'?s? ok(ay)?\.? thank(s| you)? so much|hey|h(i|ey|ello)|good (night|evening|morning|day)|noted|welcome|(yo)?u'?re welcome|k(ay)?|night)\W*$/gi;
 //helper Functions
@@ -266,6 +269,18 @@ const clientOn = async arg1 => {
             }
           }
           // create docs
+         
+          if (msgBody.slice(0,12).toLowerCase().trim()=='texttospeech'){
+            
+            const targetMessage=msgBody.slice(12)
+            const response=await textToSpeech(targetMessage);
+          if (response.success){
+            client.sendMessage(chatID, MessageMedia.fromFilePath(response.path));
+            return
+          }
+          client.sendMessage(chatID, response.path)
+            return
+           }
 
           if (
             /^creat(e)?\s*doc(ument)?\s*$/gi.test(
@@ -303,7 +318,7 @@ const clientOn = async arg1 => {
             client.sendMessage(chatID, messages.NO_MEDIA_REQUEST_SEND_TEXT);
             return;
           }
-
+ 
           if (isFlagged(msgBody)) {
             client.sendMessage(chatID, messages.MESSAGE_FLAGGED);
             client.sendMessage(
