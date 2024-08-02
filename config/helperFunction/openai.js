@@ -43,6 +43,7 @@ const openAiCall = async (chatID, tokenLimit, prompt) => {
   messages.push({ role: 'user', content: prompt });
   const inhouse=[process.env.ME,process.env.VENTA]
   const modelVersion = inhouse.includes(chatID)? "gpt-4o" : "gpt-3.5-turbo-0125"
+  console.log(modelVersion)
   try {
     const response = await openai.chat.completions.create({
       model: modelVersion,
