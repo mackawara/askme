@@ -27,7 +27,7 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-      - name: Set permissions for private key
+      - name: Set permissions for private key on AWS
         run: |
           echo "${{ secrets.AWS_EC2_PRIVATE_KEY }}" > mackawaraaws.pem
           chmod 600 mackawaraaws.pem

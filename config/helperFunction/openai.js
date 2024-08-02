@@ -1,6 +1,5 @@
 const indvUsers = require('../../models/individualUsers.js');
 const totalUsageModel = require('../../models/totalUsage');
-const tokenUsersModel = require('../../models/tokenUsers.js');
 const redisClient = require('../redisConfig.js');
 const openai = require('../openAIconfig.js');
 const { updateDbMetrics } = require('../../Utils/index.js');
@@ -11,12 +10,11 @@ const openAiCall = async (chatID, tokenLimit, prompt) => {
   let user = await indvUsers.findOne({ serialisedNumber: chatID }).exec();
   const isTokenUser =
     (await redisClient.hGet(chatID, 'isTokenUser')) == '1' ? true : false;
-  console.log('is token User?: ' + isTokenUser);
 
   let totalUsage = await totalUsageModel.findOne({});
 
   const messagesExists = await redisClient.exists(`${chatID}messages`);
-  //if there are no current messages
+  
   if (messagesExists==0) {
     await redisClient.hSet(`${chatID}messages`, {
       messages: JSON.stringify([]),
@@ -43,7 +41,6 @@ const openAiCall = async (chatID, tokenLimit, prompt) => {
   messages.push({ role: 'user', content: prompt });
   const inhouse=[process.env.ME,process.env.VENTA]
   const modelVersion = inhouse.includes(chatID)? "gpt-4o" : "gpt-3.5-turbo-0125"
-  console.log(modelVersion)
   try {
     const response = await openai.chat.completions.create({
       model: modelVersion,
@@ -61,7 +58,7 @@ const openAiCall = async (chatID, tokenLimit, prompt) => {
 
         messages.slice(0, 3); //trim messages and remain wit newest 4 only
         // at this point you have system user system user
-console.log(messages)
+console.log(`response received for ${chatID}`)
         await redisClient.hSet(
           `${chatID}messages`,
           'messages',

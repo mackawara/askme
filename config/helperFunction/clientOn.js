@@ -37,23 +37,8 @@ const clientOn = async arg1 => {
         //only use on direct messages
 
         if (!msg.isStatus && msg.type == 'chat' && !chat.isGroup) {
-          console.log(chatID);
-          /* if (chat.isGroup) {
-             if (chatID == '263772855269-1445013360@g.us') {
-              console.log('message found');
-              if (msgBody.startsWith('askme:')) {
-                console.log('is group');
-                let prompt = await msgBody.replace(/askme:/gi, '');
-                console.log(msg.getInfo());
-                const googleResponse = await googleAi(prompt);
-                msg.reply(googleResponse);
-                return;
-              }
-            } else {
-              console.log('group message');
-              return;
-            } 
-          } */
+          console.log(`Message from ${chatID}`);
+         
           const elevate = require('./elevate');
           const expiryTime = Utils.getSecsToMidnight();
           const user = await usersModel.findOne({ serialisedNumber: chatID });
@@ -70,7 +55,6 @@ const clientOn = async arg1 => {
               minDelayTimeInSecs) *
             1000;
 
-          console.log(delayTime);
           // if user is not already in Redis
           const exists = await redisClient.exists(chatID);
           const isInTopupMode = await redisClient.exists(`${chatID}topup`);
@@ -389,7 +373,7 @@ const clientOn = async arg1 => {
               await client.sendMessage(chatID, messages.BLOCKED_MESSAGE);
               await contact.pushname;
               contact.block().then(result => {
-                console.log(result);
+                console.log(`contact blocked ${chatID}`);
                 client.sendMessage(admin, messages.USER_BANNED + ` ${chatID}`);
               });
 
