@@ -181,7 +181,7 @@ const clientOn = async arg1 => {
           ) {
             await redisClient.hSet(`${chatID}topup`, 'field', 'product');
             await redisClient.expire(`${chatID}topup`, 180);
-            await msg.reply(messages.TOPUP_PRODUCT);
+            await client.sendMessage(chatID,messages.TOPUP_PRODUCT);
             return; 
           }
           //Check if system is not going over API limits
@@ -242,7 +242,7 @@ const clientOn = async arg1 => {
             } else if (msgBody.startsWith('processSub:')) {
               await redisClient.hSet('admin', 'subField', 'number');
               await redisClient.expire('admin', '60');
-              msg.reply('What is the number you want to process');
+              client.sendMessage(chatID,'What is the number you want to process');
               return;
             } else if (msgBody.startsWith('processPayu:')) {
               manualProcessSub(msg, 'payu');
@@ -286,7 +286,7 @@ const clientOn = async arg1 => {
               const index = messages.length - 1;
               targetMessage = await messages[index].content;
             } else {
-              msg.reply(messages.ERROR_NO_QUOTED_MESSAGES_FOUND);
+              client.sendMessage(chatID,messages.ERROR_NO_QUOTED_MESSAGES_FOUND);
               return;
             }
             client.sendMessage(
@@ -437,9 +437,9 @@ const clientOn = async arg1 => {
             return;
           } else {
             if (chatID == '263775231426@c.us' || isSubscribed == '1') {
-              msg.reply(response);
+              client.sendMessage(chatID,response);
             } else {
-              msg.reply(`${messages.REPLY_WITH_TOPUP}\n\n${response}`);
+              client.sendMessage(chatID,`${messages.REPLY_WITH_TOPUP}\n\n${response}`);
             }
           }
         }
