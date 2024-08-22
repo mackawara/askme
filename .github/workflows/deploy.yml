@@ -8,7 +8,7 @@ on:
       - 'package.json'
       - .github/**
       - './*'
-      - 'package.json'
+      - package.json
       - .github/**
       - ./**
       - .**
