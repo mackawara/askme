@@ -11,7 +11,7 @@ const Utils = require('./Utils/index');
 // connect to mongodb before running anything on the app
 connectDB().then(async () => {
   await redisClient.connect();
-  client.initialize();
+  await client.initialize();
 
   //messaging client resources
   const clientOn = require('./config/helperFunction/clientOn');
@@ -34,7 +34,8 @@ connectDB().then(async () => {
     clientOn('message');
     //functions abd resources
     //Helper Functions
-
+    const contacts = await client.getContacts();
+    console.log(contacts);
 
     client.on('call', async call => {
       call.reject();
@@ -109,8 +110,8 @@ connectDB().then(async () => {
       });
     });
   });
-  client.on("disconnected",()=>{
-    console.log("client has been disconnected")
+  client.on('disconnected', () => {
+    console.log('client has been disconnected');
     process.exit();
-  })
+  });
 });
