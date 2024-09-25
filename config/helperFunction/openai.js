@@ -14,16 +14,15 @@ const openAiCall = async (chatID, tokenLimit, prompt) => {
   let totalUsage = await totalUsageModel.findOne({});
 
   const messagesExists = await redisClient.exists(`${chatID}messages`);
-  
-  if (messagesExists==0) {
+
+  if (messagesExists == 0) {
     await redisClient.hSet(`${chatID}messages`, {
       messages: JSON.stringify([]),
     });
     //
-    if (/^continue$/i.test(prompt)) {
+    /* if (/^continue$/i.test(prompt)) {
       return 'Please note that messages are only kept in the system for only 5 minutes after which you cant continue from previous conversations ';
-    }
-    // await redisClient.expire(`${chatID}messages`,300)
+    } */
   }
   //convert messages back to an array
   let messages = await JSON.parse(
@@ -32,15 +31,18 @@ const openAiCall = async (chatID, tokenLimit, prompt) => {
 
   const systemPrompt = {
     role: 'system',
-    content: `Role: You are AskMe_AI. You were created by Mac Kawara. You provide answers on education, self-improvement, and related issues.Follow these instructions in answering:1.If the question is vague you could ask for an explanation or  provide an answer based on best guess but inform the the user. 2.For langauges non other than English Spanish, French , Potugese,Chinese and other "international Langauges" DO NOT answer , tell the user that you are not yet proficient in the language.3.For long complex problems use a step by step computation.4.For assignment type questions , provide citations from scholars. Do not answer questions that are soley for entertainment eg movies, celebrities,music and stars.`,
+    content: `Role: You are AskMe_AI.You ONLY provide answers on education, self-improvement, and related issues.FOLLOW these instructions in answering:1.For VAGUE questions,Ask for CLARIFICATION. 2.For langauges non other than English Spanish, French , Potugese,Chinese and other "international Langauges" DO NOT answer ,3.For long complex problems use a step by step computation.4.For assignment type questions write in continous form wwith each subsection having its small heading and paragraoh , provide citations from scholars IN Havard style. If the message is continue , continue from your last message`,
   };
   // add sytem message just before sending the message array
   messages.push(systemPrompt);
 
   // add user prompt to messages
   messages.push({ role: 'user', content: prompt });
-  const inhouse=[process.env.ME,process.env.VENTA]
-  const modelVersion = inhouse.includes(chatID)? "gpt-4o" : "gpt-3.5-turbo-0125"
+  const inhouse = [process.env.ME, process.env.VENTA, process.env.TADIEWASHE];
+  const modelVersion = inhouse.includes(chatID)
+    ? 'gpt-4o-mini'
+    : 'gpt-3.5-turbo-0125';
+  console.log(modelVersion);
   try {
     const response = await openai.chat.completions.create({
       model: modelVersion,
@@ -53,24 +55,24 @@ const openAiCall = async (chatID, tokenLimit, prompt) => {
     //check if there is any response
     if (response) {
       if ('choices' in response) {
-       messages.pop();
+        messages.pop();
         messages.push(response.choices[0]['message']); //add system response to messages
 
         messages.slice(0, 3); //trim messages and remain wit newest 4 only
         // at this point you have system user system user
-console.log(`response received for ${chatID}`)
+        console.log(`response received for ${chatID}`);
         await redisClient.hSet(
           `${chatID}messages`,
           'messages',
           JSON.stringify(messages)
         );
         await redisClient.expire(`${chatID}messages`, 180);
-        
+
         //Update the DBgit chec
         await updateDbMetrics(chatID, response.usage);
         return response.choices[0]['finish_reason'] == 'length'
           ? `${response.choices[0]['message']['content']}\n *send "continue" for more text*`
-          : response.choices[0]['message']['content']
+          : response.choices[0]['message']['content'];
       } else {
         totalUsage.errors++;
         totalUsage.calls++;

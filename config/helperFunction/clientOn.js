@@ -9,8 +9,7 @@ const googleAi = require('./googleAi');
 const randomUsageTip = require('./randomUsageTip');
 const generateImage = require('./generateImage');
 const redisClient = require('../redisConfig');
-const textToSpeech=require('./textToAudio')
-
+const textToSpeech = require('./textToAudio');
 
 const ignorePatterns =
   /^(ok(ay)?|thank(s| you)?|ouky|thanx|it'?s? ok(ay)?\.? thank(s| you)? so much|hey|h(i|ey|ello)|good (night|evening|morning|day)|noted|welcome|(yo)?u'?re welcome|k(ay)?|night)\W*$/gi;
@@ -38,7 +37,7 @@ const clientOn = async arg1 => {
 
         if (!msg.isStatus && msg.type == 'chat' && !chat.isGroup) {
           console.log(`Message from ${chatID}`);
-         
+
           const elevate = require('./elevate');
           const expiryTime = Utils.getSecsToMidnight();
           const user = await usersModel.findOne({ serialisedNumber: chatID });
@@ -46,7 +45,7 @@ const clientOn = async arg1 => {
           let maxCalls = 1;
           let isSubscribed, isFollower;
           let isAdmin;
-        
+
           let prompt = await msgBody.replace(/openAi:|createDoc/gi, '');
           const maxDelayTimeInSecs = 9;
           const minDelayTimeInSecs = 3;
@@ -113,7 +112,11 @@ const clientOn = async arg1 => {
               }
 
               //check in mongoDb if is Subscibed
-              if (!user.isSubscribed && user.callsThisMonth > 3 && !chatID===me) {
+              if (
+                !user.isSubscribed &&
+                user.callsThisMonth > 3 &&
+                !chatID === me
+              ) {
                 client.sendMessage(chatID, messages.TOP_UP_MESSAGE);
                 await redisClient.hSet(chatID, {
                   isBlocked: '1',
@@ -122,7 +125,7 @@ const clientOn = async arg1 => {
                 });
                 return;
               }
-              if (user.isSubscribed|| chatID==me) {
+              if (user.isSubscribed || chatID == me) {
                 await redisClient.hSet(chatID, {
                   isBlocked: '0',
                   isSubscribed: '1',
@@ -152,7 +155,7 @@ const clientOn = async arg1 => {
             maxCalls = () => {
               let totalCalls;
               const base = 1;
-              const subscriber = isSubscribed === '1'||chatID==me ? 25 : 0;
+              const subscriber = isSubscribed === '1' || chatID == me ? 25 : 0;
               const follower = isFollower === '1' ? 1 : 0;
               totalCalls = base + subscriber + follower;
               return totalCalls;
@@ -164,7 +167,7 @@ const clientOn = async arg1 => {
           //admin now sorted
           const minAvailableCallsAllowed = 0;
           isSubscribed = await redisClient.hGet(chatID, 'isSubscribed');
-          
+
           const isBlocked = await redisClient.hGet(chatID, 'isBlocked');
 
           await redisClient
@@ -181,17 +184,17 @@ const clientOn = async arg1 => {
           ) {
             await redisClient.hSet(`${chatID}topup`, 'field', 'product');
             await redisClient.expire(`${chatID}topup`, 180);
-            await client.sendMessage(chatID,messages.TOPUP_PRODUCT);
-            return; 
+            await client.sendMessage(chatID, messages.TOPUP_PRODUCT);
+            return;
           }
           //Check if system is not going over API limits
-          if(isBlocked==1){
-            return
+          if (isBlocked == 1) {
+            return;
           }
           if (!isSystemNotBusy(msg)) {
             return;
           }
-          
+
           const shortTTL = await redisClient.get(`${chatID}shortTTL`);
           // process retopup
 
@@ -242,7 +245,10 @@ const clientOn = async arg1 => {
             } else if (msgBody.startsWith('processSub:')) {
               await redisClient.hSet('admin', 'subField', 'number');
               await redisClient.expire('admin', '60');
-              client.sendMessage(chatID,'What is the number you want to process');
+              client.sendMessage(
+                chatID,
+                'What is the number you want to process'
+              );
               return;
             } else if (msgBody.startsWith('processPayu:')) {
               manualProcessSub(msg, 'payu');
@@ -253,18 +259,20 @@ const clientOn = async arg1 => {
             }
           }
           // create docs
-         
-          if (msgBody.slice(0,12).toLowerCase().trim()=='texttospeech'){
-            
-            const targetMessage=msgBody.slice(12)
-            const response=await textToSpeech(targetMessage);
-          if (response.success){
-            client.sendMessage(chatID, MessageMedia.fromFilePath(response.path));
-            return
+
+          if (msgBody.slice(0, 12).toLowerCase().trim() == 'texttospeech') {
+            const targetMessage = msgBody.slice(12);
+            const response = await textToSpeech(targetMessage);
+            if (response.success) {
+              client.sendMessage(
+                chatID,
+                MessageMedia.fromFilePath(response.path)
+              );
+              return;
+            }
+            client.sendMessage(chatID, response.path);
+            return;
           }
-          client.sendMessage(chatID, response.path)
-            return
-           }
 
           if (
             /^creat(e)?\s*doc(ument)?\s*$/gi.test(
@@ -286,7 +294,10 @@ const clientOn = async arg1 => {
               const index = messages.length - 1;
               targetMessage = await messages[index].content;
             } else {
-              client.sendMessage(chatID,messages.ERROR_NO_QUOTED_MESSAGES_FOUND);
+              client.sendMessage(
+                chatID,
+                messages.ERROR_NO_QUOTED_MESSAGES_FOUND
+              );
               return;
             }
             client.sendMessage(
@@ -302,7 +313,7 @@ const clientOn = async arg1 => {
             client.sendMessage(chatID, messages.NO_MEDIA_REQUEST_SEND_TEXT);
             return;
           }
- 
+
           if (isFlagged(msgBody)) {
             client.sendMessage(chatID, messages.MESSAGE_FLAGGED);
             client.sendMessage(
@@ -353,7 +364,9 @@ const clientOn = async arg1 => {
 
           // check if blocked   const isBlocked = await redisClient.hGet(chatID, "isBlocked");
           //subtract 1 usage call
-          await redisClient.HINCRBY(chatID, 'calls', -1);
+          !chatID === me
+            ? await redisClient.HINCRBY(chatID, 'calls', -1)
+            : console.log('No limits for the dhara');
           console.log(
             'remaining calls for' +
               chatID +
@@ -396,7 +409,7 @@ const clientOn = async arg1 => {
           if (isSubscribed == '1') {
             if (calls >= minAvailableCallsAllowed) {
               //set token limits based on subscription
-              tokenLimit = 600;
+              tokenLimit = 450;
             } else {
               client.sendMessage(chatID, messages.SUBSCRIPTION_QUOTA_EXCEDED);
               return;
@@ -437,9 +450,12 @@ const clientOn = async arg1 => {
             return;
           } else {
             if (chatID == '263775231426@c.us' || isSubscribed == '1') {
-              client.sendMessage(chatID,response);
+              client.sendMessage(chatID, response);
             } else {
-              client.sendMessage(chatID,`${messages.REPLY_WITH_TOPUP}\n\n${response}`);
+              client.sendMessage(
+                chatID,
+                `${messages.REPLY_WITH_TOPUP}\n\n${response}`
+              );
             }
           }
         }

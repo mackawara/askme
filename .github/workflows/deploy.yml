@@ -15,6 +15,7 @@ on:
       - /**
       - './'
       - config
+      - ./
 
 env:
   ME: ${{secrets.ME}}
