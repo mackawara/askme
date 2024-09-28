@@ -364,9 +364,9 @@ const clientOn = async arg1 => {
 
           // check if blocked   const isBlocked = await redisClient.hGet(chatID, "isBlocked");
           //subtract 1 usage call
-          !chatID === me
-            ? await redisClient.HINCRBY(chatID, 'calls', -1)
-            : console.log('No limits for the dhara');
+          chatID === '263775231426@c.us'
+            ? console.log('No limits for the dhara')
+            : await redisClient.HINCRBY(chatID, 'calls', -1);
           console.log(
             'remaining calls for' +
               chatID +
